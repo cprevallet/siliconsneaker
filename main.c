@@ -23,6 +23,10 @@
  * - Craig S. Prevallet, July, 2020  
  */
 
+/* 
+ * Required external Debian libraries: libplplot-dev, plplot-driver-cairo,
+ * libgtk-3-dev
+ */
 #include <gtk/gtk.h>
 
 #include <gdk/gdk.h>
