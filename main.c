@@ -40,6 +40,7 @@
 #include <cairo-ps.h>
 #include <plplot.h>
 
+#define NSIZE    101
 
 /* 
  * make UI elements globals (ick)
@@ -90,12 +91,43 @@ static char starnam[80] = "/usr/share/aa/star.cat";
             cairo_t * cr = gdk_drawing_context_get_cairo_context (drawingContext);
 
             { // do your drawing
+              /*
                 plsdev( "extcairo" );
                 plinit();
                 pl_cmd( PLESC_DEVINIT, cr );
-                plenv( 0.0, 1.0, 0.0, 1.0, 1, 0 );
+                plenv( 0.0, 1.0, 0.0, 1.0, 1, 2 );
                 pllab( "x", "y", "title" );
                 plend();
+              */
+                PLFLT x[NSIZE], y[NSIZE];
+                PLFLT xmin = 0., xmax = 1., ymin = 0., ymax = 100.;
+                int   i;
+                char* symbol = "o";
+
+                // Prepare data to be plotted.
+                for ( i = 0; i < NSIZE; i++ )
+                {
+                    x[i] = (PLFLT) ( i ) / (PLFLT) ( NSIZE - 1 );
+                    y[i] = ymax * x[i] * x[i];
+                }
+
+                // Initialize plplot
+                plsdev( "extcairo" );
+                plinit();
+                pl_cmd( PLESC_DEVINIT, cr );
+
+                // Create a labelled box to hold the plot.
+                plenv( xmin, xmax, ymin, ymax, 0, 0 );
+                pllab( "x", "y=100 x#u2#d", "Simple PLplot demo of a 2D line plot" );
+
+                // Plot the data that was prepared above.
+                plline( NSIZE, x, y );
+                plstring( NSIZE, x, y, symbol);
+
+                // Close PLplot library
+                plend();
+
+
 
 //                cairo_move_to(cr, 30, 30);
 //                cairo_set_font_size(cr,15);
