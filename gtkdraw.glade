@@ -1,0 +1,1007 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkAdjustment" id="adjustment1">
+    <property name="upper">23</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">6</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment10">
+    <property name="lower">300</property>
+    <property name="upper">1100</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">100</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment11">
+    <property name="upper">100</property>
+    <property name="step-increment">0.10</property>
+    <property name="page-increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment2">
+    <property name="upper">59</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment3">
+    <property name="upper">59</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment4">
+    <property name="upper">365</property>
+    <property name="value">1</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment5">
+    <property name="lower">1</property>
+    <property name="upper">100000</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment6">
+    <property name="lower">-90</property>
+    <property name="upper">90</property>
+    <property name="step-increment">0.10</property>
+    <property name="page-increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment7">
+    <property name="upper">359.99</property>
+    <property name="step-increment">0.10</property>
+    <property name="page-increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment8">
+    <property name="lower">-500</property>
+    <property name="upper">30000</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">100</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment9">
+    <property name="lower">-88</property>
+    <property name="upper">58</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">100</property>
+  </object>
+  <object class="GtkListStore" id="liststore1">
+    <columns>
+      <!-- column-name Planet_name -->
+      <column type="gchararray"/>
+      <!-- column-name Number -->
+      <column type="guint64"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Sun</col>
+        <col id="1">0</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Mercury</col>
+        <col id="1">1</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Venus</col>
+        <col id="1">2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Moon</col>
+        <col id="1">3</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Mars</col>
+        <col id="1">4</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Jupiter</col>
+        <col id="1">5</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Saturn</col>
+        <col id="1">6</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Neptune</col>
+        <col id="1">7</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Uranus</col>
+        <col id="1">8</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Pluto</col>
+        <col id="1">9</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkRadioButton" id="radiobutton1">
+    <property name="label" translatable="yes">radiobutton</property>
+    <property name="visible">True</property>
+    <property name="can-focus">True</property>
+    <property name="receives-default">False</property>
+    <property name="active">True</property>
+    <property name="draw-indicator">True</property>
+  </object>
+  <object class="GtkRadioButton" id="radiobutton2">
+    <property name="label" translatable="yes">radiobutton</property>
+    <property name="visible">True</property>
+    <property name="can-focus">True</property>
+    <property name="receives-default">False</property>
+    <property name="active">True</property>
+    <property name="draw-indicator">True</property>
+  </object>
+  <object class="GtkWindow" id="window1">
+    <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Astronomical Almanac - GTK</property>
+    <property name="icon-name">applications-utilities</property>
+    <signal name="destroy" handler="on_window1_destroy" swapped="no"/>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkStackSwitcher">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <property name="stack">stack1</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkStack" id="stack1">
+            <property name="width-request">100</property>
+            <property name="height-request">80</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkFixed" id="p0">
+                <property name="width-request">32</property>
+                <property name="height-request">32</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkFrame" id="frame1">
+                    <property name="width-request">400</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">out</property>
+                    <child>
+                      <object class="GtkFixed">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="l_lat">
+                            <property name="width-request">118</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Latitude (degrees)
+</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_lat">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Geodetic latitude of observer, degrees</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0.0000</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment6</property>
+                            <property name="climb-rate">0.5</property>
+                            <property name="digits">4</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="y">25</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_lng">
+                            <property name="width-request">132</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Longitude ( degrees)
+</property>
+                          </object>
+                          <packing>
+                            <property name="y">63</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_lng">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Terrestrial east longitude of observer, degrees</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0.0000</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment7</property>
+                            <property name="climb-rate">0.5</property>
+                            <property name="digits">4</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="y">86</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_height">
+                            <property name="width-request">204</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Height above sea level (meters)
+</property>
+                          </object>
+                          <packing>
+                            <property name="y">123</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_height">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Observer location height above sea level in meters.</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0.00</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment8</property>
+                            <property name="climb-rate">1</property>
+                            <property name="digits">2</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="y">145</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_temp">
+                            <property name="width-request">204</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Atmospheric temperature (deg C)
+</property>
+                          </object>
+                          <packing>
+                            <property name="y">183</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_press">
+                            <property name="width-request">207</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Atmospheric pressure (millibar)
+</property>
+                          </object>
+                          <packing>
+                            <property name="y">245</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_temp">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Atmospheric temperature at location in degrees C</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0.00</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment9</property>
+                            <property name="climb-rate">1</property>
+                            <property name="digits">2</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="y">206</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_press">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Atmospheric pressure at location in millibars</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">300.00</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment10</property>
+                            <property name="climb-rate">1</property>
+                            <property name="digits">2</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                            <property name="value">300</property>
+                          </object>
+                          <packing>
+                            <property name="y">268</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Location and Atmospheric Conditions</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page0</property>
+                <property name="title" translatable="yes">Observer</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="p1">
+                <property name="width-request">32</property>
+                <property name="height-request">32</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkFrame" id="frame2">
+                    <property name="width-request">400</property>
+                    <property name="height-request">80</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">out</property>
+                    <child>
+                      <object class="GtkFixed">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkLabel" id="l_min">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Minute
+</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">65</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_hr">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Hour
+</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_min">
+                            <property name="name">sb_min</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Minutes (0-59)</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment2</property>
+                            <property name="climb-rate">1</property>
+                            <property name="snap-to-ticks">True</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">85</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_hr">
+                            <property name="name">sb_hr</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Hours  (0 to 23)</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment1</property>
+                            <property name="climb-rate">1</property>
+                            <property name="snap-to-ticks">True</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">25</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_sec">
+                            <property name="width-request">48</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Second
+</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">130</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_sec">
+                            <property name="name">sb_sec</property>
+                            <property name="width-request">118</property>
+                            <property name="height-request">34</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Seconds (0-59)</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment3</property>
+                            <property name="climb-rate">1</property>
+                            <property name="snap-to-ticks">True</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">145</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="rb_TTUT">
+                            <property name="label" translatable="yes">TDT = UT</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="tooltip-text" translatable="yes">If you are comparing positions against almanac values, you probably want TDT.  If you are looking up at the sky, you probably want UT.  Ephemeris  transit times can be obtained by declaring TDT = UT.</property>
+                            <property name="draw-indicator">True</property>
+                            <property name="group">radiobutton1</property>
+                          </object>
+                          <packing>
+                            <property name="y">209</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="rb_TT">
+                            <property name="label" translatable="yes">TDT</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="tooltip-text" translatable="yes">If you are comparing positions against almanac values, you probably want TDT.  If you are looking up at the sky, you probably want UT.  Ephemeris  transit times can be obtained by declaring TDT = UT.</property>
+                            <property name="draw-indicator">True</property>
+                            <property name="group">radiobutton1</property>
+                          </object>
+                          <packing>
+                            <property name="y">230</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="rb_UT">
+                            <property name="label" translatable="yes">Universal Time</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="tooltip-text" translatable="yes">If you are comparing positions against almanac values, you probably want TDT.  If you are looking up at the sky, you probably want UT.  Ephemeris  transit times can be obtained by declaring TDT = UT.</property>
+                            <property name="draw-indicator">True</property>
+                            <property name="group">radiobutton1</property>
+                          </object>
+                          <packing>
+                            <property name="y">252</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_dt">
+                            <property name="width-request">45</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">DeltaT
+</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">189</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_dt">
+                            <property name="name">sb_dt</property>
+                            <property name="width-request">137</property>
+                            <property name="height-request">34</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Ephemeris Time - Universal Time use this deltaT (sec) if nonzero, else compute it.</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">0.00</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment11</property>
+                            <property name="climb-rate">0.10</property>
+                            <property name="digits">2</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                          </object>
+                          <packing>
+                            <property name="x">246</property>
+                            <property name="y">206</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCalendar" id="cal1">
+                            <property name="width-request">-1</property>
+                            <property name="height-request">-1</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Emphemeris start date.</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="year">2000</property>
+                            <property name="month">6</property>
+                            <property name="day">7</property>
+                          </object>
+                          <packing>
+                            <property name="y">5</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_scale">
+                            <property name="width-request">45</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Scale
+</property>
+                          </object>
+                          <packing>
+                            <property name="x">19</property>
+                            <property name="y">183</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Time</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="y">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="frame4">
+                    <property name="width-request">400</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">out</property>
+                    <child>
+                      <object class="GtkFixed">
+                        <property name="width-request">32</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="margin-top">5</property>
+                        <property name="margin-bottom">5</property>
+                        <child>
+                          <object class="GtkButton" id="b_execute">
+                            <property name="label">Execute</property>
+                            <property name="width-request">90</property>
+                            <property name="height-request">34</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="tooltip-text" translatable="yes">Generate report</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="always-show-image">True</property>
+                            <signal name="clicked" handler="_on_clicked" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="y">65</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_int">
+                            <property name="width-request">123</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Tabulation Interval (Days)
+</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="l_numint">
+                            <property name="width-request">130</property>
+                            <property name="height-request">37</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="label" translatable="yes">Number of Intervals
+</property>
+                          </object>
+                          <packing>
+                            <property name="x">200</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_int">
+                            <property name="name">sb_int</property>
+                            <property name="width-request">155</property>
+                            <property name="height-request">34</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Enter interval between tabulations in days</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">1.0000</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment4</property>
+                            <property name="climb-rate">1</property>
+                            <property name="digits">4</property>
+                            <property name="snap-to-ticks">True</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                            <property name="value">1</property>
+                          </object>
+                          <packing>
+                            <property name="y">22</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="sb_numint">
+                            <property name="name">sb_numint</property>
+                            <property name="width-request">142</property>
+                            <property name="height-request">34</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Number of Intervals to generate</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="text" translatable="yes">1</property>
+                            <property name="input-purpose">number</property>
+                            <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
+                            <property name="adjustment">adjustment5</property>
+                            <property name="climb-rate">1</property>
+                            <property name="snap-to-ticks">True</property>
+                            <property name="numeric">True</property>
+                            <property name="wrap">True</property>
+                            <property name="value">1</property>
+                          </object>
+                          <packing>
+                            <property name="x">200</property>
+                            <property name="y">22</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="b_clear">
+                            <property name="label">Clear</property>
+                            <property name="width-request">74</property>
+                            <property name="height-request">34</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">True</property>
+                            <property name="tooltip-text" translatable="yes">Clear the report window</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="always-show-image">True</property>
+                            <signal name="clicked" handler="_clear_results" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="x">106</property>
+                            <property name="y">65</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Ephemeris Report</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="y">463</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="frame5">
+                    <property name="width-request">400</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label-xalign">0</property>
+                    <property name="shadow-type">out</property>
+                    <child>
+                      <object class="GtkFixed">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child>
+                          <object class="GtkComboBoxText" id="cb_planet">
+                            <property name="width-request">96</property>
+                            <property name="height-request">34</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="active">0</property>
+                            <items>
+                              <item id="0" translatable="yes">Sun</item>
+                              <item id="1" translatable="yes">Mercury</item>
+                              <item id="2" translatable="yes">Venus</item>
+                              <item id="3" translatable="yes">Moon</item>
+                              <item id="4" translatable="yes">Mars</item>
+                              <item id="5" translatable="yes">Jupiter</item>
+                              <item id="6" translatable="yes">Saturn</item>
+                              <item id="7" translatable="yes">Uranus</item>
+                              <item id="8" translatable="yes">Neptune</item>
+                              <item id="9" translatable="yes">Pluto</item>
+                            </items>
+                          </object>
+                          <packing>
+                            <property name="y">19</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBoxText" id="cb_star">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">5</property>
+                            <property name="margin-end">5</property>
+                            <property name="margin-top">5</property>
+                            <property name="margin-bottom">5</property>
+                            <property name="active">0</property>
+                          </object>
+                          <packing>
+                            <property name="x">200</property>
+                            <property name="y">59</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="starcat">
+                            <property name="name">entry1</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Star catalog filename</property>
+                            <signal name="changed" handler="populate_star" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="x">205</property>
+                            <property name="y">22</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="rb_planet">
+                            <property name="label" translatable="yes">Planet</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="draw-indicator">True</property>
+                            <property name="group">radiobutton2</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkRadioButton" id="rb_star">
+                            <property name="label" translatable="yes">Star</property>
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="receives-default">False</property>
+                            <property name="draw-indicator">True</property>
+                            <property name="group">radiobutton2</property>
+                          </object>
+                          <packing>
+                            <property name="x">200</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="label">
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="label" translatable="yes">Observation</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="y">329</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page1</property>
+                <property name="title" translatable="yes">Almanac</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFrame" id="frame3">
+            <property name="width-request">800</property>
+            <property name="height-request">600</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-start">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-top">5</property>
+            <property name="margin-bottom">5</property>
+            <property name="label-xalign">0</property>
+            <property name="shadow-type">out</property>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="height-request">300</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkDrawingArea" id="da">
+                        <property name="name">da</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <signal name="draw" handler="_da_draw_cb" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="label">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Report</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkTextBuffer" id="textbuffer1"/>
+</interface>
