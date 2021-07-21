@@ -1,12 +1,6 @@
 /* 
- * This program provides a GTK graphical user interface to the 
- * astronomical almanac (aa) program written by S. L. Moshier, November, 1987.
- *
- * aa MUST be installed in order for this one to function.
- * On Debian systems it may be installed by "apt install astronomical-almanac"
- *
- * aa is Copyright (c) 2005 by Stephen L. Moshier <steve@moshier.net>.  
- * aa-gtk is Copyright (c) 2020 by Craig S. Prevallet <penguintx@hotmail.com>. 
+ * This program provides a GTK graphical user interface to PLPlot graphical
+ * plotting routines.
  *
  * License:
  *
@@ -149,18 +143,16 @@ gboolean _da_draw_cb(GtkWidget * widget,
   return FALSE;
 }
 
-/* Store the GUI variables in user's home directory as ana.ini for use
- * with aa. 
- */
+/* Store the GUI variables in user's home directory.*/
 int store_ini() {
   //FILE * fp, * fopen();
   char s[84];
 
   char * t = getenv("HOME");
-  strcpy(s, "aa.ini");
+  strcpy(s, "gtkdraw.ini");
   if (t && strlen(t) < 70) {
     strcpy(s, t);
-    strcat(s, "/.aa.ini");
+    strcat(s, "/.gtkdraw.ini");
   }
   return 0;
 }
