@@ -84,7 +84,7 @@ struct PlotData* init_plot_data() {
       p->xmax = p->x[i];
     }
   }
-  //TODO NICE ap->xis limits
+  //TODO NICE axis limits
   p->xmin = 0.9 * p->xmin;
   p->xmax = 1.1 * p->xmax;
   /* Input speeds in meters/sec., dummy data */
@@ -107,7 +107,7 @@ struct PlotData* init_plot_data() {
       p->ymax = p->y[i];
     }
   }
-  //TODO NICE ap->xis limits
+  //TODO NICE axis limits
   p->ymin = 0.9 * p->ymin;
   p->ymax = 1.1 * p->ymax;
   return p;
@@ -148,7 +148,7 @@ gboolean _da_draw_cb(GtkWidget * widget,
   cairo_t * cr = gdk_drawing_context_get_cairo_context(drawingContext);
   /* Do your drawing. */
   pd = init_plot_data();
-  /* Initialize plplot using the ep->xternal cairo backend. */
+  /* Initialize plplot using the external cairo backend. */
   plsdev("extcairo");
   plinit();
   pl_cmd(PLESC_DEVINIT, cr);
