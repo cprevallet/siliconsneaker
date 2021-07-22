@@ -42,6 +42,17 @@
 
 #define NSIZE 11
 
+struct PlotData {
+  PLFLT x[NSIZE];
+  PLFLT y[NSIZE];
+  PLFLT xmin;
+  PLFLT xmax;
+  PLFLT ymin; 
+  PLFLT ymax;
+  char * symbol;
+};
+
+
 /* 
  * make UI elements globals (ick)
  */
@@ -49,6 +60,58 @@ GtkSpinButton * sb_int;
 GtkSpinButton * sb_numint;
 GtkDrawingArea * da;
 
+/* Prepare data to be plotted. */
+struct PlotData* init_plot_data() {
+
+  int i;
+  static struct PlotData pdata;
+  struct PlotData *p;
+
+  /* Defaults */
+  p = &pdata;
+  p->symbol = "o";
+  p->xmin =  9999999;
+  p->xmax = -9999999;
+  p->ymin =  9999999; 
+  p->ymax = -9999999;
+  /* Input distances in miles (for testing). */
+  for (i = 0; i < NSIZE; i++) {
+    p->x[i] = (PLFLT)(i * 0.25);  /* dummy data */
+    if (p->x[i] < p->xmin) {
+      p->xmin = p->x[i];
+    }
+    if (p->x[i] > p->xmax) {
+      p->xmax = p->x[i];
+    }
+  }
+  //TODO NICE ap->xis limits
+  p->xmin = 0.9 * p->xmin;
+  p->xmax = 1.1 * p->xmax;
+  /* Input speeds in meters/sec., dummy data */
+  p->y[0] = 3.0;
+  p->y[1] = 3.2;
+  p->y[2] = 2.7;
+  p->y[3] = 2.8;
+  p->y[4] = 2.9;
+  p->y[5] = 2.85;
+  p->y[6] = 3.0;
+  p->y[7] = 3.1;
+  p->y[8] = 3.2;
+  p->y[9] = 3.3;
+  p->y[10] = 3.0;
+  for (i = 0; i < NSIZE; i++) {
+    if (p->y[i] < p->ymin) {
+      p->ymin = p->y[i];
+    }
+    if (p->y[i] > p->ymax) {
+      p->ymax = p->y[i];
+    }
+  }
+  //TODO NICE ap->xis limits
+  p->ymin = 0.9 * p->ymin;
+  p->ymax = 1.1 * p->ymax;
+  return p;
+}
 
 /* A custom axis labeling function for pace chart. */
 void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length, 
@@ -75,11 +138,7 @@ gboolean _da_draw_cb(GtkWidget * widget,
   GdkEventExpose * event,
   gpointer data) 
 {
-  PLFLT x[NSIZE], y[NSIZE];
-  PLFLT xmin = 999., xmax = 0., ymin = 999., ymax = 0.;
-  int i;
-  char * symbol = "o";
-
+  struct PlotData* pd;
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow * window = gtk_widget_get_window(widget);
   cairo_region_t * cairoRegion = cairo_region_create();
@@ -88,56 +147,20 @@ gboolean _da_draw_cb(GtkWidget * widget,
   /* Say: "I want to start drawing". */
   cairo_t * cr = gdk_drawing_context_get_cairo_context(drawingContext);
   /* Do your drawing. */
-  /* Prepare data to be plotted. */
-  /* Input distances in miles (for testing). */
-  for (i = 0; i < NSIZE; i++) {
-    x[i] = (PLFLT)(i * 0.25);
-    if (x[i] < xmin) {
-      xmin = x[i];
-    }
-    if (x[i] > xmax) {
-      xmax = x[i];
-    }
-  }
-  //TODO NICE axis limits
-  xmin = 0.9 * xmin;
-  xmax = 1.1 * xmax;
-  /* Input speeds in meters/sec. */
-  y[0] = 3.0;
-  y[1] = 3.2;
-  y[2] = 2.7;
-  y[3] = 2.8;
-  y[4] = 2.9;
-  y[5] = 2.85;
-  y[6] = 3.0;
-  y[7] = 3.1;
-  y[8] = 3.2;
-  y[9] = 3.3;
-  y[10] = 3.0;
-  for (i = 0; i < NSIZE; i++) {
-    if (y[i] < ymin) {
-      ymin = y[i];
-    }
-    if (y[i] > ymax) {
-      ymax = y[i];
-    }
-  }
-  //TODO NICE axis limits
-  ymin = 0.9 * ymin;
-  ymax = 1.1 * ymax;
-  /* Initialize plplot using the external cairo backend. */
+  pd = init_plot_data();
+  /* Initialize plplot using the ep->xternal cairo backend. */
   plsdev("extcairo");
   plinit();
   pl_cmd(PLESC_DEVINIT, cr);
   /* Setup a custom label function. */
   plslabelfunc(custom_labeler, NULL);
   /* Create a labelled box to hold the plot using custom x,y labels. */
-  plenv(xmin, xmax, ymin, ymax, 0, 70);
+  plenv(pd->xmin, pd->xmax, pd->ymin, pd->ymax, 0, 70);
   pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
   /* Plot the data that was prepared above. */
-  plline(NSIZE, x, y);
+  plline(NSIZE, pd->x, pd->y);
   /* Plot symbols for individual data points. */
-  plstring(NSIZE, x, y, symbol);
+  plstring(NSIZE, pd->x, pd->y, pd->symbol);
   /* Close PLplot library */
   plend();
   /* Say: "I'm finished drawing. */
