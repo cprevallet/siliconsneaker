@@ -134,11 +134,10 @@ void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length,
 }
 
 /* Drawing area callback. */
-gboolean _da_draw_cb(GtkWidget * widget,
+gboolean on_da_draw(GtkWidget * widget,
   GdkEventExpose * event,
-  gpointer data) 
+  struct PlotData *pd) 
 {
-  struct PlotData* pd;
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow * window = gtk_widget_get_window(widget);
   cairo_region_t * cairoRegion = cairo_region_create();
@@ -147,7 +146,6 @@ gboolean _da_draw_cb(GtkWidget * widget,
   /* Say: "I want to start drawing". */
   cairo_t * cr = gdk_drawing_context_get_cairo_context(drawingContext);
   /* Do your drawing. */
-  pd = init_plot_data();
   /* Initialize plplot using the external cairo backend. */
   plsdev("extcairo");
   plinit();
@@ -207,6 +205,7 @@ void _on_clicked(GtkButton * b) {
 int main(int argc, char * argv[]) {
   GtkBuilder * builder;
   GtkWidget * window;
+  struct PlotData* pd;
 
   gtk_init( & argc, & argv);
 
@@ -218,9 +217,12 @@ int main(int argc, char * argv[]) {
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
 
   gtk_builder_connect_signals(builder, NULL);
+  pd = init_plot_data();
+  g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pd);
 
   /* Retrieve initial values from .ini file.*/
   initialize_widgets();
+
 
   g_object_unref(builder);
 
