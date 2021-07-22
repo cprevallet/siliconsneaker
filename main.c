@@ -49,6 +49,10 @@ struct PlotData {
   PLFLT xmax;
   PLFLT ymin; 
   PLFLT ymax;
+  PLFLT xvmin;
+  PLFLT xvmax;
+  PLFLT yvmin; 
+  PLFLT yvmax;
   char * symbol;
 };
 
@@ -59,6 +63,18 @@ struct PlotData {
 GtkSpinButton * sb_int;
 GtkSpinButton * sb_numint;
 GtkDrawingArea * da;
+GtkButton * b_execute;
+GtkScaleButton *xscale_btn;
+GtkSpinButton * sb_xscale;
+GtkSpinButton * sb_yscale;
+GtkSpinButton * sb_x_trans;
+GtkSpinButton * sb_y_trans;
+GtkScaleButton * scb_x;
+GtkScaleButton * scb_y;
+GtkButton * btn_pan_up;
+GtkButton * btn_pan_down;
+GtkButton * btn_pan_right;
+GtkButton * btn_pan_left;
 
 /* Prepare data to be plotted. */
 struct PlotData* init_plot_data() {
@@ -110,6 +126,10 @@ struct PlotData* init_plot_data() {
   //TODO NICE axis limits
   p->ymin = 0.9 * p->ymin;
   p->ymax = 1.1 * p->ymax;
+  p->xvmin = p->xmin;
+  p->xvmax = p->xmax;
+  p->yvmin = p->ymin;
+  p->yvmax = p->ymax;
   return p;
 }
 
@@ -153,7 +173,7 @@ gboolean on_da_draw(GtkWidget * widget,
   /* Setup a custom label function. */
   plslabelfunc(custom_labeler, NULL);
   /* Create a labelled box to hold the plot using custom x,y labels. */
-  plenv(pd->xmin, pd->xmax, pd->ymin, pd->ymax, 0, 70);
+  plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 70);
   pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
   /* Plot the data that was prepared above. */
   plline(NSIZE, pd->x, pd->y);
@@ -193,11 +213,64 @@ int initialize_widgets() {
 void _clear_results(GtkButton * b) {
 }
 
-/* Execute the aa program via a popen call passing the values it
- * expects via a file (written out by store_values and store_ini).
- */
-void _on_clicked(GtkButton * b) {
+/* Rescale on button clicked. */
+void on_clicked(GtkButton * b, struct PlotData *pd) {
+  pd->xmax = pd->xmax - 0.1 * (pd->xmax - pd->xmin);
+  pd->xmin = pd->xmin + 0.1 * (pd->xmax - pd->xmin);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
 }
+
+void
+rescale_x_axis (GtkScaleButton *button,
+               double          value,
+               struct PlotData *pd) {
+  pd->xvmin = pd->xmin + (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->xmax - pd->xmin);
+  pd->xvmax = pd->xmax - (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->xmax - pd->xmin);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+void
+rescale_y_axis (GtkScaleButton *button,
+               double          value,
+               struct PlotData *pd) {
+  pd->yvmin = pd->ymin + (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->ymax - pd->ymin);
+  pd->yvmax = pd->ymax - (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->ymax - pd->ymin);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+void
+trans_right(GtkButton *button,
+               double          value,
+               struct PlotData *pd) {
+  pd->xvmin = pd->xvmin + (pd->xmax - pd->xmin) * 0.20;
+  pd->xvmax = pd->xvmax + (pd->xmax - pd->xmin) * 0.20;
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+void
+trans_left(GtkButton *button,
+               double          value,
+               struct PlotData *pd) {
+  pd->xvmin = pd->xvmin - (pd->xmax - pd->xmin) * 0.20;
+  pd->xvmax = pd->xvmax - (pd->xmax - pd->xmin) * 0.20;
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+void
+trans_down(GtkButton *button,
+               double          value,
+               struct PlotData *pd) {
+  pd->yvmin = pd->yvmin + (pd->ymax - pd->ymin) * 0.20;
+  pd->yvmax = pd->yvmax + (pd->ymax - pd->ymin) * 0.20;
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+void
+trans_up(GtkButton *button,
+               double          value,
+               struct PlotData *pd) {
+  pd->yvmin = pd->yvmin - (pd->ymax - pd->ymin) * 0.20;
+  pd->yvmax = pd->yvmax - (pd->ymax - pd->ymin) * 0.20;
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+
+
+
 
 /* This is the program entry point.  The builder reads an XML file (generated  
  * by the Glade application and instantiate the associated (global) objects.
@@ -215,10 +288,26 @@ int main(int argc, char * argv[]) {
   sb_int = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_int"));
   sb_numint = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_numint"));
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
+  b_execute = GTK_BUTTON(gtk_builder_get_object(builder, "b_execute"));
+  //sb_xscale = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_xscale"));
+  //sb_yscale = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_yscale"));
+  scb_x = GTK_SCALE_BUTTON(gtk_builder_get_object(builder, "scb_x"));
+  scb_y = GTK_SCALE_BUTTON(gtk_builder_get_object(builder, "scb_y"));
+  btn_pan_left = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_left"));
+  btn_pan_right = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_right"));
+  btn_pan_up = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_up"));
+  btn_pan_down = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_down"));
 
   gtk_builder_connect_signals(builder, NULL);
   pd = init_plot_data();
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pd);
+  g_signal_connect(GTK_BUTTON(b_execute), "clicked", G_CALLBACK(on_clicked), pd);
+  g_signal_connect(GTK_SCALE_BUTTON(scb_x), "value-changed", G_CALLBACK(rescale_x_axis), pd);
+  g_signal_connect(GTK_SCALE_BUTTON(scb_y), "value-changed", G_CALLBACK(rescale_y_axis), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_left), "clicked", G_CALLBACK(trans_left), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_right), "clicked", G_CALLBACK(trans_right), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_up), "clicked", G_CALLBACK(trans_up), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_down), "clicked", G_CALLBACK(trans_down), pd);
 
   /* Retrieve initial values from .ini file.*/
   initialize_widgets();
