@@ -196,8 +196,10 @@ void
 rescale_x_axis (GtkScaleButton *button,
                double          value,
                struct PlotData *pd) {
-  pd->xvmin = pd->xmin + (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->xmax - pd->xmin);
-  pd->xvmax = pd->xmax - (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->xmax - pd->xmin);
+  pd->xvmin = pd->xmin + (100.0 - gtk_scale_button_get_value (button))
+    / 100.0 * (pd->xmax - pd->xmin);
+  pd->xvmax = pd->xmax - (100.0 - gtk_scale_button_get_value (button)) 
+    / 100.0 * (pd->xmax - pd->xmin);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
@@ -206,8 +208,10 @@ void
 rescale_y_axis (GtkScaleButton *button,
                double          value,
                struct PlotData *pd) {
-  pd->yvmin = pd->ymin + (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->ymax - pd->ymin);
-  pd->yvmax = pd->ymax - (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->ymax - pd->ymin);
+  pd->yvmin = pd->ymin + (100.0 - gtk_scale_button_get_value (button)) 
+    / 100.0 * (pd->ymax - pd->ymin);
+  pd->yvmax = pd->ymax - (100.0 - gtk_scale_button_get_value (button)) 
+    / 100.0 * (pd->ymax - pd->ymin);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
@@ -274,13 +278,20 @@ int main(int argc, char * argv[]) {
 
   gtk_builder_connect_signals(builder, NULL);
   pd = init_plot_data();
-  g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pd);
-  g_signal_connect(GTK_SCALE_BUTTON(scb_x), "value-changed", G_CALLBACK(rescale_x_axis), pd);
-  g_signal_connect(GTK_SCALE_BUTTON(scb_y), "value-changed", G_CALLBACK(rescale_y_axis), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_left), "clicked", G_CALLBACK(trans_left), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_right), "clicked", G_CALLBACK(trans_right), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_up), "clicked", G_CALLBACK(trans_up), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_down), "clicked", G_CALLBACK(trans_down), pd);
+  g_signal_connect(GTK_DRAWING_AREA(da), "draw", 
+      G_CALLBACK(on_da_draw), pd);
+  g_signal_connect(GTK_SCALE_BUTTON(scb_x), "value-changed", 
+      G_CALLBACK(rescale_x_axis), pd);
+  g_signal_connect(GTK_SCALE_BUTTON(scb_y), "value-changed", 
+      G_CALLBACK(rescale_y_axis), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_left), "clicked", 
+      G_CALLBACK(trans_left), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_right), "clicked", 
+      G_CALLBACK(trans_right), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_up), "clicked", 
+      G_CALLBACK(trans_up), pd);
+  g_signal_connect(GTK_BUTTON(btn_pan_down), "clicked", 
+      G_CALLBACK(trans_down), pd);
 
   g_object_unref(builder);
 
