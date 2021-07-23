@@ -27,17 +27,15 @@
  * Required external Debian libraries: libplplot-dev, plplot-driver-cairo,
  * libgtk-3-dev
  */
+#include <math.h>
 #include <gtk/gtk.h>
-
 #include <gdk/gdk.h>
 
 /*
  * PLPlot
  */
 #include <cairo.h>
-
 #include <cairo-ps.h>
-
 #include <plplot.h>
 
 #define NSIZE 11
@@ -146,8 +144,12 @@ void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length,
       min_per_mile = 999.0;
     }
   }
+  double secs, mins;
+  secs = modf(min_per_mile, &mins);
+  secs *= 60.0;
+
   if (axis == PL_Y_AXIS) {
-    snprintf(label, (size_t) length, "%.1f", min_per_mile);
+    snprintf(label, (size_t) length, "%02.0f:%02.0f", mins, secs);
   } else {
     snprintf(label, (size_t) length, "%.1f", label_val);
   }
