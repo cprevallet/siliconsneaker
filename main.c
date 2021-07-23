@@ -191,38 +191,7 @@ gboolean on_da_draw(GtkWidget * widget,
   return FALSE;
 }
 
-/* Store the GUI variables in user's home directory.*/
-int store_ini() {
-  //FILE * fp, * fopen();
-  char s[84];
-
-  char * t = getenv("HOME");
-  strcpy(s, "gtkdraw.ini");
-  if (t && strlen(t) < 70) {
-    strcpy(s, t);
-    strcat(s, "/.gtkdraw.ini");
-  }
-  return 0;
-}
-
-/* Load the values stored in the ini file as initial widget values.
- * Initialize the calendar and time widgets with the current UTC values.
- */
-int initialize_widgets() {
-  return 0;
-}
-
-/* Clear out the text buffer when clear button is pressed. */
-void _clear_results(GtkButton * b) {
-}
-
-/* Rescale on button clicked. */
-void on_clicked(GtkButton * b, struct PlotData *pd) {
-  pd->xmax = pd->xmax - 0.1 * (pd->xmax - pd->xmin);
-  pd->xmin = pd->xmin + 0.1 * (pd->xmax - pd->xmin);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
+/* Rescale x-axis on button clicked. */
 void
 rescale_x_axis (GtkScaleButton *button,
                double          value,
@@ -231,6 +200,8 @@ rescale_x_axis (GtkScaleButton *button,
   pd->xvmax = pd->xmax - (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->xmax - pd->xmin);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
+
+/* Rescale y-axis on button clicked. */
 void
 rescale_y_axis (GtkScaleButton *button,
                double          value,
@@ -239,6 +210,8 @@ rescale_y_axis (GtkScaleButton *button,
   pd->yvmax = pd->ymax - (100.0 - gtk_scale_button_get_value (button)) / 100.0 * (pd->ymax - pd->ymin);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
+
+/* Pan right on button clicked. */
 void
 trans_right(GtkButton *button,
                double          value,
@@ -247,6 +220,8 @@ trans_right(GtkButton *button,
   pd->xvmax = pd->xvmax + (pd->xmax - pd->xmin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
+
+/* Pan left on button clicked. */
 void
 trans_left(GtkButton *button,
                double          value,
@@ -255,6 +230,8 @@ trans_left(GtkButton *button,
   pd->xvmax = pd->xvmax - (pd->xmax - pd->xmin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
+
+/* Pan down on button clicked. */
 void
 trans_down(GtkButton *button,
                double          value,
@@ -263,6 +240,8 @@ trans_down(GtkButton *button,
   pd->yvmax = pd->yvmax + (pd->ymax - pd->ymin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
+
+/* Pan up on button clicked. */
 void
 trans_up(GtkButton *button,
                double          value,
@@ -271,9 +250,6 @@ trans_up(GtkButton *button,
   pd->yvmax = pd->yvmax - (pd->ymax - pd->ymin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
-
-
-
 
 /* This is the program entry point.  The builder reads an XML file (generated  
  * by the Glade application and instantiate the associated (global) objects.
@@ -288,12 +264,7 @@ int main(int argc, char * argv[]) {
   builder = gtk_builder_new_from_file("gtkdraw.glade");
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
-  //sb_int = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_int"));
-  //sb_numint = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_numint"));
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
-  // b_execute = GTK_BUTTON(gtk_builder_get_object(builder, "b_execute"));
-  //sb_xscale = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_xscale"));
-  //sb_yscale = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_yscale"));
   scb_x = GTK_SCALE_BUTTON(gtk_builder_get_object(builder, "scb_x"));
   scb_y = GTK_SCALE_BUTTON(gtk_builder_get_object(builder, "scb_y"));
   btn_pan_left = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_left"));
@@ -304,17 +275,12 @@ int main(int argc, char * argv[]) {
   gtk_builder_connect_signals(builder, NULL);
   pd = init_plot_data();
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pd);
-  //g_signal_connect(GTK_BUTTON(b_execute), "clicked", G_CALLBACK(on_clicked), pd);
   g_signal_connect(GTK_SCALE_BUTTON(scb_x), "value-changed", G_CALLBACK(rescale_x_axis), pd);
   g_signal_connect(GTK_SCALE_BUTTON(scb_y), "value-changed", G_CALLBACK(rescale_y_axis), pd);
   g_signal_connect(GTK_BUTTON(btn_pan_left), "clicked", G_CALLBACK(trans_left), pd);
   g_signal_connect(GTK_BUTTON(btn_pan_right), "clicked", G_CALLBACK(trans_right), pd);
   g_signal_connect(GTK_BUTTON(btn_pan_up), "clicked", G_CALLBACK(trans_up), pd);
   g_signal_connect(GTK_BUTTON(btn_pan_down), "clicked", G_CALLBACK(trans_down), pd);
-
-  /* Retrieve initial values from .ini file.*/
-  initialize_widgets();
-
 
   g_object_unref(builder);
 
@@ -326,6 +292,5 @@ int main(int argc, char * argv[]) {
 
 /* Call when the window is closed.  Store GUI values before exiting.*/
 void on_window1_destroy() {
-  store_ini();
   gtk_main_quit();
 }
