@@ -255,6 +255,28 @@ trans_up(GtkButton *button,
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
+/* Get start x, y */
+gboolean on_button_press(GtkWidget* widget,
+  GdkEvent *event, struct PlotData *pd) {
+      
+  if (event->type == GDK_BUTTON_PRESS) {
+      printf("%f\n", ((GdkEventButton*)event)->x);
+      printf("%f\n", ((GdkEventButton*)event)->y);
+  }
+  return TRUE;
+}
+
+/* Get end x, y */
+gboolean on_button_release(GtkWidget* widget,
+  GdkEvent *event, struct PlotData *pd) {
+      
+  if (event->type == GDK_BUTTON_RELEASE) {
+      printf("%f\n", ((GdkEventButton*)event)->x);
+      printf("%f\n", ((GdkEventButton*)event)->y);
+  }
+  return TRUE;
+}
+
 /* This is the program entry point.  The builder reads an XML file (generated  
  * by the Glade application and instantiate the associated (global) objects.
  */
@@ -278,6 +300,12 @@ int main(int argc, char * argv[]) {
 
   gtk_builder_connect_signals(builder, NULL);
   pd = init_plot_data();
+  gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
+  g_signal_connect(GTK_DRAWING_AREA(da), "button-press-event", 
+      G_CALLBACK(on_button_press), pd);
+  g_signal_connect(GTK_DRAWING_AREA(da), "button-release-event", 
+      G_CALLBACK(on_button_release), pd);
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", 
       G_CALLBACK(on_da_draw), pd);
   g_signal_connect(GTK_SCALE_BUTTON(scb_x), "value-changed", 
