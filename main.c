@@ -85,7 +85,7 @@ struct PlotData* init_plot_data() {
 
   /* Defaults */
   p = &pdata;
-  p->symbol = "o";
+  p->symbol = "⏺";
   p->xmin =  9999999;
   p->xmax = -9999999;
   p->ymin =  9999999; 
@@ -169,6 +169,7 @@ gboolean on_da_draw(GtkWidget * widget,
   /* Initialize plplot using the external cairo backend. */
   plsdev("extcairo");
   plinit();
+  plcol0(15);
   pl_cmd(PLESC_DEVINIT, cr);
   /* Setup a custom label function. */
   plslabelfunc(custom_labeler, NULL);
@@ -240,32 +241,32 @@ void
 trans_right(GtkButton *button,
                double          value,
                struct PlotData *pd) {
-  pd->xvmin = pd->xvmin + (pd->xmax - pd->xmin) * 0.20;
-  pd->xvmax = pd->xvmax + (pd->xmax - pd->xmin) * 0.20;
+  pd->xvmin = pd->xvmin + (pd->xmax - pd->xmin) * 0.10;
+  pd->xvmax = pd->xvmax + (pd->xmax - pd->xmin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 void
 trans_left(GtkButton *button,
                double          value,
                struct PlotData *pd) {
-  pd->xvmin = pd->xvmin - (pd->xmax - pd->xmin) * 0.20;
-  pd->xvmax = pd->xvmax - (pd->xmax - pd->xmin) * 0.20;
+  pd->xvmin = pd->xvmin - (pd->xmax - pd->xmin) * 0.10;
+  pd->xvmax = pd->xvmax - (pd->xmax - pd->xmin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 void
 trans_down(GtkButton *button,
                double          value,
                struct PlotData *pd) {
-  pd->yvmin = pd->yvmin + (pd->ymax - pd->ymin) * 0.20;
-  pd->yvmax = pd->yvmax + (pd->ymax - pd->ymin) * 0.20;
+  pd->yvmin = pd->yvmin + (pd->ymax - pd->ymin) * 0.10;
+  pd->yvmax = pd->yvmax + (pd->ymax - pd->ymin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 void
 trans_up(GtkButton *button,
                double          value,
                struct PlotData *pd) {
-  pd->yvmin = pd->yvmin - (pd->ymax - pd->ymin) * 0.20;
-  pd->yvmax = pd->yvmax - (pd->ymax - pd->ymin) * 0.20;
+  pd->yvmin = pd->yvmin - (pd->ymax - pd->ymin) * 0.10;
+  pd->yvmax = pd->yvmax - (pd->ymax - pd->ymin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
@@ -285,10 +286,10 @@ int main(int argc, char * argv[]) {
   builder = gtk_builder_new_from_file("gtkdraw.glade");
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
-  sb_int = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_int"));
-  sb_numint = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_numint"));
+  //sb_int = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_int"));
+  //sb_numint = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_numint"));
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
-  b_execute = GTK_BUTTON(gtk_builder_get_object(builder, "b_execute"));
+  // b_execute = GTK_BUTTON(gtk_builder_get_object(builder, "b_execute"));
   //sb_xscale = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_xscale"));
   //sb_yscale = GTK_SPIN_BUTTON(gtk_builder_get_object(builder, "sb_yscale"));
   scb_x = GTK_SCALE_BUTTON(gtk_builder_get_object(builder, "scb_x"));
@@ -301,7 +302,7 @@ int main(int argc, char * argv[]) {
   gtk_builder_connect_signals(builder, NULL);
   pd = init_plot_data();
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pd);
-  g_signal_connect(GTK_BUTTON(b_execute), "clicked", G_CALLBACK(on_clicked), pd);
+  //g_signal_connect(GTK_BUTTON(b_execute), "clicked", G_CALLBACK(on_clicked), pd);
   g_signal_connect(GTK_SCALE_BUTTON(scb_x), "value-changed", G_CALLBACK(rescale_x_axis), pd);
   g_signal_connect(GTK_SCALE_BUTTON(scb_y), "value-changed", G_CALLBACK(rescale_y_axis), pd);
   g_signal_connect(GTK_BUTTON(btn_pan_left), "clicked", G_CALLBACK(trans_left), pd);

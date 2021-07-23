@@ -4,7 +4,7 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="lower">50.10</property>
-    <property name="upper">100</property>
+    <property name="upper">200</property>
     <property name="value">1</property>
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
@@ -20,6 +20,13 @@
     <property name="upper">100000</property>
     <property name="step-increment">1</property>
     <property name="page-increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment6">
+    <property name="lower">50.10</property>
+    <property name="upper">100</property>
+    <property name="value">1</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">10</property>
   </object>
   <object class="GtkWindow" id="window1">
     <property name="can-focus">False</property>
@@ -82,7 +89,7 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Report</property>
+                <property name="label" translatable="yes">Graph</property>
               </object>
             </child>
           </object>
@@ -113,26 +120,7 @@
                 <property name="margin-top">5</property>
                 <property name="margin-bottom">5</property>
                 <child>
-                  <object class="GtkButton" id="b_execute">
-                    <property name="label">Execute</property>
-                    <property name="width-request">90</property>
-                    <property name="height-request">34</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Generate report</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-top">5</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="always-show-image">True</property>
-                  </object>
-                  <packing>
-                    <property name="y">65</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="l_int">
+                  <object class="GtkLabel" id="l_x_zoom">
                     <property name="width-request">123</property>
                     <property name="height-request">37</property>
                     <property name="visible">True</property>
@@ -141,12 +129,12 @@
                     <property name="margin-end">5</property>
                     <property name="margin-top">5</property>
                     <property name="margin-bottom">5</property>
-                    <property name="label" translatable="yes">Tabulation Interval (Days)
+                    <property name="label" translatable="yes">Zoom X-Axis
 </property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkLabel" id="l_numint">
+                  <object class="GtkLabel" id="l_y_zoom">
                     <property name="width-request">130</property>
                     <property name="height-request">37</property>
                     <property name="visible">True</property>
@@ -155,97 +143,26 @@
                     <property name="margin-end">5</property>
                     <property name="margin-top">5</property>
                     <property name="margin-bottom">5</property>
-                    <property name="label" translatable="yes">Number of Intervals
-</property>
+                    <property name="label" translatable="yes">Zoom Y-Axis</property>
                   </object>
                   <packing>
                     <property name="x">200</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="sb_int">
-                    <property name="name">sb_int</property>
-                    <property name="width-request">155</property>
-                    <property name="height-request">34</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="tooltip-text" translatable="yes">Enter interval between tabulations in days</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-top">5</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="text" translatable="yes">1.0000</property>
-                    <property name="input-purpose">number</property>
-                    <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
-                    <property name="adjustment">adjustment4</property>
-                    <property name="climb-rate">1</property>
-                    <property name="digits">4</property>
-                    <property name="snap-to-ticks">True</property>
-                    <property name="numeric">True</property>
-                    <property name="wrap">True</property>
-                    <property name="value">1</property>
-                  </object>
-                  <packing>
-                    <property name="y">22</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSpinButton" id="sb_numint">
-                    <property name="name">sb_numint</property>
-                    <property name="width-request">142</property>
-                    <property name="height-request">34</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="tooltip-text" translatable="yes">Number of Intervals to generate</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-top">5</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="text" translatable="yes">1</property>
-                    <property name="input-purpose">number</property>
-                    <property name="input-hints">GTK_INPUT_HINT_NO_EMOJI | GTK_INPUT_HINT_NONE</property>
-                    <property name="adjustment">adjustment5</property>
-                    <property name="climb-rate">1</property>
-                    <property name="snap-to-ticks">True</property>
-                    <property name="numeric">True</property>
-                    <property name="wrap">True</property>
-                    <property name="value">1</property>
-                  </object>
-                  <packing>
-                    <property name="x">200</property>
-                    <property name="y">22</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="b_clear">
-                    <property name="label">Clear</property>
-                    <property name="width-request">74</property>
-                    <property name="height-request">34</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Clear the report window</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-top">5</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="always-show-image">True</property>
-                    <signal name="clicked" handler="_clear_results" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="x">106</property>
-                    <property name="y">65</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkScaleButton" id="scb_x">
+                    <property name="width-request">100</property>
+                    <property name="height-request">34</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="focus-on-click">False</property>
                     <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Zoom the X axis wider or narrower.</property>
                     <property name="relief">none</property>
                     <property name="value">100</property>
+                    <property name="size">button</property>
                     <property name="adjustment">adjustment1</property>
+                    <property name="icons">zoom-in-symbolic.symbolic</property>
                     <child internal-child="plus_button">
                       <object class="GtkButton">
                         <property name="can-focus">True</property>
@@ -266,19 +183,23 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="x">35</property>
-                    <property name="y">160</property>
+                    <property name="x">16</property>
+                    <property name="y">37</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkScaleButton" id="scb_y">
+                    <property name="width-request">100</property>
+                    <property name="height-request">34</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="focus-on-click">False</property>
                     <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Zoom the Y axis wider or narrower.</property>
                     <property name="relief">none</property>
                     <property name="value">100</property>
                     <property name="adjustment">adjustment6</property>
+                    <property name="icons">zoom-in-symbolic.symbolic</property>
                     <child internal-child="plus_button">
                       <object class="GtkButton">
                         <property name="can-focus">True</property>
@@ -299,63 +220,82 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="x">183</property>
-                    <property name="y">158</property>
+                    <property name="x">197</property>
+                    <property name="y">37</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="btn_pan_up">
                     <property name="label" translatable="yes">Up</property>
                     <property name="width-request">100</property>
-                    <property name="height-request">80</property>
+                    <property name="height-request">34</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Pan the graph up.</property>
                   </object>
                   <packing>
-                    <property name="x">97</property>
-                    <property name="y">281</property>
+                    <property name="x">99</property>
+                    <property name="y">292</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="btn_pan_down">
                     <property name="label" translatable="yes">Down</property>
                     <property name="width-request">100</property>
-                    <property name="height-request">80</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Pan the graph down.</property>
                   </object>
                   <packing>
                     <property name="x">99</property>
-                    <property name="y">361</property>
+                    <property name="y">357</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="btn_pan_left">
                     <property name="label" translatable="yes">Left</property>
                     <property name="width-request">100</property>
-                    <property name="height-request">80</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Pan the graph to the left.</property>
                   </object>
                   <packing>
-                    <property name="y">329</property>
+                    <property name="y">324</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="btn_pan_right">
                     <property name="label" translatable="yes">Right</property>
                     <property name="width-request">100</property>
-                    <property name="height-request">80</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Pan the graph to the right.</property>
                   </object>
                   <packing>
                     <property name="x">197</property>
                     <property name="y">324</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="l_x_zoom1">
+                    <property name="width-request">25</property>
+                    <property name="height-request">37</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="label" translatable="yes">Pan
+</property>
+                  </object>
+                  <packing>
+                    <property name="x">129</property>
+                    <property name="y">325</property>
                   </packing>
                 </child>
               </object>
@@ -364,7 +304,7 @@
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Placeholder widgets</property>
+                <property name="label" translatable="yes">Navigation</property>
               </object>
             </child>
           </object>
@@ -376,12 +316,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkAdjustment" id="adjustment6">
-    <property name="lower">50.10</property>
-    <property name="upper">100</property>
-    <property name="value">1</property>
-    <property name="step-increment">1</property>
-    <property name="page-increment">10</property>
   </object>
 </interface>
