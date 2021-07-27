@@ -38,7 +38,7 @@
 #include <cairo-ps.h>
 #include <plplot.h>
 
-#define NSIZE 11
+#define NSIZE 1001
 
 struct PlotData {
   PLFLT x[NSIZE];
@@ -83,6 +83,12 @@ GtkButton * btn_pan_down;
 GtkButton * btn_pan_right;
 GtkButton * btn_pan_left;
 
+float float_rand( float min, float max )
+{
+    float scale = rand() / (float) RAND_MAX; /* [0, 1.0] */
+    return min + scale * ( max - min );      /* [min, max] */
+}
+
 /* Prepare data to be plotted. */
 struct PlotData* init_plot_data() {
 
@@ -99,7 +105,8 @@ struct PlotData* init_plot_data() {
   p->ymax = -9999999;
   /* Input distances in miles (for testing). */
   for (i = 0; i < NSIZE; i++) {
-    p->x[i] = (PLFLT)(i * 0.25);  /* dummy data */
+    p->x[i] = (PLFLT)(i * 0.01);  /* dummy data */
+    /* Find min, max */
     if (p->x[i] < p->xmin) {
       p->xmin = p->x[i];
     }
@@ -107,17 +114,14 @@ struct PlotData* init_plot_data() {
       p->xmax = p->x[i];
     }
   }
-  p->y[0] = 3.0;
-  p->y[1] = 3.2;
-  p->y[2] = 2.7;
-  p->y[3] = 2.8;
-  p->y[4] = 2.9;
-  p->y[5] = 2.85;
-  p->y[6] = 3.0;
-  p->y[7] = 3.1;
-  p->y[8] = 3.2;
-  p->y[9] = 3.3;
-  p->y[10] = 3.0;
+  for (i = 0; i < NSIZE/2; i++) {
+    p->y[i] = float_rand(2.5, 3);
+  }
+  for (i = NSIZE/2; i < NSIZE; i++) {
+    p->y[i] = float_rand(3, 4);
+  }
+
+    /* Find min, max */
   for (i = 0; i < NSIZE; i++) {
     if (p->y[i] < p->ymin) {
       p->ymin = p->y[i];
@@ -270,7 +274,7 @@ gboolean on_button_release(GtkWidget* widget,
   guint buttonnum;
   gdk_event_get_button (event, &buttonnum);
   /* Zoom out if right mouse button release. */
-  if (buttonnum == 3) {
+  if (buttonnum == 2) {
     init_plot_data();
     gtk_widget_queue_draw(GTK_WIDGET(da));
     reset_zoom(pd);
@@ -279,11 +283,20 @@ gboolean on_button_release(GtkWidget* widget,
   /* Zoom in if left mouse button release. */
   gui_to_world(pd, (GdkEventButton*)event, Release);
   if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
-    /* Update the graph view limits and replot. */
+    /* Zoom */
+    if (buttonnum ==3) {
     pd->xvmin = fmin(pd->zm_startx, pd->zm_endx);
     pd->yvmin = fmin(pd->zm_starty, pd->zm_endy);
     pd->xvmax = fmax(pd->zm_startx, pd->zm_endx);
     pd->yvmax = fmax(pd->zm_starty, pd->zm_endy);
+    }
+    /* Pan */
+    if (buttonnum ==1) {
+    pd->xvmin = pd->xvmin + (pd->zm_startx - pd->zm_endx);
+    pd->xvmax = pd->xvmax + (pd->zm_startx - pd->zm_endx);
+    pd->yvmin = pd->yvmin + (pd->zm_starty - pd->zm_endy);
+    pd->yvmax = pd->yvmax + (pd->zm_starty - pd->zm_endy);
+    }
     gtk_widget_queue_draw(GTK_WIDGET(da));
     reset_zoom(pd);
   }
@@ -295,52 +308,13 @@ gboolean on_button_release(GtkWidget* widget,
  */
 gboolean on_motion_notify(GtkWidget* widget,
   GdkEventButton *event, struct PlotData *pd) {
-    if (event->state & GDK_BUTTON1_MASK) {
+    if (event->state & GDK_BUTTON3_MASK) {
       gui_to_world(pd, event, Move);
       gtk_widget_queue_draw(GTK_WIDGET(da));
     }
   return TRUE;
 }
 
-/* Pan right on button clicked. */
-void
-trans_right(GtkButton *button,
-               double          value,
-               struct PlotData *pd) {
-  pd->xvmin = pd->xvmin + (pd->xmax - pd->xmin) * 0.10;
-  pd->xvmax = pd->xvmax + (pd->xmax - pd->xmin) * 0.10;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
-/* Pan left on button clicked. */
-void
-trans_left(GtkButton *button,
-               double          value,
-               struct PlotData *pd) {
-  pd->xvmin = pd->xvmin - (pd->xmax - pd->xmin) * 0.10;
-  pd->xvmax = pd->xvmax - (pd->xmax - pd->xmin) * 0.10;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
-/* Pan down on button clicked. */
-void
-trans_up(GtkButton *button,
-               double          value,
-               struct PlotData *pd) {
-  pd->yvmin = pd->yvmin + (pd->ymax - pd->ymin) * 0.10;
-  pd->yvmax = pd->yvmax + (pd->ymax - pd->ymin) * 0.10;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
-/* Pan up on button clicked. */
-void
-trans_down(GtkButton *button,
-               double          value,
-               struct PlotData *pd) {
-  pd->yvmin = pd->yvmin - (pd->ymax - pd->ymin) * 0.10;
-  pd->yvmax = pd->yvmax - (pd->ymax - pd->ymin) * 0.10;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
 /* This is the program entry point.  The builder reads an XML file (generated  
  * by the Glade application and instantiate the associated (global) objects.
  */
@@ -355,10 +329,6 @@ int main(int argc, char * argv[]) {
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
-  btn_pan_left = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_left"));
-  btn_pan_right = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_right"));
-  btn_pan_up = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_up"));
-  btn_pan_down = GTK_BUTTON(gtk_builder_get_object(builder, "btn_pan_down"));
 
   gtk_builder_connect_signals(builder, NULL);
   pd = init_plot_data();
@@ -373,15 +343,6 @@ int main(int argc, char * argv[]) {
       G_CALLBACK(on_motion_notify), pd);
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", 
       G_CALLBACK(on_da_draw), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_left), "clicked", 
-      G_CALLBACK(trans_left), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_right), "clicked", 
-      G_CALLBACK(trans_right), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_up), "clicked", 
-      G_CALLBACK(trans_up), pd);
-  g_signal_connect(GTK_BUTTON(btn_pan_down), "clicked", 
-      G_CALLBACK(trans_down), pd);
-
   g_object_unref(builder);
 
   gtk_widget_show(window);

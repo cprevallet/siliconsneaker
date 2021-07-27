@@ -115,82 +115,10 @@
                     <property name="margin-end">5</property>
                     <property name="margin-top">5</property>
                     <property name="margin-bottom">5</property>
-                    <property name="label" translatable="yes">Click-drag  graph to zoom in.  Right-click to zoom out.</property>
+                    <property name="label" translatable="yes">Right mouse drag to pan.
+Left mouse click-drag  graph to zoom in.  
+Middle mouse to zoom extents.</property>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_pan_up">
-                    <property name="label" translatable="yes">Up</property>
-                    <property name="width-request">100</property>
-                    <property name="height-request">34</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Pan the graph up.</property>
-                  </object>
-                  <packing>
-                    <property name="x">99</property>
-                    <property name="y">92</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_pan_down">
-                    <property name="label" translatable="yes">Down</property>
-                    <property name="width-request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Pan the graph down.</property>
-                  </object>
-                  <packing>
-                    <property name="x">99</property>
-                    <property name="y">157</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_pan_left">
-                    <property name="label" translatable="yes">Left</property>
-                    <property name="width-request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Pan the graph to the left.</property>
-                  </object>
-                  <packing>
-                    <property name="y">124</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_pan_right">
-                    <property name="label" translatable="yes">Right</property>
-                    <property name="width-request">100</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Pan the graph to the right.</property>
-                  </object>
-                  <packing>
-                    <property name="x">197</property>
-                    <property name="y">124</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="l_x_zoom1">
-                    <property name="width-request">25</property>
-                    <property name="height-request">37</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="margin-top">5</property>
-                    <property name="margin-bottom">5</property>
-                    <property name="label" translatable="yes">Pan
-</property>
-                  </object>
-                  <packing>
-                    <property name="x">129</property>
-                    <property name="y">125</property>
-                  </packing>
                 </child>
               </object>
             </child>
