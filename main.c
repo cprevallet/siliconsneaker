@@ -51,6 +51,16 @@ struct PlotData {
   PLFLT xvmax;
   PLFLT yvmin; 
   PLFLT yvmax;
+
+  PLFLT zmxmin;
+  PLFLT zmxmax;
+  PLFLT zmymin; 
+  PLFLT zmymax;
+
+  PLFLT zm_startx;
+  PLFLT zm_starty; 
+  PLFLT zm_endx;
+  PLFLT zm_endy;
   char * symbol;
 };
 
@@ -99,8 +109,8 @@ struct PlotData* init_plot_data() {
     }
   }
   //TODO NICE axis limits
-  p->xmin = 0.9 * p->xmin;
-  p->xmax = 1.1 * p->xmax;
+  //p->xmin = 0.9 * p->xmin;
+  //p->xmax = 1.1 * p->xmax;
   /* Input speeds in meters/sec., dummy data */
   p->y[0] = 3.0;
   p->y[1] = 3.2;
@@ -122,8 +132,8 @@ struct PlotData* init_plot_data() {
     }
   }
   //TODO NICE axis limits
-  p->ymin = 0.9 * p->ymin;
-  p->ymax = 1.1 * p->ymax;
+  //p->ymin = 0.9 * p->ymin;
+  //p->ymax = 1.1 * p->ymax;
   p->xvmin = p->xmin;
   p->xvmax = p->xmax;
   p->yvmin = p->ymin;
@@ -160,6 +170,13 @@ gboolean on_da_draw(GtkWidget * widget,
   GdkEventExpose * event,
   struct PlotData *pd) 
 {
+  float ch_size = 3.0; //mm
+  float scf = 1.0; //dimensionless
+  PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
+  /* Why do we have to hardcode this???? */
+  int width = 700;
+  int height = 600;
+
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow * window = gtk_widget_get_window(widget);
   cairo_region_t * cairoRegion = cairo_region_create();
@@ -167,12 +184,18 @@ gboolean on_da_draw(GtkWidget * widget,
   drawingContext = gdk_window_begin_draw_frame(window, cairoRegion);
   /* Say: "I want to start drawing". */
   cairo_t * cr = gdk_drawing_context_get_cairo_context(drawingContext);
+
   /* Do your drawing. */
   /* Initialize plplot using the external cairo backend. */
   plsdev("extcairo");
+
+  /* Device attributes */
   plinit();
-  plcol0(15);
   pl_cmd(PLESC_DEVINIT, cr);
+  /* Color */
+  plcol0(15);
+  /* Adjust character size. */
+  plschr(ch_size, scf);
   /* Setup a custom label function. */
   plslabelfunc(custom_labeler, NULL);
   /* Create a labelled box to hold the plot using custom x,y labels. */
@@ -182,10 +205,20 @@ gboolean on_da_draw(GtkWidget * widget,
   plline(NSIZE, pd->x, pd->y);
   /* Plot symbols for individual data points. */
   plstring(NSIZE, pd->x, pd->y, pd->symbol);
+
+  /* Calculate the zoom limits (in pixels) for the graph. */
+  plgvpd (&n_xmin, &n_xmax, &n_ymin, &n_ymax);
+  pd->zmxmin = width * n_xmin;
+  pd->zmxmax = width * n_xmax;
+  pd->zmymin = height * (n_ymin - 1.0) + height;
+  pd->zmymax  = height * (n_ymax - 1.0) + height;
+
   /* Close PLplot library */
   plend();
+
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame(window, drawingContext);
+
   /* Cleanup */
   cairo_region_destroy(cairoRegion);
   return FALSE;
@@ -258,22 +291,39 @@ trans_up(GtkButton *button,
 /* Get start x, y */
 gboolean on_button_press(GtkWidget* widget,
   GdkEvent *event, struct PlotData *pd) {
-      
-  if (event->type == GDK_BUTTON_PRESS) {
-      printf("%f\n", ((GdkEventButton*)event)->x);
-      printf("%f\n", ((GdkEventButton*)event)->y);
-  }
+  float e_x = ((GdkEventButton*)event)->x;
+  float e_y =  ((GdkEventButton*)event)->y;
+  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
+  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
+  pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+  pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
   return TRUE;
 }
 
 /* Get end x, y */
 gboolean on_button_release(GtkWidget* widget,
   GdkEvent *event, struct PlotData *pd) {
-      
-  if (event->type == GDK_BUTTON_RELEASE) {
-      printf("%f\n", ((GdkEventButton*)event)->x);
-      printf("%f\n", ((GdkEventButton*)event)->y);
+  guint buttonnum;
+  gdk_event_get_button (event, &buttonnum);
+  /* Zoom out if right click. */
+  if (buttonnum == 3) {
+    init_plot_data();
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    printf("fired");
+    return TRUE;
   }
+  float e_x = ((GdkEventButton*)event)->x;
+  float e_y =  ((GdkEventButton*)event)->y;
+  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
+  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
+  pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+  pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+  /* Update the graph view limits and replot. */
+  pd->xvmin = fmin(pd->zm_startx, pd->zm_endx);
+  pd->yvmin = fmin(pd->zm_starty, pd->zm_endy);
+  pd->xvmax = fmax(pd->zm_startx, pd->zm_endx);
+  pd->yvmax = fmax(pd->zm_starty, pd->zm_endy);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
   return TRUE;
 }
 

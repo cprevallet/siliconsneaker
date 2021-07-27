@@ -18,7 +18,7 @@ GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo`
 
 # linker
 LD=gcc
-LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic
+LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic -lm
 
 OBJS=    main.o
 
