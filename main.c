@@ -43,7 +43,7 @@
 struct PlotData {
   PLFLT x[NSIZE];
   PLFLT y[NSIZE];
-  PLFLT xmin;
+  PLFLT xmin; //world
   PLFLT xmax;
   PLFLT ymin; 
   PLFLT ymax;
@@ -52,12 +52,12 @@ struct PlotData {
   PLFLT yvmin; 
   PLFLT yvmax;
 
-  PLFLT zmxmin;
+  PLFLT zmxmin; //world
   PLFLT zmxmax;
   PLFLT zmymin; 
   PLFLT zmymax;
 
-  PLFLT zm_startx;
+  PLFLT zm_startx; //world
   PLFLT zm_starty; 
   PLFLT zm_endx;
   PLFLT zm_endy;
@@ -185,6 +185,7 @@ gboolean on_da_draw(GtkWidget * widget,
   /* Say: "I want to start drawing". */
   cairo_t * cr = gdk_drawing_context_get_cairo_context(drawingContext);
 
+
   /* Do your drawing. */
   /* Initialize plplot using the external cairo backend. */
   plsdev("extcairo");
@@ -212,16 +213,37 @@ gboolean on_da_draw(GtkWidget * widget,
   pd->zmxmax = width * n_xmax;
   pd->zmymin = height * (n_ymin - 1.0) + height;
   pd->zmymax  = height * (n_ymax - 1.0) + height;
-
+  /*  Draw_selection box. */
+  PLFLT rb_x[4];
+  PLFLT rb_y[4];
+  rb_x[0] = pd->zm_startx;
+  rb_y[0] = pd->zm_starty;
+  rb_x[1] = pd->zm_startx;
+  rb_y[1] = pd->zm_endy;
+  rb_x[2] = pd->zm_endx;
+  rb_y[2] = pd->zm_endy;
+  rb_x[3] = pd->zm_endx;
+  rb_y[3] = pd->zm_starty;
+  if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
+    plscol0a (1, 65, 209, 65, 0.05);
+    plcol0( 1 );
+    plfill(4, rb_x, rb_y);
+  }
   /* Close PLplot library */
   plend();
-
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame(window, drawingContext);
-
   /* Cleanup */
   cairo_region_destroy(cairoRegion);
   return FALSE;
+}
+
+/* Set zoom back to zero. */
+void reset_zoom(struct PlotData *pd) {
+    pd->zm_startx = 0;
+    pd->zm_starty = 0;
+    pd->zm_endx = 0;
+    pd->zm_endy = 0;
 }
 
 /* Get start x, y */
@@ -245,8 +267,10 @@ gboolean on_button_release(GtkWidget* widget,
   if (buttonnum == 3) {
     init_plot_data();
     gtk_widget_queue_draw(GTK_WIDGET(da));
+    reset_zoom(pd);
     return TRUE;
   }
+  /* Zoom in if left click and drag. */
   float e_x = ((GdkEventButton*)event)->x;
   float e_y =  ((GdkEventButton*)event)->y;
   float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
@@ -260,7 +284,25 @@ gboolean on_button_release(GtkWidget* widget,
     pd->xvmax = fmax(pd->zm_startx, pd->zm_endx);
     pd->yvmax = fmax(pd->zm_starty, pd->zm_endy);
     gtk_widget_queue_draw(GTK_WIDGET(da));
+    reset_zoom(pd);
   }
+  return TRUE;
+}
+
+/* Handle button press events by either drawing a filled
+ * polygon.
+ */
+gboolean on_motion_notify(GtkWidget* widget,
+  GdkEventButton *event, struct PlotData *pd) {
+    if (event->state & GDK_BUTTON1_MASK) {
+      float e_x = ((GdkEventButton*)event)->x;
+      float e_y =  ((GdkEventButton*)event)->y;
+      float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
+      float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
+      pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+      pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+      gtk_widget_queue_draw(GTK_WIDGET(da));
+    }
   return TRUE;
 }
 
@@ -352,10 +394,13 @@ int main(int argc, char * argv[]) {
   pd = init_plot_data();
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
+  gtk_widget_add_events(GTK_WIDGET(da), GDK_POINTER_MOTION_MASK);
   g_signal_connect(GTK_DRAWING_AREA(da), "button-press-event", 
       G_CALLBACK(on_button_press), pd);
   g_signal_connect(GTK_DRAWING_AREA(da), "button-release-event", 
       G_CALLBACK(on_button_release), pd);
+  g_signal_connect(GTK_DRAWING_AREA(da), "motion-notify-event", 
+      G_CALLBACK(on_motion_notify), pd);
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", 
       G_CALLBACK(on_da_draw), pd);
   g_signal_connect(GTK_SCALE_BUTTON(scb_x), "value-changed", 
