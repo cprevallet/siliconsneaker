@@ -162,7 +162,7 @@ gboolean on_da_draw(GtkWidget * widget,
   GdkEventExpose * event,
   struct PlotData *pd) 
 {
-  float ch_size = 3.0; //mm
+  float ch_size = 4.0; //mm
   float scf = 1.0; //dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
   /* Why do we have to hardcode this???? */
