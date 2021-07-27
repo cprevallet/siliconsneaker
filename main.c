@@ -43,27 +43,26 @@
 struct PlotData {
   PLFLT x[NSIZE];
   PLFLT y[NSIZE];
-  PLFLT xmin; //world
+  PLFLT xmin; //data, world
   PLFLT xmax;
   PLFLT ymin; 
   PLFLT ymax;
-  PLFLT xvmin;
+  PLFLT xvmin; //view coordinates, world
   PLFLT xvmax;
   PLFLT yvmin; 
   PLFLT yvmax;
-
-  PLFLT zmxmin; //world
+  PLFLT zmxmin; //zoom limits, world
   PLFLT zmxmax;
   PLFLT zmymin; 
   PLFLT zmymax;
-
-  PLFLT zm_startx; //world
+  PLFLT zm_startx; //zoom coordinates, world
   PLFLT zm_starty; 
   PLFLT zm_endx;
   PLFLT zm_endy;
   char * symbol;
 };
 
+enum ZoomState {Press = 0, Move = 1, Release = 2}; 
 
 /* 
  * make UI elements globals (ick)
@@ -108,10 +107,6 @@ struct PlotData* init_plot_data() {
       p->xmax = p->x[i];
     }
   }
-  //TODO NICE axis limits
-  //p->xmin = 0.9 * p->xmin;
-  //p->xmax = 1.1 * p->xmax;
-  /* Input speeds in meters/sec., dummy data */
   p->y[0] = 3.0;
   p->y[1] = 3.2;
   p->y[2] = 2.7;
@@ -131,13 +126,10 @@ struct PlotData* init_plot_data() {
       p->ymax = p->y[i];
     }
   }
-  //TODO NICE axis limits
-  //p->ymin = 0.9 * p->ymin;
-  //p->ymax = 1.1 * p->ymax;
-  p->xvmin = p->xmin;
   p->xvmax = p->xmax;
   p->yvmin = p->ymin;
   p->yvmax = p->ymax;
+  p->xvmin = p->xmin;
   return p;
 }
 
@@ -184,7 +176,6 @@ gboolean on_da_draw(GtkWidget * widget,
   drawingContext = gdk_window_begin_draw_frame(window, cairoRegion);
   /* Say: "I want to start drawing". */
   cairo_t * cr = gdk_drawing_context_get_cairo_context(drawingContext);
-
 
   /* Do your drawing. */
   /* Initialize plplot using the external cairo backend. */
@@ -245,37 +236,48 @@ void reset_zoom(struct PlotData *pd) {
     pd->zm_endy = 0;
 }
 
-/* Get start x, y */
+/* Calculate the graph ("world") x,y coordinates corresponding to the
+ * GUI mouse ("device") coordinates.
+ * The plot view bounds (xvmin, xvmax, yvmin, yvmax) and the plot 
+ * zoom bounds (zmxmin, zmxmax, zmymin, zmymax) are calculated
+ * by the draw routine.
+ */
+void gui_to_world(struct PlotData *pd, GdkEventButton *event, 
+    enum ZoomState state) {
+  float fractx = (event->x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
+  float fracty = (pd->zmymax  - event->y) / (pd->zmymax - pd->zmymin);
+  if (state == Press) {
+    pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+    pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+  } 
+  if (state == Release || state == Move) {
+    pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+    pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+  }
+}
+
+/* Handle mouse button press. */
 gboolean on_button_press(GtkWidget* widget,
   GdkEvent *event, struct PlotData *pd) {
-  float e_x = ((GdkEventButton*)event)->x;
-  float e_y =  ((GdkEventButton*)event)->y;
-  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
-  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
-  pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-  pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+/* Get start x, y */
+  gui_to_world(pd, (GdkEventButton*)event, Press );
   return TRUE;
 }
 
-/* Get end x, y */
+/* Handle mouse button release. */
 gboolean on_button_release(GtkWidget* widget,
   GdkEvent *event, struct PlotData *pd) {
   guint buttonnum;
   gdk_event_get_button (event, &buttonnum);
-  /* Zoom out if right click. */
+  /* Zoom out if right mouse button release. */
   if (buttonnum == 3) {
     init_plot_data();
     gtk_widget_queue_draw(GTK_WIDGET(da));
     reset_zoom(pd);
     return TRUE;
   }
-  /* Zoom in if left click and drag. */
-  float e_x = ((GdkEventButton*)event)->x;
-  float e_y =  ((GdkEventButton*)event)->y;
-  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
-  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
-  pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-  pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+  /* Zoom in if left mouse button release. */
+  gui_to_world(pd, (GdkEventButton*)event, Release);
   if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
     /* Update the graph view limits and replot. */
     pd->xvmin = fmin(pd->zm_startx, pd->zm_endx);
@@ -288,18 +290,13 @@ gboolean on_button_release(GtkWidget* widget,
   return TRUE;
 }
 
-/* Handle button press events by either drawing a filled
+/* Handle mouse motion event by drawing a filled
  * polygon.
  */
 gboolean on_motion_notify(GtkWidget* widget,
   GdkEventButton *event, struct PlotData *pd) {
     if (event->state & GDK_BUTTON1_MASK) {
-      float e_x = ((GdkEventButton*)event)->x;
-      float e_y =  ((GdkEventButton*)event)->y;
-      float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
-      float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
-      pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-      pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+      gui_to_world(pd, event, Move);
       gtk_widget_queue_draw(GTK_WIDGET(da));
     }
   return TRUE;
