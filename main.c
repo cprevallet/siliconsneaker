@@ -224,6 +224,46 @@ gboolean on_da_draw(GtkWidget * widget,
   return FALSE;
 }
 
+/* Get start x, y */
+gboolean on_button_press(GtkWidget* widget,
+  GdkEvent *event, struct PlotData *pd) {
+  float e_x = ((GdkEventButton*)event)->x;
+  float e_y =  ((GdkEventButton*)event)->y;
+  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
+  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
+  pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+  pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+  return TRUE;
+}
+
+/* Get end x, y */
+gboolean on_button_release(GtkWidget* widget,
+  GdkEvent *event, struct PlotData *pd) {
+  guint buttonnum;
+  gdk_event_get_button (event, &buttonnum);
+  /* Zoom out if right click. */
+  if (buttonnum == 3) {
+    init_plot_data();
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    return TRUE;
+  }
+  float e_x = ((GdkEventButton*)event)->x;
+  float e_y =  ((GdkEventButton*)event)->y;
+  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
+  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
+  pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+  pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+  if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
+    /* Update the graph view limits and replot. */
+    pd->xvmin = fmin(pd->zm_startx, pd->zm_endx);
+    pd->yvmin = fmin(pd->zm_starty, pd->zm_endy);
+    pd->xvmax = fmax(pd->zm_startx, pd->zm_endx);
+    pd->yvmax = fmax(pd->zm_starty, pd->zm_endy);
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+  }
+  return TRUE;
+}
+
 /* Rescale x-axis on button clicked. */
 void
 rescale_x_axis (GtkScaleButton *button,
@@ -287,46 +327,6 @@ trans_up(GtkButton *button,
   pd->yvmax = pd->yvmax - (pd->ymax - pd->ymin) * 0.10;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
-
-/* Get start x, y */
-gboolean on_button_press(GtkWidget* widget,
-  GdkEvent *event, struct PlotData *pd) {
-  float e_x = ((GdkEventButton*)event)->x;
-  float e_y =  ((GdkEventButton*)event)->y;
-  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
-  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
-  pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-  pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
-  return TRUE;
-}
-
-/* Get end x, y */
-gboolean on_button_release(GtkWidget* widget,
-  GdkEvent *event, struct PlotData *pd) {
-  guint buttonnum;
-  gdk_event_get_button (event, &buttonnum);
-  /* Zoom out if right click. */
-  if (buttonnum == 3) {
-    init_plot_data();
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    printf("fired");
-    return TRUE;
-  }
-  float e_x = ((GdkEventButton*)event)->x;
-  float e_y =  ((GdkEventButton*)event)->y;
-  float fractx = (e_x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
-  float fracty = (pd->zmymax  - e_y) / (pd->zmymax - pd->zmymin);
-  pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-  pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
-  /* Update the graph view limits and replot. */
-  pd->xvmin = fmin(pd->zm_startx, pd->zm_endx);
-  pd->yvmin = fmin(pd->zm_starty, pd->zm_endy);
-  pd->xvmax = fmax(pd->zm_startx, pd->zm_endx);
-  pd->yvmax = fmax(pd->zm_starty, pd->zm_endy);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  return TRUE;
-}
-
 /* This is the program entry point.  The builder reads an XML file (generated  
  * by the Glade application and instantiate the associated (global) objects.
  */
