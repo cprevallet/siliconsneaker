@@ -324,7 +324,7 @@ trans_left(GtkButton *button,
 
 /* Pan down on button clicked. */
 void
-trans_down(GtkButton *button,
+trans_up(GtkButton *button,
                double          value,
                struct PlotData *pd) {
   pd->yvmin = pd->yvmin + (pd->ymax - pd->ymin) * 0.10;
@@ -334,7 +334,7 @@ trans_down(GtkButton *button,
 
 /* Pan up on button clicked. */
 void
-trans_up(GtkButton *button,
+trans_down(GtkButton *button,
                double          value,
                struct PlotData *pd) {
   pd->yvmin = pd->yvmin - (pd->ymax - pd->ymin) * 0.10;
