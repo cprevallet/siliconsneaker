@@ -95,12 +95,24 @@ float float_rand( float min, float max )
 }
 
 /* Get get file data. */
-
 int get_fit_file_data() {
-  /* hard-code filename for testing */
   char * fname = "./fitfiles/2021-08-02-08-14-52.fit";
-  if (get_fit_records(fname) != 0) {
+  float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE];
+  
+
+  for (int i = 0; i<NSIZE; i++) {
+    speed[i] = 0.0/0.0;  //initialize to NaN
+    dist[i] = 0.0/0.0;  //initialize to NaN
+    lat[i] = 0.0/0.0;  //initialize to NaN
+    lng[i] = 0.0/0.0;  //initialize to NaN
+  }
+  int rtnval = get_fit_records(fname, speed, dist, lat, lng);
+  if (rtnval != 0) {
     printf("Could not load activity records.\n");
+  } else {
+    for (int i = 0; i<NSIZE; i++) {
+      printf("i =%d, speed = %0.3f m/s, distance = %0.3f m, latitude = %0.6f deg, longitude = %0.6f deg \n", i, speed[i], dist[i], lat[i], lng[i]);
+    }
   }
   return 0;
 }
