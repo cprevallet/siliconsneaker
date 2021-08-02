@@ -38,6 +38,11 @@
 #include <cairo-ps.h>
 #include <plplot.h>
 
+/*
+ * Fit file decoding
+ */
+#include "decode.h"
+
 #define NSIZE 1001
 
 struct PlotData {
@@ -89,12 +94,25 @@ float float_rand( float min, float max )
     return min + scale * ( max - min );      /* [min, max] */
 }
 
+/* Get get file data. */
+
+int get_fit_file_data() {
+  /* hard-code filename for testing */
+  char * fname = "./fitfiles/2021-08-02-08-14-52.fit";
+  if (get_fit_records(fname) != 0) {
+    printf("Could not load activity records.\n");
+  }
+  return 0;
+}
+
 /* Prepare data to be plotted. */
 struct PlotData* init_plot_data() {
 
   int i;
   static struct PlotData pdata;
   struct PlotData *p;
+
+  get_fit_file_data();
 
   /* Defaults */
   p = &pdata;
@@ -103,6 +121,7 @@ struct PlotData* init_plot_data() {
   p->xmax = -9999999;
   p->ymin =  9999999; 
   p->ymax = -9999999;
+
   /* Input distances in miles (for testing). */
   for (i = 0; i < NSIZE; i++) {
     p->x[i] = (PLFLT)(i * 0.01);  /* dummy data */
