@@ -98,6 +98,8 @@ float float_rand( float min, float max )
 int get_fit_file_data() {
   char * fname = "./fitfiles/2021-08-02-08-14-52.fit";
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE];
+  int cadence[NSIZE], heart_rate[NSIZE];
+  time_t time_stamp[NSIZE];
   
 
   for (int i = 0; i<NSIZE; i++) {
@@ -105,13 +107,25 @@ int get_fit_file_data() {
     dist[i] = 0.0/0.0;  //initialize to NaN
     lat[i] = 0.0/0.0;  //initialize to NaN
     lng[i] = 0.0/0.0;  //initialize to NaN
+    cadence[i] = 0; 
+    heart_rate[i] = 0;
+    time_stamp[i] = 0; 
   }
-  int rtnval = get_fit_records(fname, speed, dist, lat, lng);
+  int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence, heart_rate, time_stamp);
   if (rtnval != 0) {
     printf("Could not load activity records.\n");
   } else {
     for (int i = 0; i<NSIZE; i++) {
-      printf("i =%d, speed = %0.3f m/s, distance = %0.3f m, latitude = %0.6f deg, longitude = %0.6f deg \n", i, speed[i], dist[i], lat[i], lng[i]);
+      struct tm * ptm = gmtime(&time_stamp[i]);
+      printf("i =%d, \
+          speed = %0.3f m/s, \
+          distance = %0.3f m, \
+          latitude = %0.6f deg,  \
+          longitude = %0.6f deg, \
+          cadence = %d steps,  \
+          heart_rate = %d bpm, \
+          time_stamp =%s UTC \n", i, speed[i], dist[i], lat[i], lng[i], cadence[i], heart_rate[i],
+          asctime(ptm));
     }
   }
   return 0;

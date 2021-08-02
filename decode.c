@@ -26,17 +26,8 @@
 
 #include "./fit/fit_convert.h"
 
-//int main(int argc, char* argv[])
-/*
-                     printf(", position_long = %0.8f", record->position_long * (180.0/pow(2,31)));
-                     printf(", position_lat = %0.8f", record->position_lat * (180.0/pow(2,31)));
-                     printf(", speed = %0.3fm/s", record->speed/1000.0);
-                     printf(", distance = %0.3fm", record->distance/100.0);
-                     //printf(", calories = %dkcal", record->calories);
-                     printf(", cadence = %d", record->cadence);
-                     printf(", heart_rate = %d", record->heart_rate);
-*/
-int get_fit_records(char* fname, float* p_speed, float* p_distance, float* p_lat, float* p_lng)
+int get_fit_records(char* fname, float* p_speed, float* p_distance, 
+    float* p_lat, float* p_lng, int* p_cadence, int* p_heart_rate, long int* p_time_stamp)
 {
    FILE *file;
    FIT_UINT8 buf[8];
@@ -161,10 +152,10 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance, float* p_lat
                         a Garmin numeric timestamp, then you have the number of
                         seconds since the 1970 Unix epoch. */
 
-                     time_t unix_time = record->timestamp + 631065600;
+                     //time_t unix_time = record->timestamp + 631065600;
                      //printf("Record: timestamp=%lu unix_secs", unix_time);
-                     struct tm *ptm = gmtime(&unix_time);
-                     //printf(", UTC=%s UTC", asctime(ptm));
+                     *p_time_stamp = record->timestamp + 631065600;
+                     *p_time_stamp++;
 
 
                      /*
@@ -205,7 +196,11 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance, float* p_lat
                      *p_distance++;
                      //printf(", calories = %dkcal", record->calories);
                      //printf(", cadence = %d", record->cadence);
+                     *p_cadence = (int) (record->cadence);
+                     *p_cadence++;
                      //printf(", heart_rate = %d", record->heart_rate);
+                     *p_heart_rate = (int) (record->heart_rate);
+                     *p_heart_rate++;
 
                      break;
                   }
