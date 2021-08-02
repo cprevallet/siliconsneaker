@@ -219,7 +219,7 @@ gboolean on_da_draw(GtkWidget * widget,
   rb_x[3] = pd->zm_endx;
   rb_y[3] = pd->zm_starty;
   if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
-    plscol0a (1, 65, 209, 65, 0.05);
+    plscol0a (1, 65, 209, 65, 0.25);
     plcol0( 1 );
     plfill(4, rb_x, rb_y);
   }
