@@ -46,21 +46,22 @@
 #define NSIZE 1001
 
 struct PlotData {
-  PLFLT x[NSIZE];
-  PLFLT y[NSIZE];
-  PLFLT xmin; //data, world
+  int   num_pts;
+  PLFLT* x;
+  PLFLT* y;
+  PLFLT xmin; //data, world coordinates
   PLFLT xmax;
   PLFLT ymin; 
   PLFLT ymax;
-  PLFLT xvmin; //view coordinates, world
+  PLFLT xvmin; //view, world coordinates
   PLFLT xvmax;
   PLFLT yvmin; 
   PLFLT yvmax;
-  PLFLT zmxmin; //zoom limits, world
+  PLFLT zmxmin; //zoom limits, world coordinates
   PLFLT zmxmax;
   PLFLT zmymin; 
   PLFLT zmymax;
-  PLFLT zm_startx; //zoom coordinates, world
+  PLFLT zm_startx; //zoom, world coordinates
   PLFLT zm_starty; 
   PLFLT zm_endx;
   PLFLT zm_endy;
@@ -148,10 +149,13 @@ struct PlotData* init_plot_data() {
   p->xmax = -9999999;
   p->ymin =  9999999; 
   p->ymax = -9999999;
+  p->num_pts = 1000;
+  p->x = (PLFLT*)malloc(p->num_pts * sizeof(PLFLT));
+  p->y = (PLFLT*)malloc(p->num_pts * sizeof(PLFLT));
 
   /* Input distances in miles (for testing). */
-  for (i = 0; i < NSIZE; i++) {
-    p->x[i] = (PLFLT)(i * 0.01);  /* dummy data */
+  for (i = 0; i < p->num_pts; i++) {
+    p->x[i] = (PLFLT)(i) * 0.01;  /* dummy data */
     /* Find min, max */
     if (p->x[i] < p->xmin) {
       p->xmin = p->x[i];
@@ -160,14 +164,14 @@ struct PlotData* init_plot_data() {
       p->xmax = p->x[i];
     }
   }
-  for (i = 0; i < NSIZE/2; i++) {
+  for (i = 0; i < (p->num_pts)/2; i++) {
     p->y[i] = float_rand(2.5, 3);
   }
-  for (i = NSIZE/2; i < NSIZE; i++) {
+  for (i = (p->num_pts)/2; i < p->num_pts; i++) {
     p->y[i] = float_rand(3, 4);
   }
   /* Find min, max */
-  for (i = 0; i < NSIZE; i++) {
+  for (i = 0; i < p->num_pts; i++) {
     if (p->y[i] < p->ymin) {
       p->ymin = p->y[i];
     }
@@ -198,7 +202,6 @@ void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length,
   double secs, mins;
   secs = modf(min_per_mile, &mins);
   secs *= 60.0;
-  printf("axis = %d\n", axis);
   if (axis == PL_Y_AXIS) {
     snprintf(label, (size_t) length, "%02.0f:%02.0f", mins, secs);
   } else {
@@ -246,9 +249,12 @@ gboolean on_da_draw(GtkWidget * widget,
   plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 70);
   pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
   /* Plot the data that was prepared above. */
-  plline(NSIZE, pd->x, pd->y);
+  for (int i = 0; i < pd->num_pts; i++) {
+    printf("i=%d, x=%f, y=%f\n", i, pd->x[i], pd->y[i]);
+  }
+  plline(pd->num_pts, pd->x, pd->y);
   /* Plot symbols for individual data points. */
-  plstring(NSIZE, pd->x, pd->y, pd->symbol);
+  plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
   /* Calculate the zoom limits (in pixels) for the graph. */
   plgvpd (&n_xmin, &n_xmax, &n_ymin, &n_ymax);
   pd->zmxmin = width * n_xmin;
@@ -392,6 +398,8 @@ int main(int argc, char * argv[]) {
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", 
       G_CALLBACK(on_da_draw), pd);
   g_object_unref(builder);
+  //free(pd->y);
+  //free(pd->x);
 
   gtk_widget_show(window);
   gtk_main();
