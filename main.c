@@ -222,7 +222,7 @@ void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length,
   if (axis == PL_Y_AXIS) {
     snprintf(label, (size_t) length, "%02.0f:%02.0f", mins, secs);
   } else {
-    snprintf(label, (size_t) length, "%.1f", label_val);
+    snprintf(label, (size_t) length, "%3.2f", label_val);
   }
   if (axis == PL_X_AXIS) {
     snprintf(label, (size_t) length, "%3.2f", 0.00062137119 * value); 
