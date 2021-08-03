@@ -43,11 +43,14 @@
  */
 #include "decode.h"
 
-#define NSIZE 1001
+#define NSIZE 2880 // long enough for 4 hour marathon at 5 sec intervals
 
 enum ZoomState { Press = 0, Move = 1, Release = 2 };
+enum PlotType { PacePlot = 1, CadencePlot = 2, HeartRatePlot = 3, 
+                AltitudePlot = 4 };
 
 struct PlotData {
+  enum PlotType ptype;
   int num_pts;
   PLFLT *x;
   PLFLT *y;
@@ -95,18 +98,20 @@ float float_rand(float min, float max) {
 }
 
 /* Prepare data to be plotted. */
-struct PlotData *init_plot_data(char *fname) {
+struct PlotData *init_plot_data(char *fname, enum PlotType ptype) {
   static struct PlotData pdata;
   struct PlotData *p;
 
   int i;
-  float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE];
+  float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], 
+        alt[NSIZE];
   int cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
   int num_recs = 0;
 
   /* Defaults */
   p = &pdata;
+  p->ptype = PacePlot;
   p->symbol = "";
   p->xmin = 0;
   p->xmax = 0;
@@ -128,9 +133,12 @@ struct PlotData *init_plot_data(char *fname) {
   p->zm_endx = 0;
   p->zm_endy = 0;
 
+  /* Establish x,y axis variables */
+  p->ptype = ptype;
+
   /* Load data from fit file. */
   int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence,
-                               heart_rate, time_stamp, &num_recs);
+                               heart_rate, alt, time_stamp, &num_recs);
   printf("%d\n", rtnval);
   if (rtnval != 0) {
     printf("Could not load activity records.\n");
@@ -139,26 +147,55 @@ struct PlotData *init_plot_data(char *fname) {
     p->num_pts = num_recs;
     p->x = (PLFLT *)malloc(p->num_pts * sizeof(PLFLT));
     p->y = (PLFLT *)malloc(p->num_pts * sizeof(PLFLT));
-    for (int i = 0; i < p->num_pts; i++) {
-      p->x[i] = (PLFLT)dist[i];
-      if (speed[i] != 0.0) {
-        p->y[i] = (PLFLT)speed[i];
-      } else {
-        p->y[i] = 0.0;
+    switch (p->ptype) {
+
+    case PacePlot:
+      for (int i = 0; i < p->num_pts; i++) {
+        p->x[i] = (PLFLT)dist[i];
+        if (speed[i] != 0.0) {
+          p->y[i] = (PLFLT)speed[i];
+        } else {
+          p->y[i] = 0.0;
+        }
       }
-      /*
-      struct tm * ptm = gmtime(&time_stamp[i]);
-      printf("i =%d, \
-          speed = %0.3f m/s, \
-          distance = %0.3f m, \
-          latitude = %0.6f deg,  \
-          longitude = %0.6f deg, \
-          cadence = %d steps,  \
-          heart_rate = %d bpm, \
-          time_stamp =%s UTC \n", i, speed[i], dist[i], lat[i], lng[i],
-      cadence[i], heart_rate[i], asctime(ptm));
-    */
+      break;
+
+    case CadencePlot:
+      for (int i = 0; i < p->num_pts; i++) {
+        p->x[i] = (PLFLT)dist[i];
+        p->y[i] = (PLFLT)cadence[i];
+      }
+      break;
+
+    case HeartRatePlot:
+      for (int i = 0; i < p->num_pts; i++) {
+        p->x[i] = (PLFLT)dist[i];
+        p->y[i] = (PLFLT)heart_rate[i];
+      }
+      break;
+
+    case AltitudePlot:
+      for (int i = 0; i < p->num_pts; i++) {
+        p->x[i] = (PLFLT)dist[i];
+        p->y[i] = (PLFLT)alt[i];
+      }
+      break;
+
+
     }
+
+    /*
+    struct tm * ptm = gmtime(&time_stamp[i]);
+    printf("i =%d, \
+        speed = %0.3f m/s, \
+        distance = %0.3f m, \
+        latitude = %0.6f deg,  \
+        longitude = %0.6f deg, \
+        cadence = %d steps,  \
+        heart_rate = %d bpm, \
+        time_stamp =%s UTC \n", i, speed[i], dist[i], lat[i], lng[i],
+    cadence[i], heart_rate[i], asctime(ptm));
+  */
   }
 
   /* Set symbol. */
@@ -203,30 +240,62 @@ void reset_zoom(struct PlotData *p) {
 }
 
 /* A custom axis labeling function for pace chart in English units. */
-void custom_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
-                    PLPointer PL_UNUSED(data)) {
+void pace_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
+                       PLPointer label_data) {
   PLFLT label_val = 0.0;
   PLFLT min_per_mile = 0.0;
   label_val = value;
+
   if (axis == PL_Y_AXIS) {
     if (label_val > 0) {
       min_per_mile = 26.8224 / label_val;
     } else {
       min_per_mile = 999.0;
     }
-  }
-  double secs, mins;
-  secs = modf(min_per_mile, &mins);
-  secs *= 60.0;
-  if (axis == PL_Y_AXIS) {
+    double secs, mins;
+    secs = modf(min_per_mile, &mins);
+    secs *= 60.0;
     snprintf(label, (size_t)length, "%02.0f:%02.0f", mins, secs);
-  } else {
-    snprintf(label, (size_t)length, "%3.2f", label_val);
+  }
+
+  if (axis == PL_X_AXIS) {
+    snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
+  }
+}
+
+/* A custom axis labeling function for cadence chart in English units. */
+void cadence_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
+                          PLPointer label_data) {
+  if (axis == PL_Y_AXIS) {
+    snprintf(label, (size_t)length, "%3.2f", value);
   }
   if (axis == PL_X_AXIS) {
     snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
   }
 }
+
+/* A custom axis labeling function for heart rate chart in English units. */
+void heart_rate_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
+                            PLPointer label_data) {
+  if (axis == PL_Y_AXIS) {
+    snprintf(label, (size_t)length, "%3.0f", value);
+  }
+  if (axis == PL_X_AXIS) {
+    snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
+  }
+}
+
+/* A custom axis labeling function for altitude chart in English units. */
+void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
+                            PLPointer label_data) {
+  if (axis == PL_Y_AXIS) {
+    snprintf(label, (size_t)length, "%3.0f", 3.28084 * value);
+  }
+  if (axis == PL_X_AXIS) {
+    snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
+  }
+}
+
 
 /* Drawing area callback. */
 gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
@@ -257,13 +326,43 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   plcol0(15);
   /* Adjust character size. */
   plschr(ch_size, scf);
-  /* Setup a custom label function. */
-  plslabelfunc(custom_labeler, NULL);
+  /* Setup a custom axis tick label function. */
+  switch (pd->ptype) {
+  case PacePlot:
+    plslabelfunc(pace_plot_labeler, NULL);
+    break;
+  case CadencePlot:
+    plslabelfunc(cadence_plot_labeler, NULL);
+    break;
+  case HeartRatePlot:
+    plslabelfunc(heart_rate_plot_labeler, NULL);
+    break;
+  case AltitudePlot:
+    plslabelfunc(altitude_plot_labeler, NULL);
+    break;
+  }
   /* Create a labelled box to hold the plot using custom x,y labels. */
   plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 70);
-  pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
+  /* Setup a custom chart label function. */
+  switch (pd->ptype) {
+  case PacePlot:
+    pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
+    break;
+  case CadencePlot:
+    pllab("Distance(miles)", "Cadence(steps/min)", "Cadence Chart");
+    break;
+  case HeartRatePlot:
+    pllab("Distance(miles)", "Heart rate (bpm)", "Heartrate Chart");
+    break;
+  case AltitudePlot:
+    pllab("Distance(miles)", "Altitude (feet)", "Altitude Chart");
+    break;
+  }
+
   /* Plot the data that was prepared above. */
-  plline(pd->num_pts, pd->x, pd->y);
+  if ((pd->x != NULL) && (pd->y != NULL)) {
+    plline(pd->num_pts, pd->x, pd->y);
+  }
   /* Plot symbols for individual data points. */
   plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
   /* Calculate the zoom limits (in pixels) for the graph. */
@@ -272,7 +371,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   pd->zmxmax = width * n_xmax;
   pd->zmymin = height * (n_ymin - 1.0) + height;
   pd->zmymax = height * (n_ymax - 1.0) + height;
-  /*  Draw_selection box. */
+  /*  Draw_selection box "rubber-band". */
   PLFLT rb_x[4];
   PLFLT rb_y[4];
   rb_x[0] = pd->zm_startx;
@@ -389,8 +488,13 @@ int main(int argc, char *argv[]) {
 
   gtk_builder_connect_signals(builder, NULL);
 
+  /* Initial values for testing.  Add to GUI later. */
   char *fname = "./fitfiles/2021-08-02-08-14-52.fit";
-  pd = init_plot_data(fname);
+  enum PlotType ptype = AltitudePlot;
+  // enum PlotType ptype = HeartRatePlot;
+  // enum PlotType ptype = CadencePlot;
+  // enum PlotType ptype = PacePlot;
+  pd = init_plot_data(fname, ptype);
   reset_view_limits(pd);
 
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);

@@ -28,7 +28,7 @@
 
 int get_fit_records(char* fname, float* p_speed, float* p_distance, 
     float* p_lat, float* p_lng, int* p_cadence, int* p_heart_rate, 
-    long int* p_time_stamp, int* p_num_recs)
+    float* p_altitude, long int* p_time_stamp, int* p_num_recs)
 {
    FILE *file;
    FIT_UINT8 buf[8];
@@ -157,32 +157,6 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                      //printf("Record: timestamp=%lu unix_secs", unix_time);
                      *p_time_stamp = record->timestamp + 631065600;
                      *p_time_stamp++;
-
-
-                     /*
-
-                     if (
-                           (record->compressed_speed_distance[0] != FIT_BYTE_INVALID) ||
-                           (record->compressed_speed_distance[1] != FIT_BYTE_INVALID) ||
-                           (record->compressed_speed_distance[2] != FIT_BYTE_INVALID)
-                        )
-                     {
-                        static FIT_UINT32 accumulated_distance16 = 0;
-                        static FIT_UINT32 last_distance16 = 0;
-                        FIT_UINT16 speed100;
-                        FIT_UINT32 distance16;
-
-                        speed100 = record->compressed_speed_distance[0] | ((record->compressed_speed_distance[1] & 0x0F) << 8);
-                        printf(", speed = %0.2fm/s", speed100/100.0f);
-
-                        distance16 = (record->compressed_speed_distance[1] >> 4) | (record->compressed_speed_distance[2] << 4);
-                        accumulated_distance16 += (distance16 - last_distance16) & 0x0FFF;
-                        last_distance16 = distance16;
-
-                        printf(", distance = %0.3fm", accumulated_distance16/16.0f);
-                     } 
-                     */
-                    
                      //printf(", position_long = %0.8f", record->position_long * (180.0/pow(2,31)));
                      *p_lng = (float) (record->position_long * (180.0/pow(2,31)));
                      *p_lng++;
@@ -192,6 +166,10 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                      //printf("record = %0.3fm/s", record->speed/1000.0);
                      *p_speed = (float) (record->speed/1000.0);
                      *p_speed++;
+                     // altitude, meters offset of 500
+                     // printf("record = %4.0fm \n", (float)record->speed / 5.0 - 500.0);
+                     *p_altitude = (float)record->altitude/5.0 - 500.0;
+                     *p_altitude++;
                      //printf(", distance = %0.3fm", record->distance/100.0);
                      *p_distance = (float) (record->distance/100.0);
                      *p_distance++;
