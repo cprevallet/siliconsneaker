@@ -152,13 +152,6 @@ struct PlotData* init_plot_data() {
   /* Input distances in miles (for testing). */
   for (i = 0; i < NSIZE; i++) {
     p->x[i] = (PLFLT)(i * 0.01);  /* dummy data */
-  for (i = 0; i < NSIZE/2; i++) {
-    p->y[i] = float_rand(2.5, 3);
-  }
-  for (i = NSIZE/2; i < NSIZE; i++) {
-    p->y[i] = float_rand(3, 4);
-  }
-
     /* Find min, max */
     if (p->x[i] < p->xmin) {
       p->xmin = p->x[i];
@@ -167,7 +160,13 @@ struct PlotData* init_plot_data() {
       p->xmax = p->x[i];
     }
   }
-    /* Find min, max */
+  for (i = 0; i < NSIZE/2; i++) {
+    p->y[i] = float_rand(2.5, 3);
+  }
+  for (i = NSIZE/2; i < NSIZE; i++) {
+    p->y[i] = float_rand(3, 4);
+  }
+  /* Find min, max */
   for (i = 0; i < NSIZE; i++) {
     if (p->y[i] < p->ymin) {
       p->ymin = p->y[i];
