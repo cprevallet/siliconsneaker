@@ -45,6 +45,8 @@
 
 #define NSIZE 1001
 
+enum ZoomState {Press = 0, Move = 1, Release = 2}; 
+
 struct PlotData {
   int   num_pts;
   PLFLT* x;
@@ -68,7 +70,6 @@ struct PlotData {
   char * symbol;
 };
 
-enum ZoomState {Press = 0, Move = 1, Release = 2}; 
 
 /* 
  * make UI elements globals (ick)
@@ -95,29 +96,58 @@ float float_rand( float min, float max )
     return min + scale * ( max - min );      /* [min, max] */
 }
 
-/* Get get file data. */
-int get_fit_file_data() {
-  char * fname = "./fitfiles/2021-08-02-08-14-52.fit";
+/* Prepare data to be plotted. */
+struct PlotData* init_plot_data(char* fname) {
+  static struct PlotData pdata;
+  struct PlotData *p;
+
+  int i;
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE];
   int cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
   int num_recs = 0;
-  
 
-  for (int i = 0; i<NSIZE; i++) {
-    speed[i] = 0.0/0.0;  //initialize to NaN
-    dist[i] = 0.0/0.0;  //initialize to NaN
-    lat[i] = 0.0/0.0;  //initialize to NaN
-    lng[i] = 0.0/0.0;  //initialize to NaN
-    cadence[i] = 0; 
-    heart_rate[i] = 0;
-    time_stamp[i] = 0; 
-  }
+  /* Defaults */
+  p = &pdata;
+  p->symbol = "";
+  p->xmin = 0;
+  p->xmax = 0;
+  p->ymin = 0; 
+  p->ymax = 0;
+  p->num_pts = 0;
+  p->x = NULL;
+  p->y = NULL;
+  p->xvmax = 0;
+  p->yvmin = 0;
+  p->yvmax = 0;
+  p->xvmin = 0;
+  p->zmxmin = 0;
+  p->zmxmax = 0;
+  p->zmymin = 0; 
+  p->zmymax = 0;
+  p->zm_startx = 0;
+  p->zm_starty = 0; 
+  p->zm_endx = 0;
+  p->zm_endy = 0;
+
+  /* Load data from fit file. */
   int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence, heart_rate, time_stamp, &num_recs);
+  printf("%d\n", rtnval);
   if (rtnval != 0) {
     printf("Could not load activity records.\n");
+    gtk_main_quit();
   } else {
-    for (int i = 0; i<num_recs; i++) {
+    p->num_pts = num_recs;
+    p->x = (PLFLT*)malloc(p->num_pts * sizeof(PLFLT));
+    p->y = (PLFLT*)malloc(p->num_pts * sizeof(PLFLT));
+    for (int i = 0; i<p->num_pts; i++) {
+      p->x[i] = (PLFLT)dist[i]; 
+      if (speed[i] != 0.0) {
+        p->y[i] = (PLFLT)speed[i];
+      } else {
+        p->y[i] = 0.0;
+      }
+      /*
       struct tm * ptm = gmtime(&time_stamp[i]);
       printf("i =%d, \
           speed = %0.3f m/s, \
@@ -128,50 +158,25 @@ int get_fit_file_data() {
           heart_rate = %d bpm, \
           time_stamp =%s UTC \n", i, speed[i], dist[i], lat[i], lng[i], cadence[i], heart_rate[i],
           asctime(ptm));
+    */
     }
   }
-  return 0;
-}
 
-/* Prepare data to be plotted. */
-struct PlotData* init_plot_data() {
-
-  int i;
-  static struct PlotData pdata;
-  struct PlotData *p;
-
-  get_fit_file_data();
-
-  /* Defaults */
-  p = &pdata;
+  /* Set symbol. */
   p->symbol = "⏺";
+
+  /* Find plot data min, max */
   p->xmin =  9999999;
   p->xmax = -9999999;
   p->ymin =  9999999; 
   p->ymax = -9999999;
-  p->num_pts = 1000;
-  p->x = (PLFLT*)malloc(p->num_pts * sizeof(PLFLT));
-  p->y = (PLFLT*)malloc(p->num_pts * sizeof(PLFLT));
-
-  /* Input distances in miles (for testing). */
   for (i = 0; i < p->num_pts; i++) {
-    p->x[i] = (PLFLT)(i) * 0.01;  /* dummy data */
-    /* Find min, max */
     if (p->x[i] < p->xmin) {
       p->xmin = p->x[i];
     }
     if (p->x[i] > p->xmax) {
       p->xmax = p->x[i];
     }
-  }
-  for (i = 0; i < (p->num_pts)/2; i++) {
-    p->y[i] = float_rand(2.5, 3);
-  }
-  for (i = (p->num_pts)/2; i < p->num_pts; i++) {
-    p->y[i] = float_rand(3, 4);
-  }
-  /* Find min, max */
-  for (i = 0; i < p->num_pts; i++) {
     if (p->y[i] < p->ymin) {
       p->ymin = p->y[i];
     }
@@ -179,11 +184,23 @@ struct PlotData* init_plot_data() {
       p->ymax = p->y[i];
     }
   }
+  return p;
+}
+
+/* Set the view limits to the data extents. */
+void reset_view_limits(struct PlotData *p) {
   p->xvmax = p->xmax;
   p->yvmin = p->ymin;
   p->yvmax = p->ymax;
   p->xvmin = p->xmin;
-  return p;
+}
+
+/* Set zoom back to zero. */
+void reset_zoom(struct PlotData *p) {
+    p->zm_startx = 0;
+    p->zm_starty = 0;
+    p->zm_endx = 0;
+    p->zm_endy = 0;
 }
 
 /* A custom axis labeling function for pace chart in English units. */
@@ -208,7 +225,7 @@ void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length,
     snprintf(label, (size_t) length, "%.1f", label_val);
   }
   if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t) length, "%3.2f", 0.62 * value);
+    snprintf(label, (size_t) length, "%3.2f", 0.00062137119 * value); 
   }
 }
 
@@ -249,9 +266,9 @@ gboolean on_da_draw(GtkWidget * widget,
   plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 70);
   pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
   /* Plot the data that was prepared above. */
-  for (int i = 0; i < pd->num_pts; i++) {
-    printf("i=%d, x=%f, y=%f\n", i, pd->x[i], pd->y[i]);
-  }
+  //for (int i = 0; i < pd->num_pts; i++) {
+  //  printf("i=%d, x=%f, y=%f\n", i, pd->x[i], pd->y[i]);
+  //}
   plline(pd->num_pts, pd->x, pd->y);
   /* Plot symbols for individual data points. */
   plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
@@ -284,14 +301,6 @@ gboolean on_da_draw(GtkWidget * widget,
   /* Cleanup */
   cairo_region_destroy(cairoRegion);
   return FALSE;
-}
-
-/* Set zoom back to zero. */
-void reset_zoom(struct PlotData *pd) {
-    pd->zm_startx = 0;
-    pd->zm_starty = 0;
-    pd->zm_endx = 0;
-    pd->zm_endy = 0;
 }
 
 /* Calculate the graph ("world") x,y coordinates corresponding to the
@@ -329,7 +338,7 @@ gboolean on_button_release(GtkWidget* widget,
   gdk_event_get_button (event, &buttonnum);
   /* Zoom out if right mouse button release. */
   if (buttonnum == 2) {
-    init_plot_data();
+    reset_view_limits(pd);
     gtk_widget_queue_draw(GTK_WIDGET(da));
     reset_zoom(pd);
     return TRUE;
@@ -385,7 +394,12 @@ int main(int argc, char * argv[]) {
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
 
   gtk_builder_connect_signals(builder, NULL);
-  pd = init_plot_data();
+
+
+  char * fname = "./fitfiles/2021-08-02-08-14-52.fit";
+  pd = init_plot_data(fname);
+  reset_view_limits(pd);
+
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_POINTER_MOTION_MASK);
@@ -398,8 +412,6 @@ int main(int argc, char * argv[]) {
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", 
       G_CALLBACK(on_da_draw), pd);
   g_object_unref(builder);
-  //free(pd->y);
-  //free(pd->x);
 
   gtk_widget_show(window);
   gtk_main();
