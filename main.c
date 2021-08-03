@@ -100,6 +100,7 @@ int get_fit_file_data() {
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE];
   int cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
+  int num_recs = 0;
   
 
   for (int i = 0; i<NSIZE; i++) {
@@ -111,11 +112,11 @@ int get_fit_file_data() {
     heart_rate[i] = 0;
     time_stamp[i] = 0; 
   }
-  int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence, heart_rate, time_stamp);
+  int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence, heart_rate, time_stamp, &num_recs);
   if (rtnval != 0) {
     printf("Could not load activity records.\n");
   } else {
-    for (int i = 0; i<NSIZE; i++) {
+    for (int i = 0; i<num_recs; i++) {
       struct tm * ptm = gmtime(&time_stamp[i]);
       printf("i =%d, \
           speed = %0.3f m/s, \
@@ -151,6 +152,13 @@ struct PlotData* init_plot_data() {
   /* Input distances in miles (for testing). */
   for (i = 0; i < NSIZE; i++) {
     p->x[i] = (PLFLT)(i * 0.01);  /* dummy data */
+  for (i = 0; i < NSIZE/2; i++) {
+    p->y[i] = float_rand(2.5, 3);
+  }
+  for (i = NSIZE/2; i < NSIZE; i++) {
+    p->y[i] = float_rand(3, 4);
+  }
+
     /* Find min, max */
     if (p->x[i] < p->xmin) {
       p->xmin = p->x[i];
@@ -159,13 +167,6 @@ struct PlotData* init_plot_data() {
       p->xmax = p->x[i];
     }
   }
-  for (i = 0; i < NSIZE/2; i++) {
-    p->y[i] = float_rand(2.5, 3);
-  }
-  for (i = NSIZE/2; i < NSIZE; i++) {
-    p->y[i] = float_rand(3, 4);
-  }
-
     /* Find min, max */
   for (i = 0; i < NSIZE; i++) {
     if (p->y[i] < p->ymin) {
@@ -198,11 +199,14 @@ void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length,
   double secs, mins;
   secs = modf(min_per_mile, &mins);
   secs *= 60.0;
-
+  printf("axis = %d\n", axis);
   if (axis == PL_Y_AXIS) {
     snprintf(label, (size_t) length, "%02.0f:%02.0f", mins, secs);
   } else {
     snprintf(label, (size_t) length, "%.1f", label_val);
+  }
+  if (axis == PL_X_AXIS) {
+    snprintf(label, (size_t) length, "%3.2f", 0.62 * value);
   }
 }
 

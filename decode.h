@@ -3,4 +3,5 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 int get_fit_records(char* fname, float* p_speed, float* p_distance, 
-    float* p_lat, float* p_lng, int* p_cadence, int* p_heart_rate, long int* p_time_stamp);
+    float* p_lat, float* p_lng, int* p_cadence, int* p_heart_rate, 
+    long int* p_time_stamp, int* p_num_recs);
