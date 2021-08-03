@@ -182,7 +182,7 @@ struct PlotData* init_plot_data() {
   return p;
 }
 
-/* A custom axis labeling function for pace chart. */
+/* A custom axis labeling function for pace chart in English units. */
 void custom_labeler(PLINT axis, PLFLT value, char * label, PLINT length, 
     PLPointer PL_UNUSED(data)) {
   PLFLT label_val = 0.0;
