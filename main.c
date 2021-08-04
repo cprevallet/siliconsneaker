@@ -30,6 +30,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <math.h>
+#include <float.h>
 
 /*
  * PLPlot
@@ -211,10 +212,10 @@ struct PlotData *init_plot_data(char *fname, enum PlotType ptype) {
   p->symbol = "⏺";
 
   /* Find plot data min, max */
-  p->xmin = 9999999;
-  p->xmax = -9999999;
-  p->ymin = 9999999;
-  p->ymax = -9999999;
+  p->xmin = FLT_MAX;
+  p->xmax = -FLT_MAX;
+  p->ymin = FLT_MAX;
+  p->ymax = -FLT_MAX;
   for (int i = 0; i < p->num_pts; i++) {
     if (p->x[i] < p->xmin) {
       p->xmin = p->x[i];
