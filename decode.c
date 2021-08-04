@@ -244,5 +244,5 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
 
    fclose(file);
 
-   return 0;
+   return 100;
 }

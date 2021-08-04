@@ -27,10 +27,10 @@
  * Required external Debian libraries: libplplot-dev, plplot-driver-cairo,
  * libgtk-3-dev
  */
+#include <float.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <math.h>
-#include <float.h>
 
 /*
  * PLPlot
@@ -81,25 +81,13 @@ struct PlotData {
 /*
  * make UI elements globals (ick)
  */
-GtkSpinButton *sb_int;
-GtkSpinButton *sb_numint;
 GtkDrawingArea *da;
-GtkButton *b_execute;
-GtkScaleButton *xscale_btn;
-GtkSpinButton *sb_xscale;
-GtkSpinButton *sb_yscale;
-GtkSpinButton *sb_x_trans;
-GtkSpinButton *sb_y_trans;
-GtkScaleButton *scb_x;
-GtkScaleButton *scb_y;
-GtkButton *btn_pan_up;
-GtkButton *btn_pan_down;
-GtkButton *btn_pan_right;
-GtkButton *btn_pan_left;
 GtkRadioButton *rb_Pace;
 GtkRadioButton *rb_Cadence;
 GtkRadioButton *rb_HeartRate;
 GtkRadioButton *rb_Altitude;
+GtkFileChooserButton *btnFileOpen;
+char *fname;
 
 /* Set the view limits to the data extents. */
 void reset_view_limits(struct PlotData *p) {
@@ -157,7 +145,7 @@ struct PlotData *init_plot_data(char *fname, enum PlotType ptype) {
   /* Load data from fit file. */
   int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence,
                                heart_rate, alt, time_stamp, &num_recs);
-  if (rtnval != 0) {
+  if (rtnval != 100) {
     printf("Could not load activity records.\n");
   } else {
     p->num_pts = num_recs;
@@ -309,77 +297,77 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   /* Say: "I want to start drawing". */
   cairo_t *cr = gdk_drawing_context_get_cairo_context(drawingContext);
 
-  /* Do your drawing. */
-  /* Initialize plplot using the external cairo backend. */
-  plsdev("extcairo");
-
-  /* Device attributes */
-  plinit();
-  pl_cmd(PLESC_DEVINIT, cr);
-  /* Color */
-  plcol0(15);
-  /* Adjust character size. */
-  plschr(ch_size, scf);
-  /* Setup a custom axis tick label function. */
-  switch (pd->ptype) {
-  case PacePlot:
-    plslabelfunc(pace_plot_labeler, NULL);
-    break;
-  case CadencePlot:
-    plslabelfunc(cadence_plot_labeler, NULL);
-    break;
-  case HeartRatePlot:
-    plslabelfunc(heart_rate_plot_labeler, NULL);
-    break;
-  case AltitudePlot:
-    plslabelfunc(altitude_plot_labeler, NULL);
-    break;
-  }
-  /* Create a labelled box to hold the plot using custom x,y labels. */
-  plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 70);
-  /* Setup a custom chart label function. */
-  switch (pd->ptype) {
-  case PacePlot:
-    pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
-    break;
-  case CadencePlot:
-    pllab("Distance(miles)", "Cadence(steps/min)", "Cadence Chart");
-    break;
-  case HeartRatePlot:
-    pllab("Distance(miles)", "Heart rate (bpm)", "Heartrate Chart");
-    break;
-  case AltitudePlot:
-    pllab("Distance(miles)", "Altitude (feet)", "Altitude Chart");
-    break;
-  }
-
-  /* Plot the data that was loaded. */
   if ((pd->x != NULL) && (pd->y != NULL)) {
+    /* Do your drawing. */
+    /* Initialize plplot using the external cairo backend. */
+    plsdev("extcairo");
+
+    /* Device attributes */
+    plinit();
+    pl_cmd(PLESC_DEVINIT, cr);
+    /* Color */
+    plcol0(15);
+    /* Adjust character size. */
+    plschr(ch_size, scf);
+    /* Setup a custom axis tick label function. */
+    switch (pd->ptype) {
+    case PacePlot:
+      plslabelfunc(pace_plot_labeler, NULL);
+      break;
+    case CadencePlot:
+      plslabelfunc(cadence_plot_labeler, NULL);
+      break;
+    case HeartRatePlot:
+      plslabelfunc(heart_rate_plot_labeler, NULL);
+      break;
+    case AltitudePlot:
+      plslabelfunc(altitude_plot_labeler, NULL);
+      break;
+    }
+    /* Create a labelled box to hold the plot using custom x,y labels. */
+    plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 70);
+    /* Setup a custom chart label function. */
+    switch (pd->ptype) {
+    case PacePlot:
+      pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
+      break;
+    case CadencePlot:
+      pllab("Distance(miles)", "Cadence(steps/min)", "Cadence Chart");
+      break;
+    case HeartRatePlot:
+      pllab("Distance(miles)", "Heart rate (bpm)", "Heartrate Chart");
+      break;
+    case AltitudePlot:
+      pllab("Distance(miles)", "Altitude (feet)", "Altitude Chart");
+      break;
+    }
+
+    /* Plot the data that was loaded. */
     plline(pd->num_pts, pd->x, pd->y);
-  }
-  /* Plot symbols for individual data points. */
-  plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
-  /* Calculate the zoom limits (in pixels) for the graph. */
-  plgvpd(&n_xmin, &n_xmax, &n_ymin, &n_ymax);
-  pd->zmxmin = width * n_xmin;
-  pd->zmxmax = width * n_xmax;
-  pd->zmymin = height * (n_ymin - 1.0) + height;
-  pd->zmymax = height * (n_ymax - 1.0) + height;
-  /*  Draw_selection box "rubber-band". */
-  PLFLT rb_x[4];
-  PLFLT rb_y[4];
-  rb_x[0] = pd->zm_startx;
-  rb_y[0] = pd->zm_starty;
-  rb_x[1] = pd->zm_startx;
-  rb_y[1] = pd->zm_endy;
-  rb_x[2] = pd->zm_endx;
-  rb_y[2] = pd->zm_endy;
-  rb_x[3] = pd->zm_endx;
-  rb_y[3] = pd->zm_starty;
-  if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
-    plscol0a(1, 65, 209, 65, 0.25);
-    plcol0(1);
-    plfill(4, rb_x, rb_y);
+    /* Plot symbols for individual data points. */
+    plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
+    /* Calculate the zoom limits (in pixels) for the graph. */
+    plgvpd(&n_xmin, &n_xmax, &n_ymin, &n_ymax);
+    pd->zmxmin = width * n_xmin;
+    pd->zmxmax = width * n_xmax;
+    pd->zmymin = height * (n_ymin - 1.0) + height;
+    pd->zmymax = height * (n_ymax - 1.0) + height;
+    /*  Draw_selection box "rubber-band". */
+    PLFLT rb_x[4];
+    PLFLT rb_y[4];
+    rb_x[0] = pd->zm_startx;
+    rb_y[0] = pd->zm_starty;
+    rb_x[1] = pd->zm_startx;
+    rb_y[1] = pd->zm_endy;
+    rb_x[2] = pd->zm_endx;
+    rb_y[2] = pd->zm_endy;
+    rb_x[3] = pd->zm_endx;
+    rb_y[3] = pd->zm_starty;
+    if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
+      plscol0a(1, 65, 209, 65, 0.25);
+      plcol0(1);
+      plfill(4, rb_x, rb_y);
+    }
   }
   /* Close PLplot library */
   plend();
@@ -466,34 +454,26 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
 }
 
 /* User has selected Pace Graph. */
-void on_rb_pace(GtkToggleButton *togglebutton, struct PlotData *pd) {
-
-  char *fname = "./fitfiles/2021-08-02-08-14-52.fit";
-  pd = init_plot_data(fname, PacePlot);
+void on_rb_pace(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, PacePlot);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
 /* User has selected Cadence Graph. */
-void on_rb_cadence(GtkToggleButton *togglebutton, struct PlotData *pd) {
-
-  char *fname = "./fitfiles/2021-08-02-08-14-52.fit";
-  pd = init_plot_data(fname, CadencePlot);
+void on_rb_cadence(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, CadencePlot);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
 /* User has selected Heartrate Graph. */
-void on_rb_heartrate(GtkToggleButton *togglebutton, struct PlotData *pd) {
-
-  char *fname = "./fitfiles/2021-08-02-08-14-52.fit";
-  pd = init_plot_data(fname, HeartRatePlot);
+void on_rb_heartrate(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, HeartRatePlot);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
 /* User has selected Heartrate Graph. */
-void on_rb_altitude(GtkToggleButton *togglebutton, struct PlotData *pd) {
-
-  char *fname = "./fitfiles/2021-08-02-08-14-52.fit";
-  pd = init_plot_data(fname, AltitudePlot);
+void on_rb_altitude(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, AltitudePlot);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
@@ -503,6 +483,24 @@ void on_rb_altitude(GtkToggleButton *togglebutton, struct PlotData *pd) {
 gboolean initialize_widgets() {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
   return TRUE;
+}
+
+/* Open a new file and plot. */
+void on_btnFileOpen_file_set() {
+  /* fname is a global */
+  fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Pace))) {
+    on_rb_pace(GTK_TOGGLE_BUTTON(rb_Pace), NULL);
+  }
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Cadence))) {
+    on_rb_cadence(GTK_TOGGLE_BUTTON(rb_Cadence), NULL);
+  }
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_HeartRate))) {
+    on_rb_heartrate(GTK_TOGGLE_BUTTON(rb_HeartRate), NULL);
+  }
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Altitude))) {
+    on_rb_altitude(GTK_TOGGLE_BUTTON(rb_Altitude), NULL);
+  }
 }
 
 /* This is the program entry point.  The builder reads an XML file (generated
@@ -525,16 +523,16 @@ int main(int argc, char *argv[]) {
       GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_HeartRate"));
   rb_Altitude =
       GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Altitude"));
+  btnFileOpen =
+      GTK_FILE_CHOOSER_BUTTON(gtk_builder_get_object(builder, "btnFileOpen"));
 
   gtk_builder_connect_signals(builder, NULL);
 
   /* Set initial values.*/
   initialize_widgets();
 
-  /* Initial values for testing.  Add to GUI later. */
-
-  char *fname = "./fitfiles/2021-08-02-08-14-52.fit";
-  pd = init_plot_data(fname, PacePlot);
+  /* Uninitialized fname. Needed for drawing area callback. */
+  pd = init_plot_data("", PacePlot);
 
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
@@ -547,17 +545,20 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_motion_notify), pd);
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pd);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Pace), "toggled", G_CALLBACK(on_rb_pace),
-                   pd);
+                   NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Cadence), "toggled",
-                   G_CALLBACK(on_rb_cadence), pd);
+                   G_CALLBACK(on_rb_cadence), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_HeartRate), "toggled",
-                   G_CALLBACK(on_rb_heartrate), pd);
+                   G_CALLBACK(on_rb_heartrate), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
-                   G_CALLBACK(on_rb_altitude), pd);
+                   G_CALLBACK(on_rb_altitude), NULL);
 
   g_object_unref(builder);
 
   gtk_widget_show(window);
+
+  on_btnFileOpen_file_set();
+
   gtk_main();
 
   return 0;
