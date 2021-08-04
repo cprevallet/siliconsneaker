@@ -34,7 +34,7 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
    FIT_UINT8 buf[8];
    FIT_CONVERT_RETURN convert_return = FIT_CONVERT_CONTINUE;
    FIT_UINT32 buf_size;
-   FIT_UINT32 mesg_index = 0;
+   //FIT_UINT32 mesg_index = 0;
    #if defined(FIT_CONVERT_MULTI_THREAD)
       FIT_CONVERT_STATE state;
    #endif
@@ -87,29 +87,28 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                   const FIT_UINT8 *mesg = FitConvert_GetMessageData();
                   FIT_UINT16 mesg_num = FitConvert_GetMessageNumber();
                #endif
-
-               //printf("Mesg %d (%d) - ", mesg_index++, mesg_num);
+//printf("Mesg %d (%d) - ", mesg_index++, mesg_num);
 
                switch(mesg_num)
                {
                   case FIT_MESG_NUM_FILE_ID:
                   {
-                     const FIT_FILE_ID_MESG *id = (FIT_FILE_ID_MESG *) mesg;
+                     //const FIT_FILE_ID_MESG *id = (FIT_FILE_ID_MESG *) mesg;
                      //printf("File ID: type=%u, number=%u\n", id->type, id->number);
                      break;
                   }
 
                   case FIT_MESG_NUM_USER_PROFILE:
                   {
-                     const FIT_USER_PROFILE_MESG *user_profile = (FIT_USER_PROFILE_MESG *) mesg;
+                     //const FIT_USER_PROFILE_MESG *user_profile = (FIT_USER_PROFILE_MESG *) mesg;
                      //printf("User Profile: weight=%0.1fkg\n", user_profile->weight / 10.0f);
                      break;
                   }
 
                   case FIT_MESG_NUM_ACTIVITY:
-                  {
+                  {  /*
                      const FIT_ACTIVITY_MESG *activity = (FIT_ACTIVITY_MESG *) mesg;
-                     //printf("Activity: timestamp=%u, type=%u, event=%u, event_type=%u, num_sessions=%u\n", activity->timestamp, activity->type, activity->event, activity->event_type, activity->num_sessions);
+                     printf("Activity: timestamp=%u, type=%u, event=%u, event_type=%u, num_sessions=%u\n", activity->timestamp, activity->type, activity->event, activity->event_type, activity->num_sessions);
                      {
                         FIT_ACTIVITY_MESG old_mesg;
                         old_mesg.num_sessions = 1;
@@ -120,19 +119,20 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                         #endif
                         //printf("Restored num_sessions=1 - Activity: timestamp=%u, type=%u, event=%u, event_type=%u, num_sessions=%u\n", activity->timestamp, activity->type, activity->event, activity->event_type, activity->num_sessions);
                      }
+                     */
                      break;
                   }
 
                   case FIT_MESG_NUM_SESSION:
                   {
-                     const FIT_SESSION_MESG *session = (FIT_SESSION_MESG *) mesg;
+                     //const FIT_SESSION_MESG *session = (FIT_SESSION_MESG *) mesg;
                      //printf("Session: timestamp=%u\n", session->timestamp);
                      break;
                   }
 
                   case FIT_MESG_NUM_LAP:
                   {
-                     const FIT_LAP_MESG *lap = (FIT_LAP_MESG *) mesg;
+                     //const FIT_LAP_MESG *lap = (FIT_LAP_MESG *) mesg;
                      //printf("Lap: timestamp=%u\n", lap->timestamp);
                      break;
                   }
@@ -156,45 +156,44 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                      //time_t unix_time = record->timestamp + 631065600;
                      //printf("Record: timestamp=%lu unix_secs", unix_time);
                      *p_time_stamp = record->timestamp + 631065600;
-                     *p_time_stamp++;
+                     p_time_stamp++;
                      //printf(", position_long = %0.8f", record->position_long * (180.0/pow(2,31)));
                      *p_lng = (float) (record->position_long * (180.0/pow(2,31)));
-                     *p_lng++;
+                     p_lng++;
                      //printf(", position_lat = %0.8f", record->position_lat * (180.0/pow(2,31)));
                      *p_lat = (float) (record->position_lat * (180.0/pow(2,31)));
-                     *p_lat++;
+                     p_lat++;
                      //printf("record = %0.3fm/s", record->speed/1000.0);
                      *p_speed = (float) (record->speed/1000.0);
-                     *p_speed++;
+                     p_speed++;
                      // altitude, meters offset of 500
                      // printf("record = %4.0fm \n", (float)record->speed / 5.0 - 500.0);
                      *p_altitude = (float)record->altitude/5.0 - 500.0;
-                     *p_altitude++;
+                     p_altitude++;
                      //printf(", distance = %0.3fm", record->distance/100.0);
                      *p_distance = (float) (record->distance/100.0);
-                     *p_distance++;
+                     p_distance++;
                      //printf(", calories = %dkcal", record->calories);
                      //printf(", cadence = %d", record->cadence);
                      *p_cadence = (int) (record->cadence);
-                     *p_cadence++;
+                     p_cadence++;
                      //printf(", heart_rate = %d", record->heart_rate);
                      *p_heart_rate = (int) (record->heart_rate);
-                     *p_heart_rate++;
+                     p_heart_rate++;
                      *p_num_recs = *p_num_recs + 1;
                      break;
                   }
 
                   case FIT_MESG_NUM_EVENT:
                   {
-                     const FIT_EVENT_MESG *event = (FIT_EVENT_MESG *) mesg;
+                     //const FIT_EVENT_MESG *event = (FIT_EVENT_MESG *) mesg;
                      //printf("Event: timestamp=%u\n", event->timestamp);
                      break;
                   }
 
                   case FIT_MESG_NUM_DEVICE_INFO:
                   {
-                     const FIT_DEVICE_INFO_MESG *device_info = (FIT_DEVICE_INFO_MESG *) mesg;
-                     //printf("Device Info: timestamp=%u\n", device_info->timestamp);
+                     //const FIT_DEVICE_INFO_MESG *device_info = (FIT_DEVICE_INFO_MESG *) mesg;
                      break;
                   }
 

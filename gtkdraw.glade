@@ -14,6 +14,14 @@
     <property name="step-increment">1</property>
     <property name="page-increment">5</property>
   </object>
+  <object class="GtkRadioButton" id="radiobutton1">
+    <property name="label" translatable="yes">radiobutton</property>
+    <property name="visible">True</property>
+    <property name="can-focus">True</property>
+    <property name="receives-default">False</property>
+    <property name="active">True</property>
+    <property name="draw-indicator">True</property>
+  </object>
   <object class="GtkWindow" id="window1">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">PLPlot Test</property>
@@ -119,6 +127,72 @@
 Left mouse click-drag  graph to zoom in.  
 Middle mouse to zoom extents.</property>
                   </object>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="rb_Pace">
+                    <property name="label" translatable="yes">Pace Graph</property>
+                    <property name="width-request">92</property>
+                    <property name="height-request">23</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="tooltip-text" translatable="yes">Pace vs. Distance</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">radiobutton1</property>
+                  </object>
+                  <packing>
+                    <property name="x">68</property>
+                    <property name="y">100</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="rb_Cadence">
+                    <property name="label" translatable="yes">Cadence Graph</property>
+                    <property name="width-request">57</property>
+                    <property name="height-request">23</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="tooltip-text" translatable="yes">Cadence vs. Distance</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">radiobutton1</property>
+                  </object>
+                  <packing>
+                    <property name="x">68</property>
+                    <property name="y">120</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="rb_HeartRate">
+                    <property name="label" translatable="yes">Heart Rate Graph</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="tooltip-text" translatable="yes">Heart rate vs. Distance</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">radiobutton1</property>
+                  </object>
+                  <packing>
+                    <property name="x">68</property>
+                    <property name="y">140</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="rb_Altitude">
+                    <property name="label" translatable="yes">Altitude Graph</property>
+                    <property name="width-request">127</property>
+                    <property name="height-request">23</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="tooltip-text" translatable="yes">Altitude vs. Distance</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">radiobutton1</property>
+                  </object>
+                  <packing>
+                    <property name="x">68</property>
+                    <property name="y">160</property>
+                  </packing>
                 </child>
               </object>
             </child>
