@@ -237,7 +237,6 @@ Middle mouse to zoom extents.</property>
                     <property name="group">radiobutton1</property>
                   </object>
                   <packing>
-                    <property name="x">68</property>
                     <property name="y">100</property>
                   </packing>
                 </child>
@@ -254,7 +253,6 @@ Middle mouse to zoom extents.</property>
                     <property name="group">radiobutton1</property>
                   </object>
                   <packing>
-                    <property name="x">68</property>
                     <property name="y">120</property>
                   </packing>
                 </child>
@@ -269,7 +267,6 @@ Middle mouse to zoom extents.</property>
                     <property name="group">radiobutton1</property>
                   </object>
                   <packing>
-                    <property name="x">68</property>
                     <property name="y">140</property>
                   </packing>
                 </child>
@@ -286,7 +283,6 @@ Middle mouse to zoom extents.</property>
                     <property name="group">radiobutton1</property>
                   </object>
                   <packing>
-                    <property name="x">68</property>
                     <property name="y">160</property>
                   </packing>
                 </child>
@@ -299,8 +295,7 @@ Middle mouse to zoom extents.</property>
                     <signal name="file-set" handler="on_btnFileOpen_file_set" swapped="no"/>
                   </object>
                   <packing>
-                    <property name="x">74</property>
-                    <property name="y">320</property>
+                    <property name="y">220</property>
                   </packing>
                 </child>
               </object>

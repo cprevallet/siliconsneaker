@@ -82,6 +82,8 @@ struct PlotData {
   PLFLT zm_starty;
   PLFLT zm_endx;
   PLFLT zm_endy;
+  PLFLT *lat;
+  PLFLT *lng;
   char *symbol;
 };
 
@@ -95,12 +97,12 @@ GtkRadioButton *rb_HeartRate;
 GtkRadioButton *rb_Altitude;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
-char *fname;
 GtkWidget *champlain_widget;
 ChamplainView *champlain_view;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 struct PlotData pdata;
 struct PlotData *pd = &pdata;
+char* fname = "";
 
 //
 // Graph stuff
@@ -129,7 +131,6 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   int cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
   int num_recs = 0;
-  printf("init_plot_data called\n");
 
   if (pd == NULL) { return; }
 
@@ -155,6 +156,8 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   pd->zm_starty = 0;
   pd->zm_endx = 0;
   pd->zm_endy = 0;
+  pd->lat = NULL;
+  pd->lng = NULL;
 
   /* Establish x,y axis variables */
   pd->ptype = ptype;
@@ -166,6 +169,12 @@ void init_plot_data(char *fname, enum PlotType ptype) {
     printf("Could not load activity records.\n");
   } else {
     pd->num_pts = num_recs;
+    pd->lat = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    pd->lng = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    for (int i = 0; i < pd->num_pts; i++) {
+      pd->lat[i] = (PLFLT)lat[i];
+      pd->lng[i] = (PLFLT)lng[i];
+    }
     pd->x = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
     pd->y = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
     switch (pd->ptype) {
@@ -305,8 +314,6 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   /* Why do we have to hardcode this???? */
   int width = 700;
   int height = 600;
-
-  printf("on_da_draw called\n");
 
   if (pd == NULL) { return TRUE; }
 
@@ -477,12 +484,18 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
 //
 // Map Stuff
 //
+
+/* Update the map. */
 static void update_map() {
-  
-  champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
   //champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
+  if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
+    champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), pd->lat[0],pd->lng[0]);
+  } else {
+    champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 0, 0);
+  }
 }
 
+/* Zoom in. */
 static void
 zoom_in (GtkWidget *widget,
     ChamplainView *champlain_view)
@@ -491,6 +504,7 @@ zoom_in (GtkWidget *widget,
 }
 
 
+/* Zoom out. */
 static void
 zoom_out (GtkWidget *widget,
     ChamplainView *view)
@@ -502,55 +516,65 @@ zoom_out (GtkWidget *widget,
 // Navigation Stuff
 //
 
-/* Load the values stored in the ini file as initial widget values.
- * Initialize the calendar and time widgets with the current UTC values.
- */
-gboolean initialize_widgets() {
-  //gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
-  return TRUE;
+
+gboolean 
+do_plot() {
+  if ((fname != NULL) && (fname[0] != '\0')) {
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Pace))) {
+      init_plot_data(fname, PacePlot);
+      }
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Cadence))) {
+      init_plot_data(fname, CadencePlot);
+      }
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_HeartRate))) {
+      init_plot_data(fname, HeartRatePlot);
+      }
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Altitude))) {
+      init_plot_data(fname, AltitudePlot);
+      }
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    return FALSE;
+  } else {
+    return TRUE;
+  }
 }
 
 /* User has selected Pace Graph. */
-void on_rb_pace(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, PacePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
+void on_rb_pace(GtkToggleButton *togglebutton, gpointer data) {
+  do_plot();
+  update_map();
 }
 
 /* User has selected Cadence Graph. */
-void on_rb_cadence(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, CadencePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
+void on_rb_cadence(GtkToggleButton *togglebutton, gpointer data) {
+  do_plot();
+  update_map();
 }
 
 /* User has selected Heartrate Graph. */
-void on_rb_heartrate(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, HeartRatePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
+void on_rb_heartrate(GtkToggleButton *togglebutton, gpointer data) {
+  do_plot();
+  update_map();
 }
 
 /* User has selected Heartrate Graph. */
-void on_rb_altitude(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, AltitudePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
+void on_rb_altitude(GtkToggleButton *togglebutton, gpointer data) {
+  do_plot();
+  update_map();
 }
 
 /* User has pressed open a new file. */
 void on_btnFileOpen_file_set() {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Pace))) {
-    on_rb_pace(GTK_TOGGLE_BUTTON(rb_Pace), NULL);
-  }
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Cadence))) {
-    on_rb_cadence(GTK_TOGGLE_BUTTON(rb_Cadence), NULL);
-  }
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_HeartRate))) {
-    on_rb_heartrate(GTK_TOGGLE_BUTTON(rb_HeartRate), NULL);
-  }
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Altitude))) {
-    on_rb_altitude(GTK_TOGGLE_BUTTON(rb_Altitude), NULL);
-  }
+  printf("open fname = %s\n", fname);
+  do_plot();
+  update_map();
 }
+
+//
+// Main
+//
 
 /* This is the program entry point.  The builder reads an XML file (generated
  * by the Glade application and instantiate the associated (global) objects.
@@ -578,11 +602,6 @@ int main(int argc, char *argv[]) {
   btn_Zoom_In = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_In"));
   btn_Zoom_Out = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_Out"));
 
-  gtk_builder_connect_signals(builder, NULL);
-
-  /* Set initial values.*/
-  initialize_widgets();
-
   /* Initialize champlain map and add it to a frame after initializing clutter. */
   if (gtk_clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
     return 1;
@@ -598,6 +617,7 @@ int main(int argc, char *argv[]) {
   gtk_widget_show_all (window);
 
   /* Signals and events */
+  gtk_builder_connect_signals(builder, NULL);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_POINTER_MOTION_MASK);
@@ -621,9 +641,8 @@ int main(int argc, char *argv[]) {
 
   g_object_unref(builder);
 
+  /* Required to display champlain widget. */
   gtk_widget_show(window);
-
-  on_btnFileOpen_file_set();
 
   gtk_main();
 
