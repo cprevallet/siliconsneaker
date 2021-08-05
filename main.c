@@ -88,7 +88,7 @@ struct PlotData {
 };
 
 /*
- * make UI elements and structs globals (ick)
+ * define global UI elements and structs (ick)
  */
 GtkDrawingArea *da;
 GtkRadioButton *rb_Pace;
@@ -103,6 +103,9 @@ GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 struct PlotData pdata;
 struct PlotData *pd = &pdata;
 char* fname = "";
+static ChamplainPathLayer *path_layer;
+static ChamplainPathLayer *path;
+ChamplainMarkerLayer *layer;
 
 //
 // Graph stuff
@@ -485,11 +488,30 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
 // Map Stuff
 //
 
+/* Add a latitude, longitude to the path. */
+static void
+append_point (ChamplainPathLayer *layer, gdouble lon, gdouble lat)
+{
+  ChamplainCoordinate *coord;  
+  
+  coord = champlain_coordinate_new_full (lon, lat);
+  champlain_path_layer_add_node (layer, CHAMPLAIN_LOCATION (coord));
+}
+
+
 /* Update the map. */
 static void update_map() {
   //champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
   if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
     champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), pd->lat[0],pd->lng[0]);
+    //layer = create_marker_layer (champlain_view, &path);
+    champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (path));
+    //champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (layer));
+    path_layer = champlain_path_layer_new ();
+    for (int i = 0; i < pd->num_pts; i++) {
+      append_point(path_layer, pd->lat[i], pd->lng[i]);
+    }
+    champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (path_layer));
   } else {
     champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 0, 0);
   }
