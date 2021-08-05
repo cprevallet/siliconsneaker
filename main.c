@@ -40,6 +40,13 @@
 #include <plplot.h>
 
 /*
+ * Champlain map
+ */
+#include <champlain/champlain.h>
+#include <champlain-gtk/champlain-gtk.h>
+#include <clutter-gtk/clutter-gtk.h>
+
+/*
  * Fit file decoding
  */
 #include "decode.h"
@@ -87,7 +94,15 @@ GtkRadioButton *rb_Cadence;
 GtkRadioButton *rb_HeartRate;
 GtkRadioButton *rb_Altitude;
 GtkFileChooserButton *btnFileOpen;
+GtkFrame *viewport;
 char *fname;
+GtkWidget *champlain_widget;
+ChamplainView *champlain_view;
+GtkButton *btn_Zoom_In, *btn_Zoom_Out;
+
+//
+// Graph stuff
+//
 
 /* Set the view limits to the data extents. */
 void reset_view_limits(struct PlotData *p) {
@@ -477,6 +492,29 @@ void on_rb_altitude(GtkToggleButton *togglebutton, gpointer userdata) {
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
+//
+// Map Stuff
+//
+
+static void
+zoom_in (GtkWidget *widget,
+    ChamplainView *champlain_view)
+{
+  champlain_view_zoom_in (champlain_view);
+}
+
+
+static void
+zoom_out (GtkWidget *widget,
+    ChamplainView *view)
+{
+  champlain_view_zoom_out (champlain_view);
+}
+
+//
+// Navigation Stuff
+//
+
 /* Load the values stored in the ini file as initial widget values.
  * Initialize the calendar and time widgets with the current UTC values.
  */
@@ -511,11 +549,13 @@ int main(int argc, char *argv[]) {
   GtkBuilder *builder;
   GtkWidget *window;
 
+
   gtk_init(&argc, &argv);
 
   builder = gtk_builder_new_from_file("gtkdraw.glade");
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
+  viewport = GTK_FRAME(gtk_builder_get_object(builder, "viewport"));
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
   rb_Pace = GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Pace"));
   rb_Cadence = GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Cadence"));
@@ -525,15 +565,34 @@ int main(int argc, char *argv[]) {
       GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Altitude"));
   btnFileOpen =
       GTK_FILE_CHOOSER_BUTTON(gtk_builder_get_object(builder, "btnFileOpen"));
+  btn_Zoom_In = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_In"));
+  btn_Zoom_Out = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_Out"));
 
   gtk_builder_connect_signals(builder, NULL);
 
   /* Set initial values.*/
   initialize_widgets();
 
+  /* Initialize champlain map and add it to a frame after initializing clutter. */
+  if (gtk_clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
+    return 1;
+  champlain_widget = gtk_champlain_embed_new ();
+  champlain_view = gtk_champlain_embed_get_view (GTK_CHAMPLAIN_EMBED (champlain_widget));
+  //clutter_actor_set_reactive (CLUTTER_ACTOR (champlain_view), TRUE);
+    g_object_set (G_OBJECT (champlain_view),
+      "kinetic-mode", TRUE,
+      "zoom-level", 14,
+      NULL);
+  //champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
+  gtk_widget_set_size_request (champlain_widget, 640, 480);
+  gtk_container_add (GTK_CONTAINER (viewport), champlain_widget);
+  gtk_widget_show_all (window);
+
+
   /* Uninitialized fname. Needed for drawing area callback. */
   pd = init_plot_data("", PacePlot);
 
+  /* Signals and events */
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_POINTER_MOTION_MASK);
@@ -552,6 +611,8 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_rb_heartrate), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
                    G_CALLBACK(on_rb_altitude), NULL);
+  g_signal_connect (GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK (zoom_in), champlain_view);
+  g_signal_connect (GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK (zoom_out), champlain_view);
 
   g_object_unref(builder);
 
@@ -565,4 +626,6 @@ int main(int argc, char *argv[]) {
 }
 
 /* Call when the window is closed.  Store GUI values before exiting.*/
-void on_window1_destroy() { gtk_main_quit(); }
+void on_window1_destroy() { 
+  gtk_main_quit(); 
+}

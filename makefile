@@ -14,7 +14,7 @@ PTHREAD=-pthread
 
 CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD)
 
-GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo`
+GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo champlain-0.12 champlain-gtk-0.12 clutter-gtk-1.0`
 
 # linker
 LD=gcc
