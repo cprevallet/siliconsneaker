@@ -31,6 +31,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <math.h>
+#include <string.h>
 
 /*
  * PLPlot
@@ -42,8 +43,8 @@
 /*
  * Champlain map
  */
-#include <champlain/champlain.h>
 #include <champlain-gtk/champlain-gtk.h>
+#include <champlain/champlain.h>
 #include <clutter-gtk/clutter-gtk.h>
 
 /*
@@ -84,6 +85,7 @@ struct PlotData {
   PLFLT zm_endy;
   PLFLT *lat;
   PLFLT *lng;
+  char *start_time;
   char *symbol;
 };
 
@@ -102,7 +104,7 @@ ChamplainView *champlain_view;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 struct PlotData pdata;
 struct PlotData *pd = &pdata;
-char* fname = "";
+char *fname = "";
 static ChamplainPathLayer *path_layer;
 static ChamplainPathLayer *path;
 ChamplainMarkerLayer *layer;
@@ -135,7 +137,9 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   time_t time_stamp[NSIZE];
   int num_recs = 0;
 
-  if (pd == NULL) { return; }
+  if (pd == NULL) {
+    return;
+  }
 
   /* Defaults */
   pd->ptype = PacePlot;
@@ -161,6 +165,7 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   pd->zm_endy = 0;
   pd->lat = NULL;
   pd->lng = NULL;
+  pd->start_time = "";
 
   /* Establish x,y axis variables */
   pd->ptype = ptype;
@@ -210,20 +215,10 @@ void init_plot_data(char *fname, enum PlotType ptype) {
       }
       break;
     }
-
-    /*
-    struct tm * ptm = gmtime(&time_stamp[i]);
-    printf("i =%d, \
-        speed = %0.3f m/s, \
-        distance = %0.3f m, \
-        latitude = %0.6f deg,  \
-        longitude = %0.6f deg, \
-        cadence = %d steps,  \
-        heart_rate = %d bpm, \
-        time_stamp =%s UTC \n", i, speed[i], dist[i], lat[i], lng[i],
-    cadence[i], heart_rate[i], asctime(ptm));
-  */
   }
+  /* Set start time in UTC (for title) */
+  struct tm *ptm = gmtime(&time_stamp[0]);
+  pd->start_time = asctime(ptm);
 
   /* Set symbol. */
   pd->symbol = "⏺";
@@ -318,7 +313,9 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   int width = 700;
   int height = 600;
 
-  if (pd == NULL) { return TRUE; }
+  if (pd == NULL) {
+    return TRUE;
+  }
 
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow *window = gtk_widget_get_window(widget);
@@ -337,22 +334,33 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     plinit();
     pl_cmd(PLESC_DEVINIT, cr);
     /* Color */
+    plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
+    plscol0a(15, 200, 200, 200, 0.9); // light gray for background
+    plscol0a(5, 156, 100, 134, 0.8);  // magenta for pace
+    plscol0a(6, 31, 119, 180, 0.8);   // light blue for heartrate
+    plscol0a(7, 255, 127, 14, 0.8);   // light yellow for altitude
+    plscol0a(8, 77, 175, 74, 0.8);    // light green for heartrate
+
     plcol0(15);
     /* Adjust character size. */
     plschr(ch_size, scf);
     /* Setup a custom axis tick label function. */
     switch (pd->ptype) {
     case PacePlot:
+      plcol0(5);
       plslabelfunc(pace_plot_labeler, NULL);
       break;
     case CadencePlot:
+      plcol0(6);
       plslabelfunc(cadence_plot_labeler, NULL);
       break;
-    case HeartRatePlot:
-      plslabelfunc(heart_rate_plot_labeler, NULL);
-      break;
     case AltitudePlot:
+      plcol0(7);
       plslabelfunc(altitude_plot_labeler, NULL);
+      break;
+    case HeartRatePlot:
+      plcol0(8);
+      plslabelfunc(heart_rate_plot_labeler, NULL);
       break;
     }
     /* Create a labelled box to hold the plot using custom x,y labels. */
@@ -360,19 +368,22 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     /* Setup a custom chart label function. */
     switch (pd->ptype) {
     case PacePlot:
-      pllab("Distance(miles)", "Pace(min/mile)", "Pace Chart");
+      pllab("Distance(miles)", "Pace(min/mile)", pd->start_time);
+      plcol0(5);
       break;
     case CadencePlot:
-      pllab("Distance(miles)", "Cadence(steps/min)", "Cadence Chart");
-      break;
-    case HeartRatePlot:
-      pllab("Distance(miles)", "Heart rate (bpm)", "Heartrate Chart");
+      pllab("Distance(miles)", "Cadence(steps/min)", pd->start_time);
+      plcol0(6);
       break;
     case AltitudePlot:
-      pllab("Distance(miles)", "Altitude (feet)", "Altitude Chart");
+      pllab("Distance(miles)", "Altitude (feet)", pd->start_time);
+      plcol0(7);
+      break;
+    case HeartRatePlot:
+      pllab("Distance(miles)", "Heart rate (bpm)", pd->start_time);
+      plcol0(8);
       break;
     }
-
     /* Plot the data that was loaded. */
     plline(pd->num_pts, pd->x, pd->y);
     /* Plot symbols for individual data points. */
@@ -395,7 +406,6 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     rb_x[3] = pd->zm_endx;
     rb_y[3] = pd->zm_starty;
     if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
-      plscol0a(1, 65, 209, 65, 0.25);
       plcol0(1);
       plfill(4, rb_x, rb_y);
     }
@@ -489,71 +499,66 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
 //
 
 /* Add a latitude, longitude to the path. */
-static void
-append_point (ChamplainPathLayer *layer, gdouble lon, gdouble lat)
-{
-  ChamplainCoordinate *coord;  
-  
-  coord = champlain_coordinate_new_full (lon, lat);
-  champlain_path_layer_add_node (layer, CHAMPLAIN_LOCATION (coord));
-}
+static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
+  ChamplainCoordinate *coord;
 
+  coord = champlain_coordinate_new_full(lon, lat);
+  champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
+}
 
 /* Update the map. */
 static void update_map() {
-  //champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
+  // champlain_view_center_on (CHAMPLAIN_VIEW
+  // (champlain_view), 29.709889,-95.755781);
   if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
-    champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), pd->lat[0],pd->lng[0]);
-    //layer = create_marker_layer (champlain_view, &path);
-    champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (path));
-    //champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (layer));
-    path_layer = champlain_path_layer_new ();
+    champlain_view_center_on(CHAMPLAIN_VIEW(champlain_view), pd->lat[0],
+                             pd->lng[0]);
+    // layer = create_marker_layer (champlain_view, &path);
+    champlain_view_add_layer(champlain_view, CHAMPLAIN_LAYER(path));
+    // champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (layer));
+    path_layer = champlain_path_layer_new();
     for (int i = 0; i < pd->num_pts; i++) {
       append_point(path_layer, pd->lat[i], pd->lng[i]);
     }
-    champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (path_layer));
+    champlain_view_add_layer(champlain_view, CHAMPLAIN_LAYER(path_layer));
   } else {
-    champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 0, 0);
+    champlain_view_center_on(CHAMPLAIN_VIEW(champlain_view), 0, 0);
   }
 }
 
 /* Zoom in. */
-static void
-zoom_in (GtkWidget *widget,
-    ChamplainView *champlain_view)
-{
-  champlain_view_zoom_in (champlain_view);
+static void zoom_in(GtkWidget *widget, ChamplainView *champlain_view) {
+  champlain_view_zoom_in(champlain_view);
 }
 
-
 /* Zoom out. */
-static void
-zoom_out (GtkWidget *widget,
-    ChamplainView *view)
-{
-  champlain_view_zoom_out (champlain_view);
+static void zoom_out(GtkWidget *widget, ChamplainView *view) {
+  champlain_view_zoom_out(champlain_view);
 }
 
 //
 // Navigation Stuff
 //
+/* Default to the pace chart.  */
+gboolean default_chart() {
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
+  return TRUE;
+}
 
-
-gboolean 
-do_plot() {
+gboolean do_plot() {
   if ((fname != NULL) && (fname[0] != '\0')) {
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Pace))) {
       init_plot_data(fname, PacePlot);
-      }
+    }
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Cadence))) {
       init_plot_data(fname, CadencePlot);
-      }
+    }
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_HeartRate))) {
       init_plot_data(fname, HeartRatePlot);
-      }
+    }
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Altitude))) {
       init_plot_data(fname, AltitudePlot);
-      }
+    }
     gtk_widget_queue_draw(GTK_WIDGET(da));
     return FALSE;
   } else {
@@ -562,28 +567,18 @@ do_plot() {
 }
 
 /* User has selected Pace Graph. */
-void on_rb_pace(GtkToggleButton *togglebutton, gpointer data) {
-  do_plot();
-  update_map();
-}
+void on_rb_pace(GtkToggleButton *togglebutton, gpointer data) { do_plot(); }
 
 /* User has selected Cadence Graph. */
-void on_rb_cadence(GtkToggleButton *togglebutton, gpointer data) {
-  do_plot();
-  update_map();
-}
+void on_rb_cadence(GtkToggleButton *togglebutton, gpointer data) { do_plot(); }
 
 /* User has selected Heartrate Graph. */
 void on_rb_heartrate(GtkToggleButton *togglebutton, gpointer data) {
   do_plot();
-  update_map();
 }
 
 /* User has selected Heartrate Graph. */
-void on_rb_altitude(GtkToggleButton *togglebutton, gpointer data) {
-  do_plot();
-  update_map();
-}
+void on_rb_altitude(GtkToggleButton *togglebutton, gpointer data) { do_plot(); }
 
 /* User has pressed open a new file. */
 void on_btnFileOpen_file_set() {
@@ -605,7 +600,6 @@ int main(int argc, char *argv[]) {
   GtkBuilder *builder;
   GtkWidget *window;
 
-
   gtk_init(&argc, &argv);
 
   builder = gtk_builder_new_from_file("gtkdraw.glade");
@@ -624,19 +618,22 @@ int main(int argc, char *argv[]) {
   btn_Zoom_In = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_In"));
   btn_Zoom_Out = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_Out"));
 
-  /* Initialize champlain map and add it to a frame after initializing clutter. */
-  if (gtk_clutter_init (&argc, &argv) != CLUTTER_INIT_SUCCESS)
+  /* Select a default chart to start. */
+  default_chart();
+
+  /* Initialize champlain map and add it to a frame after initializing clutter.
+   */
+  if (gtk_clutter_init(&argc, &argv) != CLUTTER_INIT_SUCCESS)
     return 1;
-  champlain_widget = gtk_champlain_embed_new ();
-  champlain_view = gtk_champlain_embed_get_view (GTK_CHAMPLAIN_EMBED (champlain_widget));
-  //clutter_actor_set_reactive (CLUTTER_ACTOR (champlain_view), TRUE);
-    g_object_set (G_OBJECT (champlain_view),
-      "kinetic-mode", TRUE,
-      "zoom-level", 14,
-      NULL);
-  gtk_widget_set_size_request (champlain_widget, 640, 480);
-  gtk_container_add (GTK_CONTAINER (viewport), champlain_widget);
-  gtk_widget_show_all (window);
+  champlain_widget = gtk_champlain_embed_new();
+  champlain_view =
+      gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
+  // clutter_actor_set_reactive (CLUTTER_ACTOR (champlain_view), TRUE);
+  g_object_set(G_OBJECT(champlain_view), "kinetic-mode", TRUE, "zoom-level", 14,
+               NULL);
+  gtk_widget_set_size_request(champlain_widget, 640, 480);
+  gtk_container_add(GTK_CONTAINER(viewport), champlain_widget);
+  gtk_widget_show_all(window);
 
   /* Signals and events */
   gtk_builder_connect_signals(builder, NULL);
@@ -658,8 +655,10 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_rb_heartrate), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
                    G_CALLBACK(on_rb_altitude), NULL);
-  g_signal_connect (GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK (zoom_in), champlain_view);
-  g_signal_connect (GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK (zoom_out), champlain_view);
+  g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
+                   champlain_view);
+  g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
+                   champlain_view);
 
   g_object_unref(builder);
 
@@ -672,6 +671,4 @@ int main(int argc, char *argv[]) {
 }
 
 /* Call when the window is closed.  Store GUI values before exiting.*/
-void on_window1_destroy() { 
-  gtk_main_quit(); 
-}
+void on_window1_destroy() { gtk_main_quit(); }
