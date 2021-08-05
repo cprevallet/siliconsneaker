@@ -86,7 +86,7 @@ struct PlotData {
 };
 
 /*
- * make UI elements globals (ick)
+ * make UI elements and structs globals (ick)
  */
 GtkDrawingArea *da;
 GtkRadioButton *rb_Pace;
@@ -99,63 +99,65 @@ char *fname;
 GtkWidget *champlain_widget;
 ChamplainView *champlain_view;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
+struct PlotData pdata;
+struct PlotData *pd = &pdata;
 
 //
 // Graph stuff
 //
 
 /* Set the view limits to the data extents. */
-void reset_view_limits(struct PlotData *p) {
-  p->xvmax = p->xmax;
-  p->yvmin = p->ymin;
-  p->yvmax = p->ymax;
-  p->xvmin = p->xmin;
+void reset_view_limits() {
+  pd->xvmax = pd->xmax;
+  pd->yvmin = pd->ymin;
+  pd->yvmax = pd->ymax;
+  pd->xvmin = pd->xmin;
 }
 
 /* Set zoom back to zero. */
-void reset_zoom(struct PlotData *p) {
-  p->zm_startx = 0;
-  p->zm_starty = 0;
-  p->zm_endx = 0;
-  p->zm_endy = 0;
+void reset_zoom() {
+  pd->zm_startx = 0;
+  pd->zm_starty = 0;
+  pd->zm_endx = 0;
+  pd->zm_endy = 0;
 }
 
 /* Load data into memory and prepare data to be plotted. */
-struct PlotData *init_plot_data(char *fname, enum PlotType ptype) {
-  static struct PlotData pdata;
-  struct PlotData *p;
+void init_plot_data(char *fname, enum PlotType ptype) {
 
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE];
   int cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
   int num_recs = 0;
+  printf("init_plot_data called\n");
+
+  if (pd == NULL) { return; }
 
   /* Defaults */
-  p = &pdata;
-  p->ptype = PacePlot;
-  p->symbol = "";
-  p->xmin = 0;
-  p->xmax = 0;
-  p->ymin = 0;
-  p->ymax = 0;
-  p->num_pts = 0;
-  p->x = NULL;
-  p->y = NULL;
-  p->xvmax = 0;
-  p->yvmin = 0;
-  p->yvmax = 0;
-  p->xvmin = 0;
-  p->zmxmin = 0;
-  p->zmxmax = 0;
-  p->zmymin = 0;
-  p->zmymax = 0;
-  p->zm_startx = 0;
-  p->zm_starty = 0;
-  p->zm_endx = 0;
-  p->zm_endy = 0;
+  pd->ptype = PacePlot;
+  pd->symbol = "";
+  pd->xmin = 0;
+  pd->xmax = 0;
+  pd->ymin = 0;
+  pd->ymax = 0;
+  pd->num_pts = 0;
+  pd->x = NULL;
+  pd->y = NULL;
+  pd->xvmax = 0;
+  pd->yvmin = 0;
+  pd->yvmax = 0;
+  pd->xvmin = 0;
+  pd->zmxmin = 0;
+  pd->zmxmax = 0;
+  pd->zmymin = 0;
+  pd->zmymax = 0;
+  pd->zm_startx = 0;
+  pd->zm_starty = 0;
+  pd->zm_endx = 0;
+  pd->zm_endy = 0;
 
   /* Establish x,y axis variables */
-  p->ptype = ptype;
+  pd->ptype = ptype;
 
   /* Load data from fit file. */
   int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence,
@@ -163,36 +165,36 @@ struct PlotData *init_plot_data(char *fname, enum PlotType ptype) {
   if (rtnval != 100) {
     printf("Could not load activity records.\n");
   } else {
-    p->num_pts = num_recs;
-    p->x = (PLFLT *)malloc(p->num_pts * sizeof(PLFLT));
-    p->y = (PLFLT *)malloc(p->num_pts * sizeof(PLFLT));
-    switch (p->ptype) {
+    pd->num_pts = num_recs;
+    pd->x = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    pd->y = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    switch (pd->ptype) {
     case PacePlot:
-      for (int i = 0; i < p->num_pts; i++) {
-        p->x[i] = (PLFLT)dist[i];
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i];
         if (speed[i] != 0.0) {
-          p->y[i] = (PLFLT)speed[i];
+          pd->y[i] = (PLFLT)speed[i];
         } else {
-          p->y[i] = 0.0;
+          pd->y[i] = 0.0;
         }
       }
       break;
     case CadencePlot:
-      for (int i = 0; i < p->num_pts; i++) {
-        p->x[i] = (PLFLT)dist[i];
-        p->y[i] = (PLFLT)cadence[i];
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i];
+        pd->y[i] = (PLFLT)cadence[i];
       }
       break;
     case HeartRatePlot:
-      for (int i = 0; i < p->num_pts; i++) {
-        p->x[i] = (PLFLT)dist[i];
-        p->y[i] = (PLFLT)heart_rate[i];
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i];
+        pd->y[i] = (PLFLT)heart_rate[i];
       }
       break;
     case AltitudePlot:
-      for (int i = 0; i < p->num_pts; i++) {
-        p->x[i] = (PLFLT)dist[i];
-        p->y[i] = (PLFLT)alt[i];
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i];
+        pd->y[i] = (PLFLT)alt[i];
       }
       break;
     }
@@ -212,29 +214,29 @@ struct PlotData *init_plot_data(char *fname, enum PlotType ptype) {
   }
 
   /* Set symbol. */
-  p->symbol = "⏺";
+  pd->symbol = "⏺";
 
   /* Find plot data min, max */
-  p->xmin = FLT_MAX;
-  p->xmax = -FLT_MAX;
-  p->ymin = FLT_MAX;
-  p->ymax = -FLT_MAX;
-  for (int i = 0; i < p->num_pts; i++) {
-    if (p->x[i] < p->xmin) {
-      p->xmin = p->x[i];
+  pd->xmin = FLT_MAX;
+  pd->xmax = -FLT_MAX;
+  pd->ymin = FLT_MAX;
+  pd->ymax = -FLT_MAX;
+  for (int i = 0; i < pd->num_pts; i++) {
+    if (pd->x[i] < pd->xmin) {
+      pd->xmin = pd->x[i];
     }
-    if (p->x[i] > p->xmax) {
-      p->xmax = p->x[i];
+    if (pd->x[i] > pd->xmax) {
+      pd->xmax = pd->x[i];
     }
-    if (p->y[i] < p->ymin) {
-      p->ymin = p->y[i];
+    if (pd->y[i] < pd->ymin) {
+      pd->ymin = pd->y[i];
     }
-    if (p->y[i] > p->ymax) {
-      p->ymax = p->y[i];
+    if (pd->y[i] > pd->ymax) {
+      pd->ymax = pd->y[i];
     }
   }
-  reset_view_limits(p);
-  return p;
+  reset_view_limits();
+  reset_zoom();
 }
 
 /* A custom axis labeling function for pace chart in English units. */
@@ -303,6 +305,10 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   /* Why do we have to hardcode this???? */
   int width = 700;
   int height = 600;
+
+  printf("on_da_draw called\n");
+
+  if (pd == NULL) { return TRUE; }
 
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow *window = gtk_widget_get_window(widget);
@@ -468,33 +474,14 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
   return TRUE;
 }
 
-/* User has selected Pace Graph. */
-void on_rb_pace(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, PacePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
-/* User has selected Cadence Graph. */
-void on_rb_cadence(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, CadencePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
-/* User has selected Heartrate Graph. */
-void on_rb_heartrate(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, HeartRatePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
-/* User has selected Heartrate Graph. */
-void on_rb_altitude(GtkToggleButton *togglebutton, gpointer userdata) {
-  init_plot_data(fname, AltitudePlot);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-}
-
 //
 // Map Stuff
 //
+static void update_map() {
+  
+  champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
+  //champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
+}
 
 static void
 zoom_in (GtkWidget *widget,
@@ -519,11 +506,35 @@ zoom_out (GtkWidget *widget,
  * Initialize the calendar and time widgets with the current UTC values.
  */
 gboolean initialize_widgets() {
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
+  //gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
   return TRUE;
 }
 
-/* Open a new file and plot. */
+/* User has selected Pace Graph. */
+void on_rb_pace(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, PacePlot);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+
+/* User has selected Cadence Graph. */
+void on_rb_cadence(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, CadencePlot);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+
+/* User has selected Heartrate Graph. */
+void on_rb_heartrate(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, HeartRatePlot);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+
+/* User has selected Heartrate Graph. */
+void on_rb_altitude(GtkToggleButton *togglebutton, gpointer userdata) {
+  init_plot_data(fname, AltitudePlot);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+}
+
+/* User has pressed open a new file. */
 void on_btnFileOpen_file_set() {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
@@ -545,7 +556,6 @@ void on_btnFileOpen_file_set() {
  * by the Glade application and instantiate the associated (global) objects.
  */
 int main(int argc, char *argv[]) {
-  struct PlotData *pd;
   GtkBuilder *builder;
   GtkWidget *window;
 
@@ -583,14 +593,9 @@ int main(int argc, char *argv[]) {
       "kinetic-mode", TRUE,
       "zoom-level", 14,
       NULL);
-  //champlain_view_center_on (CHAMPLAIN_VIEW (champlain_view), 29.709889,-95.755781);
   gtk_widget_set_size_request (champlain_widget, 640, 480);
   gtk_container_add (GTK_CONTAINER (viewport), champlain_widget);
   gtk_widget_show_all (window);
-
-
-  /* Uninitialized fname. Needed for drawing area callback. */
-  pd = init_plot_data("", PacePlot);
 
   /* Signals and events */
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
