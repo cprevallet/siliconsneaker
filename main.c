@@ -113,6 +113,19 @@ ChamplainMarkerLayer *layer;
 // Graph stuff
 //
 
+/*
+gboolean scaleit(double lb, double ub, int nticks, double *newlb, 
+    double* roundedTickRange ) {
+  if (ub < lb) return TRUE;
+  double range = ub - lb;
+  double unroundedTickSize = range/((double)nticks - 1.0);
+  double x = ceil(log10(unroundedTickSize) - 1.0);
+  double pow10x = pow(10, x);
+  *roundedTickRange = ceil(unroundedTickSize / pow10x) * pow10x;
+  *newlb = (*roundedTickRange) * round( lb / *roundedTickRange);
+  return FALSE;
+}
+*/
 /* Set the view limits to the data extents. */
 void reset_view_limits() {
   pd->xvmax = pd->xmax;
@@ -340,32 +353,45 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     plscol0a(6, 31, 119, 180, 0.8);   // light blue for heartrate
     plscol0a(7, 255, 127, 14, 0.8);   // light yellow for altitude
     plscol0a(8, 77, 175, 74, 0.8);    // light green for heartrate
+    
+    /* Viewport and window */
+    pladv(0);
+    plvpor(0.15, 0.85, 0.15, 0.85);
+    plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
 
-    plcol0(15);
     /* Adjust character size. */
     plschr(ch_size, scf);
+    plcol0(15);
+
     /* Setup a custom axis tick label function. */
     switch (pd->ptype) {
     case PacePlot:
-      plcol0(5);
+      //plcol0(5);
       plslabelfunc(pace_plot_labeler, NULL);
       break;
     case CadencePlot:
-      plcol0(6);
+      //plcol0(6);
       plslabelfunc(cadence_plot_labeler, NULL);
       break;
     case AltitudePlot:
-      plcol0(7);
+      //plcol0(7);
       plslabelfunc(altitude_plot_labeler, NULL);
       break;
     case HeartRatePlot:
-      plcol0(8);
+      //plcol0(8);
       plslabelfunc(heart_rate_plot_labeler, NULL);
       break;
     }
+
     /* Create a labelled box to hold the plot using custom x,y labels. */
-    plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 70);
-    /* Setup a custom chart label function. */
+    //plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 72);
+    // Do we want finer control here?  Let's try.
+    char * xopt = "bnost";
+    char * yopt = "bgnost";
+    plaxes (pd->xvmin, pd->xvmax, xopt, 0, 0, yopt, 0, 0);
+
+
+    /* Setup axis labels and titles. */
     switch (pd->ptype) {
     case PacePlot:
       pllab("Distance(miles)", "Pace(min/mile)", pd->start_time);
@@ -508,8 +534,6 @@ static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
 
 /* Update the map. */
 static void update_map() {
-  // champlain_view_center_on (CHAMPLAIN_VIEW
-  // (champlain_view), 29.709889,-95.755781);
   if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
     champlain_view_center_on(CHAMPLAIN_VIEW(champlain_view), pd->lat[0],
                              pd->lng[0]);
