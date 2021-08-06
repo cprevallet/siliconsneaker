@@ -107,6 +107,8 @@ char *fname = "";
 ChamplainView *c_view;
 static ChamplainPathLayer *c_path_layer;
 
+static ChamplainMarkerLayer *c_marker_layer;
+
 //
 // Graph stuff
 //
@@ -529,20 +531,41 @@ static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
   champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
 }
 
+static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng, gdouble lat, char* txt) {
+    ClutterActor *my_marker = champlain_label_new_from_file ("icons/emblem-generic.png", NULL);
+    champlain_label_set_text (CHAMPLAIN_LABEL (my_marker), txt);
+    champlain_label_set_draw_shadow (CHAMPLAIN_LABEL (my_marker), FALSE);
+    champlain_location_set_location (CHAMPLAIN_LOCATION (my_marker), lat, lng);
+    champlain_marker_layer_add_marker (my_marker_layer, CHAMPLAIN_MARKER (my_marker));
+}
+
 /* Update the map. */
 static void update_map() {
   if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
+    /* Center at the start. */
     champlain_view_center_on(CHAMPLAIN_VIEW(c_view), pd->lat[0], pd->lng[0]);
+    /* Remove any existing layers if we are reloading. */
     if (c_path_layer != NULL) {
       champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
     }
+    if (c_marker_layer != NULL) {
+      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
+    }
     champlain_view_reload_tiles(c_view);
+    /*Create new layers. */
     c_path_layer = champlain_path_layer_new();
+    c_marker_layer = champlain_marker_layer_new();
+    /* Add start and stop markers. */
+    add_marker(c_marker_layer, pd->lng[pd->num_pts-1], pd->lat[pd->num_pts-1], "End");
+    add_marker(c_marker_layer, pd->lng[0], pd->lat[0], "Start");
+    /* Add a path */
     for (int i = 0; i < pd->num_pts; i++) {
       append_point(c_path_layer, pd->lat[i], pd->lng[i]);
     }
     champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
+    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
   } else {
+    /* Start-up. */
     champlain_view_center_on(CHAMPLAIN_VIEW(c_view), 0, 0);
   }
 }
