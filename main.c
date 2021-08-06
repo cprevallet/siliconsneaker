@@ -322,9 +322,12 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
-  /* Why do we have to hardcode this???? */
-  int width = 700;
-  int height = 600;
+  GtkAllocation allocation;
+  gtk_widget_get_allocation (widget, &allocation);
+  int width = allocation.width;
+  int height = allocation.height;
+  //printf("%d, %d\n", width, height);
+
 
   if (pd == NULL) {
     return TRUE;
@@ -357,6 +360,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     /* Viewport and window */
     pladv(0);
     plvpor(0.15, 0.85, 0.15, 0.85);
+
     plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
 
     /* Adjust character size. */
