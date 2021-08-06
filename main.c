@@ -100,21 +100,19 @@ GtkRadioButton *rb_Altitude;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
 GtkWidget *champlain_widget;
-ChamplainView *champlain_view;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 struct PlotData pdata;
 struct PlotData *pd = &pdata;
 char *fname = "";
-static ChamplainPathLayer *path_layer;
-static ChamplainPathLayer *path;
-ChamplainMarkerLayer *layer;
+ChamplainView *c_view;
+static ChamplainPathLayer *c_path_layer;
 
 //
 // Graph stuff
 //
 
 /*
-gboolean scaleit(double lb, double ub, int nticks, double *newlb, 
+gboolean scaleit(double lb, double ub, int nticks, double *newlb,
     double* roundedTickRange ) {
   if (ub < lb) return TRUE;
   double range = ub - lb;
@@ -353,7 +351,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     plscol0a(6, 31, 119, 180, 0.8);   // light blue for heartrate
     plscol0a(7, 255, 127, 14, 0.8);   // light yellow for altitude
     plscol0a(8, 77, 175, 74, 0.8);    // light green for heartrate
-    
+
     /* Viewport and window */
     pladv(0);
     plvpor(0.15, 0.85, 0.15, 0.85);
@@ -366,30 +364,29 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     /* Setup a custom axis tick label function. */
     switch (pd->ptype) {
     case PacePlot:
-      //plcol0(5);
+      // plcol0(5);
       plslabelfunc(pace_plot_labeler, NULL);
       break;
     case CadencePlot:
-      //plcol0(6);
+      // plcol0(6);
       plslabelfunc(cadence_plot_labeler, NULL);
       break;
     case AltitudePlot:
-      //plcol0(7);
+      // plcol0(7);
       plslabelfunc(altitude_plot_labeler, NULL);
       break;
     case HeartRatePlot:
-      //plcol0(8);
+      // plcol0(8);
       plslabelfunc(heart_rate_plot_labeler, NULL);
       break;
     }
 
     /* Create a labelled box to hold the plot using custom x,y labels. */
-    //plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 72);
+    // plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 72);
     // Do we want finer control here?  Let's try.
-    char * xopt = "bnost";
-    char * yopt = "bgnost";
-    plaxes (pd->xvmin, pd->xvmax, xopt, 0, 0, yopt, 0, 0);
-
+    char *xopt = "bnost";
+    char *yopt = "bgnost";
+    plaxes(pd->xvmin, pd->xvmax, xopt, 0, 0, yopt, 0, 0);
 
     /* Setup axis labels and titles. */
     switch (pd->ptype) {
@@ -535,29 +532,29 @@ static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
 /* Update the map. */
 static void update_map() {
   if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
-    champlain_view_center_on(CHAMPLAIN_VIEW(champlain_view), pd->lat[0],
-                             pd->lng[0]);
-    // layer = create_marker_layer (champlain_view, &path);
-    champlain_view_add_layer(champlain_view, CHAMPLAIN_LAYER(path));
-    // champlain_view_add_layer (champlain_view, CHAMPLAIN_LAYER (layer));
-    path_layer = champlain_path_layer_new();
-    for (int i = 0; i < pd->num_pts; i++) {
-      append_point(path_layer, pd->lat[i], pd->lng[i]);
+    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), pd->lat[0], pd->lng[0]);
+    if (c_path_layer != NULL) {
+      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
     }
-    champlain_view_add_layer(champlain_view, CHAMPLAIN_LAYER(path_layer));
+    champlain_view_reload_tiles(c_view);
+    c_path_layer = champlain_path_layer_new();
+    for (int i = 0; i < pd->num_pts; i++) {
+      append_point(c_path_layer, pd->lat[i], pd->lng[i]);
+    }
+    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
   } else {
-    champlain_view_center_on(CHAMPLAIN_VIEW(champlain_view), 0, 0);
+    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), 0, 0);
   }
 }
 
 /* Zoom in. */
-static void zoom_in(GtkWidget *widget, ChamplainView *champlain_view) {
-  champlain_view_zoom_in(champlain_view);
+static void zoom_in(GtkWidget *widget, ChamplainView *c_view) {
+  champlain_view_zoom_in(c_view);
 }
 
 /* Zoom out. */
-static void zoom_out(GtkWidget *widget, ChamplainView *view) {
-  champlain_view_zoom_out(champlain_view);
+static void zoom_out(GtkWidget *widget, ChamplainView *c_view) {
+  champlain_view_zoom_out(c_view);
 }
 
 //
@@ -650,11 +647,9 @@ int main(int argc, char *argv[]) {
   if (gtk_clutter_init(&argc, &argv) != CLUTTER_INIT_SUCCESS)
     return 1;
   champlain_widget = gtk_champlain_embed_new();
-  champlain_view =
-      gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
-  // clutter_actor_set_reactive (CLUTTER_ACTOR (champlain_view), TRUE);
-  g_object_set(G_OBJECT(champlain_view), "kinetic-mode", TRUE, "zoom-level", 14,
-               NULL);
+  c_view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
+  clutter_actor_set_reactive(CLUTTER_ACTOR(c_view), TRUE);
+  g_object_set(G_OBJECT(c_view), "kinetic-mode", TRUE, "zoom-level", 14, NULL);
   gtk_widget_set_size_request(champlain_widget, 640, 480);
   gtk_container_add(GTK_CONTAINER(viewport), champlain_widget);
   gtk_widget_show_all(window);
@@ -680,9 +675,9 @@ int main(int argc, char *argv[]) {
   g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
                    G_CALLBACK(on_rb_altitude), NULL);
   g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
-                   champlain_view);
+                   c_view);
   g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
-                   champlain_view);
+                   c_view);
 
   g_object_unref(builder);
 
