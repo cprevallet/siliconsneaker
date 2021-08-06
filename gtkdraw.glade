@@ -251,6 +251,9 @@
                             <property name="height-request">600</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="tooltip-text" translatable="yes">Right mouse drag to pan.
+Left mouse click-drag  graph to zoom in.  
+Middle mouse to zoom extents.</property>
                           </object>
                         </child>
                       </object>
