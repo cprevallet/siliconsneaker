@@ -577,11 +577,8 @@ static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
 }
 
 static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
-                       gdouble lat, char *txt) {
-  ClutterActor *my_marker =
-      champlain_label_new_from_file("icons/emblem-generic.png", NULL);
-  champlain_label_set_text(CHAMPLAIN_LABEL(my_marker), txt);
-  champlain_label_set_draw_shadow(CHAMPLAIN_LABEL(my_marker), FALSE);
+                       gdouble lat) {
+  ClutterActor *my_marker = champlain_point_new_full (12, NULL);
   champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), lat, lng);
   champlain_marker_layer_add_marker(my_marker_layer,
                                     CHAMPLAIN_MARKER(my_marker));
@@ -605,8 +602,8 @@ static void update_map() {
     c_marker_layer = champlain_marker_layer_new();
     /* Add start and stop markers. */
     add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
-               pd->lat[pd->num_pts - 1], "End");
-    add_marker(c_marker_layer, pd->lng[0], pd->lat[0], "Start");
+               pd->lat[pd->num_pts - 1]);
+    add_marker(c_marker_layer, pd->lng[0], pd->lat[0]);
     /* Add a path */
     for (int i = 0; i < pd->num_pts; i++) {
       append_point(c_path_layer, pd->lat[i], pd->lng[i]);
