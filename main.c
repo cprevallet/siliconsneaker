@@ -55,7 +55,7 @@
 #define NSIZE 2880 // long enough for 4 hour marathon at 5 sec intervals
 
 enum ZoomState { Press = 0, Move = 1, Release = 2 };
-enum UnitSystem { Metric = 0, English = 1 };
+enum UnitSystem { Metric = 1, English = 0 };
 enum PlotType {
   PacePlot = 1,
   CadencePlot = 2,
@@ -103,12 +103,12 @@ GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
 GtkWidget *champlain_widget;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
+GtkComboBoxText *cb_Units;
 struct PlotData pdata;
 struct PlotData *pd = &pdata;
 char *fname = "";
 ChamplainView *c_view;
 static ChamplainPathLayer *c_path_layer;
-
 static ChamplainMarkerLayer *c_marker_layer;
 
 //
@@ -168,8 +168,13 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   pd->lat = NULL;
   pd->lng = NULL;
   pd->start_time = "";
-  pd->units = English;
-  // pd->units = Metric;
+  gchar *user_units = gtk_combo_box_text_get_active_text (cb_Units);
+  if (!strcmp(user_units, "Metric")) {
+     pd->units = Metric;
+  } else {
+     pd->units = English;
+  }
+  g_free(user_units);
 
   /* Establish x,y axis variables */
   pd->ptype = ptype;
@@ -653,6 +658,10 @@ gboolean do_plot() {
     return TRUE;
   }
 }
+/* User has changed unit system.*/
+void on_cb_units_changed(GtkComboBox *cb_Units, gpointer data) {
+  do_plot();
+}
 
 /* User has selected Pace Graph. */
 void on_rb_pace(GtkToggleButton *togglebutton, gpointer data) { do_plot(); }
@@ -673,8 +682,7 @@ void on_btnFileOpen_file_set() {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   printf("open fname = %s\n", fname);
-  // TODO Should load the fitfile once here in a routine (and maybe convert for
-  // units)
+  // TODO Should load the fitfile once here in a routine
   // and then move the associated arrays each time we call from init_plot_data
   // from do_plot.
   do_plot();
@@ -709,6 +717,7 @@ int main(int argc, char *argv[]) {
       GTK_FILE_CHOOSER_BUTTON(gtk_builder_get_object(builder, "btnFileOpen"));
   btn_Zoom_In = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_In"));
   btn_Zoom_Out = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_Out"));
+  cb_Units = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "cb_Units"));
 
   /* Select a default chart to start. */
   default_chart();
@@ -749,6 +758,8 @@ int main(int argc, char *argv[]) {
                    c_view);
   g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
                    c_view);
+  g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed", 
+      G_CALLBACK(on_cb_units_changed), pd);
 
   g_object_unref(builder);
 
