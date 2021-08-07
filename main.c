@@ -55,6 +55,7 @@
 #define NSIZE 2880 // long enough for 4 hour marathon at 5 sec intervals
 
 enum ZoomState { Press = 0, Move = 1, Release = 2 };
+enum UnitSystem { Metric = 0, English = 1 };
 enum PlotType {
   PacePlot = 1,
   CadencePlot = 2,
@@ -87,6 +88,7 @@ struct PlotData {
   PLFLT *lng;
   char *start_time;
   char *symbol;
+  enum UnitSystem units;
 };
 
 /*
@@ -113,19 +115,6 @@ static ChamplainMarkerLayer *c_marker_layer;
 // Graph stuff
 //
 
-/*
-gboolean scaleit(double lb, double ub, int nticks, double *newlb,
-    double* roundedTickRange ) {
-  if (ub < lb) return TRUE;
-  double range = ub - lb;
-  double unroundedTickSize = range/((double)nticks - 1.0);
-  double x = ceil(log10(unroundedTickSize) - 1.0);
-  double pow10x = pow(10, x);
-  *roundedTickRange = ceil(unroundedTickSize / pow10x) * pow10x;
-  *newlb = (*roundedTickRange) * round( lb / *roundedTickRange);
-  return FALSE;
-}
-*/
 /* Set the view limits to the data extents. */
 void reset_view_limits() {
   pd->xvmax = pd->xmax;
@@ -179,6 +168,8 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   pd->lat = NULL;
   pd->lng = NULL;
   pd->start_time = "";
+  pd->units = English;
+  // pd->units = Metric;
 
   /* Establish x,y axis variables */
   pd->ptype = ptype;
@@ -198,33 +189,64 @@ void init_plot_data(char *fname, enum PlotType ptype) {
     }
     pd->x = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
     pd->y = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    // Move into the diplayed variables.  And do unit conversions
+    // from the raw decoded values where necessary.
+    float x_cnv, y_cnv;
     switch (pd->ptype) {
     case PacePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 0.037282272;   // meters per sec to miles per min
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 0.06;  // meters per sec to kilometers per min
+      }
       for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i];
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
         if (speed[i] != 0.0) {
-          pd->y[i] = (PLFLT)speed[i];
+          pd->y[i] = (PLFLT)speed[i] * y_cnv;
         } else {
           pd->y[i] = 0.0;
         }
       }
       break;
     case CadencePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 1.0;           // steps to steps
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 1.0;   // steps to steps
+      }
       for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i];
-        pd->y[i] = (PLFLT)cadence[i];
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
+        pd->y[i] = (PLFLT)cadence[i] * y_cnv;
       }
       break;
     case HeartRatePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 1.0;           // bpm to bpm
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 1.0;   // bpm to bpm
+      }
       for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i];
-        pd->y[i] = (PLFLT)heart_rate[i];
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
+        pd->y[i] = (PLFLT)heart_rate[i] * y_cnv;
       }
       break;
     case AltitudePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 3.28084;       // meters to feet
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 1.0;   // meters to meters
+      }
       for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i];
-        pd->y[i] = (PLFLT)alt[i];
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
+        pd->y[i] = (PLFLT)alt[i] * y_cnv;
       }
       break;
     }
@@ -263,23 +285,23 @@ void init_plot_data(char *fname, enum PlotType ptype) {
 void pace_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
                        PLPointer label_data) {
   PLFLT label_val = 0.0;
-  PLFLT min_per_mile = 0.0;
+  PLFLT pace_units = 0.0;
   label_val = value;
 
   if (axis == PL_Y_AXIS) {
     if (label_val > 0) {
-      min_per_mile = 26.8224 / label_val;
+      pace_units = 1 / label_val;
     } else {
-      min_per_mile = 999.0;
+      pace_units = 999.0;
     }
     double secs, mins;
-    secs = modf(min_per_mile, &mins);
+    secs = modf(pace_units, &mins);
     secs *= 60.0;
     snprintf(label, (size_t)length, "%02.0f:%02.0f", mins, secs);
   }
 
   if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
+    snprintf(label, (size_t)length, "%3.2f", value);
   }
 }
 
@@ -290,7 +312,7 @@ void cadence_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
     snprintf(label, (size_t)length, "%3.2f", value);
   }
   if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
+    snprintf(label, (size_t)length, "%3.2f", value);
   }
 }
 
@@ -301,7 +323,7 @@ void heart_rate_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
     snprintf(label, (size_t)length, "%3.0f", value);
   }
   if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
+    snprintf(label, (size_t)length, "%3.2f", value);
   }
 }
 
@@ -309,10 +331,10 @@ void heart_rate_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
 void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
                            PLPointer label_data) {
   if (axis == PL_Y_AXIS) {
-    snprintf(label, (size_t)length, "%3.0f", 3.28084 * value);
+    snprintf(label, (size_t)length, "%3.0f", value);
   }
   if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", 0.00062137119 * value);
+    snprintf(label, (size_t)length, "%3.2f", value);
   }
 }
 
@@ -323,11 +345,10 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
   GtkAllocation allocation;
-  gtk_widget_get_allocation (widget, &allocation);
+  gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width;
   int height = allocation.height;
-  //printf("%d, %d\n", width, height);
-
+  // printf("%d, %d\n", width, height);
 
   if (pd == NULL) {
     return TRUE;
@@ -388,28 +409,43 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     }
 
     /* Create a labelled box to hold the plot using custom x,y labels. */
-    // plenv(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax, 0, 72);
     // Do we want finer control here?  Let's try.
     char *xopt = "bnost";
     char *yopt = "bgnost";
-    plaxes(pd->xvmin, pd->xvmax, xopt, 0, 0, yopt, 0, 0);
+    plaxes(pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
 
     /* Setup axis labels and titles. */
     switch (pd->ptype) {
     case PacePlot:
-      pllab("Distance(miles)", "Pace(min/mile)", pd->start_time);
+      if (pd->units == English) {
+        pllab("Distance(miles)", "Pace(min/mile)", pd->start_time);
+      } else {
+        pllab("Distance(km)", "Pace(min/km)", pd->start_time);
+      }
       plcol0(5);
       break;
     case CadencePlot:
-      pllab("Distance(miles)", "Cadence(steps/min)", pd->start_time);
+      if (pd->units == English) {
+        pllab("Distance(miles)", "Cadence(steps/min)", pd->start_time);
+      } else {
+        pllab("Distance(km)", "Cadence(steps/min)", pd->start_time);
+      }
       plcol0(6);
       break;
     case AltitudePlot:
-      pllab("Distance(miles)", "Altitude (feet)", pd->start_time);
+      if (pd->units == English) {
+        pllab("Distance(miles)", "Altitude (feet)", pd->start_time);
+      } else {
+        pllab("Distance(km)", "Altitude(meters)", pd->start_time);
+      }
       plcol0(7);
       break;
     case HeartRatePlot:
-      pllab("Distance(miles)", "Heart rate (bpm)", pd->start_time);
+      if (pd->units == English) {
+        pllab("Distance(miles)", "Heart rate (bpm)", pd->start_time);
+      } else {
+        pllab("Distance(km)", "Heart rate (bpm)", pd->start_time);
+      }
       plcol0(8);
       break;
     }
@@ -535,12 +571,15 @@ static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
   champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
 }
 
-static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng, gdouble lat, char* txt) {
-    ClutterActor *my_marker = champlain_label_new_from_file ("icons/emblem-generic.png", NULL);
-    champlain_label_set_text (CHAMPLAIN_LABEL (my_marker), txt);
-    champlain_label_set_draw_shadow (CHAMPLAIN_LABEL (my_marker), FALSE);
-    champlain_location_set_location (CHAMPLAIN_LOCATION (my_marker), lat, lng);
-    champlain_marker_layer_add_marker (my_marker_layer, CHAMPLAIN_MARKER (my_marker));
+static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
+                       gdouble lat, char *txt) {
+  ClutterActor *my_marker =
+      champlain_label_new_from_file("icons/emblem-generic.png", NULL);
+  champlain_label_set_text(CHAMPLAIN_LABEL(my_marker), txt);
+  champlain_label_set_draw_shadow(CHAMPLAIN_LABEL(my_marker), FALSE);
+  champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), lat, lng);
+  champlain_marker_layer_add_marker(my_marker_layer,
+                                    CHAMPLAIN_MARKER(my_marker));
 }
 
 /* Update the map. */
@@ -560,7 +599,8 @@ static void update_map() {
     c_path_layer = champlain_path_layer_new();
     c_marker_layer = champlain_marker_layer_new();
     /* Add start and stop markers. */
-    add_marker(c_marker_layer, pd->lng[pd->num_pts-1], pd->lat[pd->num_pts-1], "End");
+    add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
+               pd->lat[pd->num_pts - 1], "End");
     add_marker(c_marker_layer, pd->lng[0], pd->lat[0], "Start");
     /* Add a path */
     for (int i = 0; i < pd->num_pts; i++) {
@@ -633,6 +673,10 @@ void on_btnFileOpen_file_set() {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   printf("open fname = %s\n", fname);
+  // TODO Should load the fitfile once here in a routine (and maybe convert for
+  // units)
+  // and then move the associated arrays each time we call from init_plot_data
+  // from do_plot.
   do_plot();
   update_map();
 }
