@@ -168,11 +168,11 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   pd->lat = NULL;
   pd->lng = NULL;
   pd->start_time = "";
-  gchar *user_units = gtk_combo_box_text_get_active_text (cb_Units);
+  gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
   if (!strcmp(user_units, "Metric")) {
-     pd->units = Metric;
+    pd->units = Metric;
   } else {
-     pd->units = English;
+    pd->units = English;
   }
   g_free(user_units);
 
@@ -378,7 +378,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event,
     /* Color */
     plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
     plscol0a(15, 200, 200, 200, 0.9); // light gray for background
-    plscol0a(5, 156, 100, 134, 0.8);  // magenta for pace
+    plscol0a(5, 156, 100, 134, 0.8);  // light magenta for pace
     plscol0a(6, 31, 119, 180, 0.8);   // light blue for heartrate
     plscol0a(7, 255, 127, 14, 0.8);   // light yellow for altitude
     plscol0a(8, 77, 175, 74, 0.8);    // light green for heartrate
@@ -512,12 +512,12 @@ void gui_to_world(struct PlotData *pd, GdkEventButton *event,
 /* Change the cursor style. */
 void change_cursor(GtkWidget *widget, const gchar *name) {
   /* Change cursor to cross. */
-  GdkDisplay *display = gtk_widget_get_display (widget);
+  GdkDisplay *display = gtk_widget_get_display(widget);
   GdkCursor *cursor;
-  cursor = gdk_cursor_new_from_name (display, name);
-  gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
+  cursor = gdk_cursor_new_from_name(display, name);
+  gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
   // Release the reference on the cursor
-  g_object_unref (cursor);
+  g_object_unref(cursor);
 }
 
 /* Handle mouse button press. */
@@ -525,8 +525,12 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event,
                          struct PlotData *pd) {
   guint buttonnum;
   gdk_event_get_button(event, &buttonnum);
-  if (buttonnum == 3) {change_cursor(widget, "crosshair");}
-  if (buttonnum == 1) {change_cursor(widget, "hand1");}
+  if (buttonnum == 3) {
+    change_cursor(widget, "crosshair");
+  }
+  if (buttonnum == 1) {
+    change_cursor(widget, "hand1");
+  }
   /* Get start x, y */
   gui_to_world(pd, (GdkEventButton *)event, Press);
   return TRUE;
@@ -594,8 +598,8 @@ static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
 }
 
 static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
-                       gdouble lat) {
-  ClutterActor *my_marker = champlain_point_new_full (12, NULL);
+                       gdouble lat, const ClutterColor *color) {
+  ClutterActor *my_marker = champlain_point_new_full(12, color);
   champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), lat, lng);
   champlain_marker_layer_add_marker(my_marker_layer,
                                     CHAMPLAIN_MARKER(my_marker));
@@ -603,6 +607,13 @@ static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
 
 /* Update the map. */
 static void update_map() {
+  /* Define colors for start, end markers.*/
+  ClutterColor my_green;
+  ClutterColor my_magenta;
+  ClutterColor my_blue;
+  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
+  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
+  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
   if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
     /* Center at the start. */
     champlain_view_center_on(CHAMPLAIN_VIEW(c_view), pd->lat[0], pd->lng[0]);
@@ -616,11 +627,12 @@ static void update_map() {
     champlain_view_reload_tiles(c_view);
     /*Create new layers. */
     c_path_layer = champlain_path_layer_new();
+    champlain_path_layer_set_stroke_color(c_path_layer, &my_blue);
     c_marker_layer = champlain_marker_layer_new();
-    /* Add start and stop markers. */
+    /* Add start and stop markers. Green for start. Red for end. */
     add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
-               pd->lat[pd->num_pts - 1]);
-    add_marker(c_marker_layer, pd->lng[0], pd->lat[0]);
+               pd->lat[pd->num_pts - 1], &my_magenta);
+    add_marker(c_marker_layer, pd->lng[0], pd->lat[0], &my_green);
     /* Add a path */
     for (int i = 0; i < pd->num_pts; i++) {
       append_point(c_path_layer, pd->lat[i], pd->lng[i]);
@@ -673,9 +685,7 @@ gboolean do_plot() {
   }
 }
 /* User has changed unit system.*/
-void on_cb_units_changed(GtkComboBox *cb_Units, gpointer data) {
-  do_plot();
-}
+void on_cb_units_changed(GtkComboBox *cb_Units, gpointer data) { do_plot(); }
 
 /* User has selected Pace Graph. */
 void on_rb_pace(GtkToggleButton *togglebutton, gpointer data) { do_plot(); }
@@ -772,8 +782,8 @@ int main(int argc, char *argv[]) {
                    c_view);
   g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
                    c_view);
-  g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed", 
-      G_CALLBACK(on_cb_units_changed), pd);
+  g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
+                   G_CALLBACK(on_cb_units_changed), pd);
 
   g_object_unref(builder);
 
