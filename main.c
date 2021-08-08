@@ -509,9 +509,24 @@ void gui_to_world(struct PlotData *pd, GdkEventButton *event,
   }
 }
 
+/* Change the cursor style. */
+void change_cursor(GtkWidget *widget, const gchar *name) {
+  /* Change cursor to cross. */
+  GdkDisplay *display = gtk_widget_get_display (widget);
+  GdkCursor *cursor;
+  cursor = gdk_cursor_new_from_name (display, name);
+  gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
+  // Release the reference on the cursor
+  g_object_unref (cursor);
+}
+
 /* Handle mouse button press. */
 gboolean on_button_press(GtkWidget *widget, GdkEvent *event,
                          struct PlotData *pd) {
+  guint buttonnum;
+  gdk_event_get_button(event, &buttonnum);
+  if (buttonnum == 3) {change_cursor(widget, "crosshair");}
+  if (buttonnum == 1) {change_cursor(widget, "hand1");}
   /* Get start x, y */
   gui_to_world(pd, (GdkEventButton *)event, Press);
   return TRUE;
@@ -521,6 +536,7 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event,
 gboolean on_button_release(GtkWidget *widget, GdkEvent *event,
                            struct PlotData *pd) {
   guint buttonnum;
+  change_cursor(widget, "default");
   gdk_event_get_button(event, &buttonnum);
   /* Zoom out if right mouse button release. */
   if (buttonnum == 2) {
@@ -557,6 +573,7 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event,
  */
 gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
                           struct PlotData *pd) {
+
   if (event->state & GDK_BUTTON3_MASK) {
     gui_to_world(pd, event, Move);
     gtk_widget_queue_draw(GTK_WIDGET(da));
