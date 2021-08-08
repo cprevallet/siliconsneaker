@@ -138,11 +138,25 @@ void init_plot_data(char *fname, enum PlotType ptype) {
   int cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
   int num_recs = 0;
-
+  /* Hey, this needs to be initialized prior to entry. */
   if (pd == NULL) {
     return;
   }
-
+  /* Housekeeping. Release any memory previously allocated before
+   * reinitializing. 
+   */
+  if (pd->x != NULL) {
+    free(pd->x);
+  }
+  if (pd->y != NULL) {
+    free(pd->y);
+  }
+  if (pd->lat != NULL) {
+    free(pd->lat);
+  }
+  if (pd->lng != NULL) {
+    free(pd->lng);
+  }
   /* Defaults */
   pd->ptype = PacePlot;
   pd->symbol = "";
@@ -194,7 +208,7 @@ void init_plot_data(char *fname, enum PlotType ptype) {
     }
     pd->x = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
     pd->y = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
-    // Move into the diplayed variables.  And do unit conversions
+    // Move into the diplayed variables and do unit conversions
     // from the raw decoded values where necessary.
     float x_cnv, y_cnv;
     switch (pd->ptype) {
