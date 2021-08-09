@@ -203,7 +203,8 @@ struct PlotData *ppace = &paceplot;
 struct PlotData *pcadence = &cadenceplot;
 struct PlotData *pheart = &heartrateplot;
 struct PlotData *paltitude = &altitudeplot;
-struct PlotData *pd = NULL;
+struct PlotData *pd;
+
 GtkDrawingArea *da;
 GtkRadioButton *rb_Pace;
 GtkRadioButton *rb_Cadence;
@@ -226,6 +227,9 @@ static ChamplainMarkerLayer *c_marker_layer;
 
 /* Set the view limits to the data extents. */
 void reset_view_limits() {
+  if (pd == NULL) {
+    return;
+  }
   pd->xvmax = pd->xmax;
   pd->yvmin = pd->ymin;
   pd->yvmax = pd->ymax;
@@ -234,177 +238,13 @@ void reset_view_limits() {
 
 /* Set zoom back to zero. */
 void reset_zoom() {
-  pd->zm_startx = 0;
-  pd->zm_starty = 0;
-  pd->zm_endx = 0;
-  pd->zm_endy = 0;
-}
-
-/* Load data into memory and prepare data to be plotted. */
-void init_plot_data(char *fname) {
-  float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE];
-  int cadence[NSIZE], heart_rate[NSIZE];
-  time_t time_stamp[NSIZE];
-  int num_recs = 0;
-  /* Hey, this needs to be initialized prior to entry. */
   if (pd == NULL) {
-    printf("It's null!!!\n");
     return;
   }
-  /* Housekeeping. Release any memory previously allocated before
-   * reinitializing. 
-   */
-  if (pd->x != NULL) {
-    free(pd->x);
-  }
-  if (pd->y != NULL) {
-    free(pd->y);
-  }
-  if (pd->lat != NULL) {
-    free(pd->lat);
-  }
-  if (pd->lng != NULL) {
-    free(pd->lng);
-  }
-
-  printf("got in!\n");
-  /* Defaults */
-  /*
-  pd->ptype = PacePlot;
-  pd->symbol = "";
-  pd->xmin = 0;
-  pd->xmax = 0;
-  pd->ymin = 0;
-  pd->ymax = 0;
-  pd->num_pts = 0;
-  pd->x = NULL;
-  pd->y = NULL;
-  pd->xvmax = 0;
-  pd->yvmin = 0;
-  pd->yvmax = 0;
-  pd->xvmin = 0;
-  pd->zmxmin = 0;
-  pd->zmxmax = 0;
-  pd->zmymin = 0;
-  pd->zmymax = 0;
   pd->zm_startx = 0;
   pd->zm_starty = 0;
   pd->zm_endx = 0;
   pd->zm_endy = 0;
-  pd->lat = NULL;
-  pd->lng = NULL;
-  pd->start_time = "";
-  */
-  gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
-  if (!strcmp(user_units, "Metric")) {
-    pd->units = Metric;
-  } else {
-    pd->units = English;
-  }
-  g_free(user_units);
-
-  /* Load data from fit file. */
-  int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence,
-                               heart_rate, alt, time_stamp, &num_recs);
-  if (rtnval != 100) {
-    printf("Could not load activity records.\n");
-  } else {
-    pd->num_pts = num_recs;
-    pd->lat = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
-    pd->lng = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
-    for (int i = 0; i < pd->num_pts; i++) {
-      pd->lat[i] = (PLFLT)lat[i];
-      pd->lng[i] = (PLFLT)lng[i];
-    }
-    pd->x = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
-    pd->y = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
-    // Move into the diplayed variables and do unit conversions
-    // from the raw decoded values where necessary.
-    float x_cnv, y_cnv;
-    switch (pd->ptype) {
-    case PacePlot:
-      if (pd->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 0.037282272;   // meters per sec to miles per min
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 0.06;  // meters per sec to kilometers per min
-      }
-      for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i] * x_cnv;
-        if (speed[i] != 0.0) {
-          pd->y[i] = (PLFLT)speed[i] * y_cnv;
-        } else {
-          pd->y[i] = 0.0;
-        }
-      }
-      break;
-    case CadencePlot:
-      if (pd->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 1.0;           // steps to steps
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 1.0;   // steps to steps
-      }
-      for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i] * x_cnv;
-        pd->y[i] = (PLFLT)cadence[i] * y_cnv;
-      }
-      break;
-    case HeartRatePlot:
-      if (pd->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 1.0;           // bpm to bpm
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 1.0;   // bpm to bpm
-      }
-      for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i] * x_cnv;
-        pd->y[i] = (PLFLT)heart_rate[i] * y_cnv;
-      }
-      break;
-    case AltitudePlot:
-      if (pd->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 3.28084;       // meters to feet
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 1.0;   // meters to meters
-      }
-      for (int i = 0; i < pd->num_pts; i++) {
-        pd->x[i] = (PLFLT)dist[i] * x_cnv;
-        pd->y[i] = (PLFLT)alt[i] * y_cnv;
-      }
-      break;
-    }
-  }
-  /* Set start time in UTC (for title) */
-  struct tm *ptm = gmtime(&time_stamp[0]);
-  pd->start_time = asctime(ptm);
-
-  /* Find plot data min, max */
-  pd->xmin = FLT_MAX;
-  pd->xmax = -FLT_MAX;
-  pd->ymin = FLT_MAX;
-  pd->ymax = -FLT_MAX;
-  for (int i = 0; i < pd->num_pts; i++) {
-    if (pd->x[i] < pd->xmin) {
-      pd->xmin = pd->x[i];
-    }
-    if (pd->x[i] > pd->xmax) {
-      pd->xmax = pd->x[i];
-    }
-    if (pd->y[i] < pd->ymin) {
-      pd->ymin = pd->y[i];
-    }
-    if (pd->y[i] > pd->ymax) {
-      pd->ymax = pd->y[i];
-    }
-  }
-  reset_view_limits(pd);
-  reset_zoom(pd);
 }
 
 /* A custom axis labeling function for pace chart in English units. */
@@ -465,7 +305,7 @@ void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
 }
 
 /* Drawing area callback. */
-gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event) { 
+gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) { 
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
@@ -618,6 +458,9 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event) {
  */
 void gui_to_world(struct PlotData *pd, GdkEventButton *event,
                   enum ZoomState state) {
+  if (pd == NULL) {
+    return;
+  }
   float fractx = (event->x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
   float fracty = (pd->zmymax - event->y) / (pd->zmymax - pd->zmymin);
   if (state == Press) {
@@ -642,9 +485,11 @@ void change_cursor(GtkWidget *widget, const gchar *name) {
 }
 
 /* Handle mouse button press. */
-gboolean on_button_press(GtkWidget *widget, GdkEvent *event,
-                         struct PlotData *pd) {
+gboolean on_button_press(GtkWidget *widget, GdkEvent *event) {
   guint buttonnum;
+  if (pd == NULL) {
+    return FALSE;
+  }
   gdk_event_get_button(event, &buttonnum);
   if (buttonnum == 3) {
     change_cursor(widget, "crosshair");
@@ -658,16 +503,18 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event,
 }
 
 /* Handle mouse button release. */
-gboolean on_button_release(GtkWidget *widget, GdkEvent *event,
-                           struct PlotData *pd) {
+gboolean on_button_release(GtkWidget *widget, GdkEvent *event) {
   guint buttonnum;
+  if (pd == NULL) {
+    return FALSE;
+  }
   change_cursor(widget, "default");
   gdk_event_get_button(event, &buttonnum);
   /* Zoom out if right mouse button release. */
   if (buttonnum == 2) {
-    reset_view_limits(pd);
+    reset_view_limits();
     gtk_widget_queue_draw(GTK_WIDGET(da));
-    reset_zoom(pd);
+    reset_zoom();
     return TRUE;
   }
   /* Zoom in if left mouse button release. */
@@ -688,7 +535,7 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event,
       pd->yvmax = pd->yvmax + (pd->zm_starty - pd->zm_endy);
     }
     gtk_widget_queue_draw(GTK_WIDGET(da));
-    reset_zoom(pd);
+    reset_zoom();
   }
   return TRUE;
 }
@@ -696,15 +543,155 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event,
 /* Handle mouse motion event by drawing a filled
  * polygon.
  */
-gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
-                          struct PlotData *pd) {
+gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
 
+  if (pd == NULL) {
+    return FALSE;
+  }
   if (event->state & GDK_BUTTON3_MASK) {
     gui_to_world(pd, event, Move);
     gtk_widget_queue_draw(GTK_WIDGET(da));
   }
   return TRUE;
 }
+/* Load data into memory and prepare data to be plotted. */
+void init_plot_data() {
+  float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE];
+  int cadence[NSIZE], heart_rate[NSIZE];
+  time_t time_stamp[NSIZE];
+  int num_recs = 0;
+  /* Hey, this needs to be initialized prior to entry. */
+  if (pd == NULL) {
+    return;
+  }
+  /* Housekeeping. Release any memory previously allocated before
+   * reinitializing. 
+   */
+  if (pd->x != NULL) {
+    free(pd->x);
+  }
+  if (pd->y != NULL) {
+    free(pd->y);
+  }
+  if (pd->lat != NULL) {
+    free(pd->lat);
+  }
+  if (pd->lng != NULL) {
+    free(pd->lng);
+  }
+
+  gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
+  if (!strcmp(user_units, "Metric")) {
+    pd->units = Metric;
+  } else {
+    pd->units = English;
+  }
+  g_free(user_units);
+
+  /* Load data from fit file. */
+  int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence,
+                               heart_rate, alt, time_stamp, &num_recs);
+  if (rtnval != 100) {
+    printf("Could not load activity records.\n");
+  } else {
+    pd->num_pts = num_recs;
+    pd->lat = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    pd->lng = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    for (int i = 0; i < pd->num_pts; i++) {
+      pd->lat[i] = (PLFLT)lat[i];
+      pd->lng[i] = (PLFLT)lng[i];
+    }
+    pd->x = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    pd->y = (PLFLT *)malloc(pd->num_pts * sizeof(PLFLT));
+    // Move into the diplayed variables and do unit conversions
+    // from the raw decoded values where necessary.
+    float x_cnv, y_cnv;
+    switch (pd->ptype) {
+    case PacePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 0.037282272;   // meters per sec to miles per min
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 0.06;  // meters per sec to kilometers per min
+      }
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
+        if (speed[i] != 0.0) {
+          pd->y[i] = (PLFLT)speed[i] * y_cnv;
+        } else {
+          pd->y[i] = 0.0;
+        }
+      }
+      break;
+    case CadencePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 1.0;           // steps to steps
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 1.0;   // steps to steps
+      }
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
+        pd->y[i] = (PLFLT)cadence[i] * y_cnv;
+      }
+      break;
+    case HeartRatePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 1.0;           // bpm to bpm
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 1.0;   // bpm to bpm
+      }
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
+        pd->y[i] = (PLFLT)heart_rate[i] * y_cnv;
+      }
+      break;
+    case AltitudePlot:
+      if (pd->units == English) {
+        x_cnv = 0.00062137119; // meters to miles
+        y_cnv = 3.28084;       // meters to feet
+      } else {
+        x_cnv = 0.001; // meters to kilometers
+        y_cnv = 1.0;   // meters to meters
+      }
+      for (int i = 0; i < pd->num_pts; i++) {
+        pd->x[i] = (PLFLT)dist[i] * x_cnv;
+        pd->y[i] = (PLFLT)alt[i] * y_cnv;
+      }
+      break;
+    }
+  }
+  /* Set start time in UTC (for title) */
+  struct tm *ptm = gmtime(&time_stamp[0]);
+  pd->start_time = asctime(ptm);
+
+  /* Find plot data min, max */
+  pd->xmin = FLT_MAX;
+  pd->xmax = -FLT_MAX;
+  pd->ymin = FLT_MAX;
+  pd->ymax = -FLT_MAX;
+  for (int i = 0; i < pd->num_pts; i++) {
+    if (pd->x[i] < pd->xmin) {
+      pd->xmin = pd->x[i];
+    }
+    if (pd->x[i] > pd->xmax) {
+      pd->xmax = pd->x[i];
+    }
+    if (pd->y[i] < pd->ymin) {
+      pd->ymin = pd->y[i];
+    }
+    if (pd->y[i] > pd->ymax) {
+      pd->ymax = pd->y[i];
+    }
+  }
+  reset_view_limits();
+  reset_zoom();
+}
+
 
 //
 // Map Stuff
@@ -788,16 +775,16 @@ gboolean default_chart() {
 gboolean do_plot() {
   if ((fname != NULL) && (fname[0] != '\0')) {
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Pace))) {
-      init_plot_data(fname);
+      init_plot_data();
     }
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Cadence))) {
-      init_plot_data(fname);
+      init_plot_data();
     }
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_HeartRate))) {
-      init_plot_data(fname);
+      init_plot_data();
     }
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Altitude))) {
-      init_plot_data(fname);
+      init_plot_data();
     }
     gtk_widget_queue_draw(GTK_WIDGET(da));
     return FALSE;
@@ -807,47 +794,43 @@ gboolean do_plot() {
 }
 
 /* User has changed unit system.*/
-void on_cb_units_changed(GtkComboBox *cb_Units, struct PlotData *pd) { 
+void on_cb_units_changed(GtkComboBox *cb_Units) { 
   do_plot(); 
 }
 
 /* User has selected Pace Graph. */
-void on_rb_pace(GtkToggleButton *togglebutton, struct PlotData *pd) { 
-//void on_rb_pace(GtkToggleButton *togglebutton) { 
+void on_rb_pace(GtkToggleButton *togglebutton) { 
   pd = ppace;
   do_plot(); 
 }
 
 /* User has selected Cadence Graph. */
-void on_rb_cadence(GtkToggleButton *togglebutton, struct PlotData *pd) { 
-//void on_rb_cadence(GtkToggleButton *togglebutton) { 
+void on_rb_cadence(GtkToggleButton *togglebutton) { 
   pd = pcadence;
   do_plot(); 
 }
 
 /* User has selected Heartrate Graph. */
-void on_rb_heartrate(GtkToggleButton *togglebutton, struct PlotData *pd) {
-//void on_rb_heartrate(GtkToggleButton *togglebutton) {
+void on_rb_heartrate(GtkToggleButton *togglebutton) {
   pd = pheart;
   do_plot();
 }
 
 /* User has selected Altitude Graph. */
-void on_rb_altitude(GtkToggleButton *togglebutton, struct PlotData *pd) { 
-//void on_rb_altitude(GtkToggleButton *togglebutton) { 
+void on_rb_altitude(GtkToggleButton *togglebutton) { 
   pd = paltitude;
   do_plot(); 
 }
 
 /* User has pressed open a new file. */
-void on_btnFileOpen_file_set() {
+void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   printf("open fname = %s\n", fname);
   // TODO Should load the fitfile once here in a routine
   // and then move the associated arrays each time we call from init_plot_data
   // from do_plot.
-  pd = ppace;
+  if (pd == NULL) { pd = ppace; }
   do_plot();
   update_map();
 }
@@ -905,32 +888,32 @@ int main(int argc, char *argv[]) {
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_POINTER_MOTION_MASK);
   g_signal_connect(GTK_DRAWING_AREA(da), "button-press-event",
-                   G_CALLBACK(on_button_press), pd);
+                   G_CALLBACK(on_button_press), NULL);
   g_signal_connect(GTK_DRAWING_AREA(da), "button-release-event",
-                   G_CALLBACK(on_button_release), pd);
+                   G_CALLBACK(on_button_release), NULL);
   g_signal_connect(GTK_DRAWING_AREA(da), "motion-notify-event",
-                   G_CALLBACK(on_motion_notify), pd);
+                   G_CALLBACK(on_motion_notify), NULL);
   g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Pace), "toggled", G_CALLBACK(on_rb_pace),
-                   pd);
+                   NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Cadence), "toggled",
-                   G_CALLBACK(on_rb_cadence), pd);
+                   G_CALLBACK(on_rb_cadence), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_HeartRate), "toggled",
-                   G_CALLBACK(on_rb_heartrate), pd);
+                   G_CALLBACK(on_rb_heartrate), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
-                   G_CALLBACK(on_rb_altitude), pd);
+                   G_CALLBACK(on_rb_altitude), NULL);
   g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
                    c_view);
   g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
                    c_view);
   g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
-                   G_CALLBACK(on_cb_units_changed), pd);
+                   G_CALLBACK(on_cb_units_changed), NULL);
+  g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set", G_CALLBACK(on_btnFileOpen_file_set), NULL);
 
   g_object_unref(builder);
 
   /* Required to display champlain widget. */
   gtk_widget_show(window);
-
   gtk_main();
 
   return 0;
