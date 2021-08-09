@@ -89,115 +89,107 @@ typedef struct PlotData {
   char *start_time;
   char *symbol;
   enum UnitSystem units;
-} PlotData;  
+} PlotData;
 
 /*
  * define global UI elements and structs (ick)
  */
-PlotData paceplot = {
-  .ptype = PacePlot,
-  .symbol = "⏺",
-  .xmin = 0,
-  .xmax = 0,
-  .ymin = 0,
-  .ymax = 0,
-  .num_pts = 0,
-  .x = NULL,
-  .y = NULL,
-  .xvmax = 0,
-  .yvmin = 0,
-  .yvmax = 0,
-  .xvmin = 0,
-  .zmxmin = 0,
-  .zmxmax = 0,
-  .zmymin = 0,
-  .zmymax = 0,
-  .zm_startx = 0,
-  .zm_starty = 0,
-  .zm_endx = 0,
-  .zm_endy = 0,
-  .lat = NULL,
-  .lng = NULL,
-  .start_time = ""
-};
-PlotData cadenceplot = {
-  .ptype = CadencePlot, 
-  .symbol = "⏺",
-  .xmin = 0,
-  .xmax = 0,
-  .ymin = 0,
-  .ymax = 0,
-  .num_pts = 0,
-  .x = NULL,
-  .y = NULL,
-  .xvmax = 0,
-  .yvmin = 0,
-  .yvmax = 0,
-  .xvmin = 0,
-  .zmxmin = 0,
-  .zmxmax = 0,
-  .zmymin = 0,
-  .zmymax = 0,
-  .zm_startx = 0,
-  .zm_starty = 0,
-  .zm_endx = 0,
-  .zm_endy = 0,
-  .lat = NULL,
-  .lng = NULL,
-  .start_time = ""
-};
-PlotData heartrateplot = {
-  .ptype = HeartRatePlot, 
-  .symbol = "⏺",
-  .xmin = 0,
-  .xmax = 0,
-  .ymin = 0,
-  .ymax = 0,
-  .num_pts = 0,
-  .x = NULL,
-  .y = NULL,
-  .xvmax = 0,
-  .yvmin = 0,
-  .yvmax = 0,
-  .xvmin = 0,
-  .zmxmin = 0,
-  .zmxmax = 0,
-  .zmymin = 0,
-  .zmymax = 0,
-  .zm_startx = 0,
-  .zm_starty = 0,
-  .zm_endx = 0,
-  .zm_endy = 0,
-  .lat = NULL,
-  .lng = NULL,
-  .start_time = ""
-};
-PlotData altitudeplot = {
-  .ptype = AltitudePlot, 
-  .symbol = "⏺",
-  .xmin = 0,
-  .xmax = 0,
-  .ymin = 0,
-  .ymax = 0,
-  .num_pts = 0,
-  .x = NULL,
-  .y = NULL,
-  .xvmax = 0,
-  .yvmin = 0,
-  .yvmax = 0,
-  .xvmin = 0,
-  .zmxmin = 0,
-  .zmxmax = 0,
-  .zmymin = 0,
-  .zmymax = 0,
-  .zm_startx = 0,
-  .zm_starty = 0,
-  .zm_endx = 0,
-  .zm_endy = 0,
-  .lat = NULL,
-  .lng = NULL,
-  .start_time = ""
-};
+PlotData paceplot = {.ptype = PacePlot,
+                     .symbol = "⏺",
+                     .xmin = 0,
+                     .xmax = 0,
+                     .ymin = 0,
+                     .ymax = 0,
+                     .num_pts = 0,
+                     .x = NULL,
+                     .y = NULL,
+                     .xvmax = 0,
+                     .yvmin = 0,
+                     .yvmax = 0,
+                     .xvmin = 0,
+                     .zmxmin = 0,
+                     .zmxmax = 0,
+                     .zmymin = 0,
+                     .zmymax = 0,
+                     .zm_startx = 0,
+                     .zm_starty = 0,
+                     .zm_endx = 0,
+                     .zm_endy = 0,
+                     .lat = NULL,
+                     .lng = NULL,
+                     .start_time = ""};
+PlotData cadenceplot = {.ptype = CadencePlot,
+                        .symbol = "⏺",
+                        .xmin = 0,
+                        .xmax = 0,
+                        .ymin = 0,
+                        .ymax = 0,
+                        .num_pts = 0,
+                        .x = NULL,
+                        .y = NULL,
+                        .xvmax = 0,
+                        .yvmin = 0,
+                        .yvmax = 0,
+                        .xvmin = 0,
+                        .zmxmin = 0,
+                        .zmxmax = 0,
+                        .zmymin = 0,
+                        .zmymax = 0,
+                        .zm_startx = 0,
+                        .zm_starty = 0,
+                        .zm_endx = 0,
+                        .zm_endy = 0,
+                        .lat = NULL,
+                        .lng = NULL,
+                        .start_time = ""};
+PlotData heartrateplot = {.ptype = HeartRatePlot,
+                          .symbol = "⏺",
+                          .xmin = 0,
+                          .xmax = 0,
+                          .ymin = 0,
+                          .ymax = 0,
+                          .num_pts = 0,
+                          .x = NULL,
+                          .y = NULL,
+                          .xvmax = 0,
+                          .yvmin = 0,
+                          .yvmax = 0,
+                          .xvmin = 0,
+                          .zmxmin = 0,
+                          .zmxmax = 0,
+                          .zmymin = 0,
+                          .zmymax = 0,
+                          .zm_startx = 0,
+                          .zm_starty = 0,
+                          .zm_endx = 0,
+                          .zm_endy = 0,
+                          .lat = NULL,
+                          .lng = NULL,
+                          .start_time = ""};
+PlotData altitudeplot = {.ptype = AltitudePlot,
+                         .symbol = "⏺",
+                         .xmin = 0,
+                         .xmax = 0,
+                         .ymin = 0,
+                         .ymax = 0,
+                         .num_pts = 0,
+                         .x = NULL,
+                         .y = NULL,
+                         .xvmax = 0,
+                         .yvmin = 0,
+                         .yvmax = 0,
+                         .xvmin = 0,
+                         .zmxmin = 0,
+                         .zmxmax = 0,
+                         .zmymin = 0,
+                         .zmymax = 0,
+                         .zm_startx = 0,
+                         .zm_starty = 0,
+                         .zm_endx = 0,
+                         .zm_endy = 0,
+                         .lat = NULL,
+                         .lng = NULL,
+                         .start_time = ""};
 struct PlotData *ppace = &paceplot;
 struct PlotData *pcadence = &cadenceplot;
 struct PlotData *pheart = &heartrateplot;
@@ -247,27 +239,27 @@ void reset_zoom() {
 }
 
 void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
-    float y_raw[NSIZE], float lat_raw[NSIZE], float lng_raw[NSIZE], 
-    time_t time_stamp[NSIZE]) {
+                        float y_raw[NSIZE], float lat_raw[NSIZE],
+                        float lng_raw[NSIZE], time_t time_stamp[NSIZE]) {
   PlotData *pdest;
   float x_cnv, y_cnv;
   /* Store to the correct global variable. */
   switch (ptype) {
-    case PacePlot:
-      pdest = ppace;
-      break;
-    case CadencePlot:
-      pdest = pcadence;
-      break;
-    case HeartRatePlot:
-      pdest = pheart;
-      break;
-    case AltitudePlot:
-      pdest = paltitude;
-      break;
-    }
+  case PacePlot:
+    pdest = ppace;
+    break;
+  case CadencePlot:
+    pdest = pcadence;
+    break;
+  case HeartRatePlot:
+    pdest = pheart;
+    break;
+  case AltitudePlot:
+    pdest = paltitude;
+    break;
+  }
   /* Housekeeping. Release any memory previously allocated before
-   * reinitializing. 
+   * reinitializing.
    */
   if (pdest->x != NULL) {
     free(pdest->x);
@@ -290,43 +282,43 @@ void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
   pdest->y = (PLFLT *)malloc(pdest->num_pts * sizeof(PLFLT));
   /* Assign the conversion factors by plot type. */
   switch (pdest->ptype) {
-    case PacePlot:
-      if (pdest->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 0.037282272;   // meters per sec to miles per min
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 0.06;  // meters per sec to kilometers per min
-      }
-      break;
-    case CadencePlot:
-      if (pdest->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 1.0;           // steps to steps
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 1.0;   // steps to steps
-      }
-      break;
-    case HeartRatePlot:
-      if (pdest->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 1.0;           // bpm to bpm
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 1.0;   // bpm to bpm
-      }
-      break;
-    case AltitudePlot:
-      if (pdest->units == English) {
-        x_cnv = 0.00062137119; // meters to miles
-        y_cnv = 3.28084;       // meters to feet
-      } else {
-        x_cnv = 0.001; // meters to kilometers
-        y_cnv = 1.0;   // meters to meters
-      }
-      break;
+  case PacePlot:
+    if (pdest->units == English) {
+      x_cnv = 0.00062137119; // meters to miles
+      y_cnv = 0.037282272;   // meters per sec to miles per min
+    } else {
+      x_cnv = 0.001; // meters to kilometers
+      y_cnv = 0.06;  // meters per sec to kilometers per min
     }
+    break;
+  case CadencePlot:
+    if (pdest->units == English) {
+      x_cnv = 0.00062137119; // meters to miles
+      y_cnv = 1.0;           // steps to steps
+    } else {
+      x_cnv = 0.001; // meters to kilometers
+      y_cnv = 1.0;   // steps to steps
+    }
+    break;
+  case HeartRatePlot:
+    if (pdest->units == English) {
+      x_cnv = 0.00062137119; // meters to miles
+      y_cnv = 1.0;           // bpm to bpm
+    } else {
+      x_cnv = 0.001; // meters to kilometers
+      y_cnv = 1.0;   // bpm to bpm
+    }
+    break;
+  case AltitudePlot:
+    if (pdest->units == English) {
+      x_cnv = 0.00062137119; // meters to miles
+      y_cnv = 3.28084;       // meters to feet
+    } else {
+      x_cnv = 0.001; // meters to kilometers
+      y_cnv = 1.0;   // meters to meters
+    }
+    break;
+  }
   /* Convert (or in the case of positions/time, copy) the raw values to the
    * displayed values.
    */
@@ -340,8 +332,8 @@ void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
   }
   /* Set start time in UTC (for title) */
   if (pdest->num_pts > 0) {
-  struct tm *ptm = gmtime(&time_stamp[0]);
-  pdest->start_time = asctime(ptm);
+    struct tm *ptm = gmtime(&time_stamp[0]);
+    pdest->start_time = asctime(ptm);
   }
   /* Find plot data min, max */
   pdest->xmin = FLT_MAX;
@@ -375,9 +367,9 @@ void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
 }
 
 /* Read data from file, convert to display plot structures. */
-gboolean load_data( ) {
-  float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE], 
-        cadence[NSIZE], heart_rate[NSIZE];
+gboolean load_data() {
+  float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE],
+      cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
   int num_recs = 0;
   /* Unit system first. */
@@ -401,13 +393,14 @@ gboolean load_data( ) {
     return FALSE;
   } else {
     convert_and_assign(PacePlot, num_recs, dist, speed, lat, lng, time_stamp);
-    convert_and_assign(CadencePlot, num_recs, dist, cadence, lat, lng, time_stamp);
-    convert_and_assign(HeartRatePlot, num_recs, dist, heart_rate, lat, lng, time_stamp);
+    convert_and_assign(CadencePlot, num_recs, dist, cadence, lat, lng,
+                       time_stamp);
+    convert_and_assign(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
+                       time_stamp);
     convert_and_assign(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
     return TRUE;
   }
 }
-
 
 /* Load data into memory and prepare data to be plotted. */
 void init_plot_data() {
@@ -415,7 +408,6 @@ void init_plot_data() {
   reset_view_limits();
   reset_zoom();
 }
-
 
 /* A custom axis labeling function for pace chart in English units. */
 void pace_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
@@ -475,7 +467,7 @@ void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
 }
 
 /* Drawing area callback. */
-gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) { 
+gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
@@ -804,19 +796,19 @@ gboolean default_chart() {
 }
 
 /* User has changed unit system.*/
-void on_cb_units_changed(GtkComboBox *cb_Units) { 
-  init_plot_data(); //got to reconvert the raw data
+void on_cb_units_changed(GtkComboBox *cb_Units) {
+  init_plot_data(); // got to reconvert the raw data
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
 /* User has selected Pace Graph. */
-void on_rb_pace(GtkToggleButton *togglebutton) { 
+void on_rb_pace(GtkToggleButton *togglebutton) {
   pd = ppace;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
 /* User has selected Cadence Graph. */
-void on_rb_cadence(GtkToggleButton *togglebutton) { 
+void on_rb_cadence(GtkToggleButton *togglebutton) {
   pd = pcadence;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
@@ -828,7 +820,7 @@ void on_rb_heartrate(GtkToggleButton *togglebutton) {
 }
 
 /* User has selected Altitude Graph. */
-void on_rb_altitude(GtkToggleButton *togglebutton) { 
+void on_rb_altitude(GtkToggleButton *togglebutton) {
   pd = paltitude;
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
@@ -838,7 +830,9 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   init_plot_data();
-  if (pd == NULL) { pd = ppace; }
+  if (pd == NULL) {
+    pd = ppace;
+  }
   gtk_widget_queue_draw(GTK_WIDGET(da));
   update_map();
 }
@@ -851,7 +845,6 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
  * by the Glade application and instantiate the associated (global) objects.
  */
 int main(int argc, char *argv[]) {
-
 
   GtkBuilder *builder;
   GtkWidget *window;
@@ -916,7 +909,8 @@ int main(int argc, char *argv[]) {
                    c_view);
   g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
                    G_CALLBACK(on_cb_units_changed), NULL);
-  g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set", G_CALLBACK(on_btnFileOpen_file_set), NULL);
+  g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
+                   G_CALLBACK(on_btnFileOpen_file_set), NULL);
 
   /* Release the builder memory. */
   g_object_unref(builder);
