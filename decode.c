@@ -27,7 +27,7 @@
 #include "./fit/fit_convert.h"
 
 int get_fit_records(char* fname, float* p_speed, float* p_distance, 
-    float* p_lat, float* p_lng, int* p_cadence, int* p_heart_rate, 
+    float* p_lat, float* p_lng, float* p_cadence, float* p_heart_rate, 
     float* p_altitude, long int* p_time_stamp, int* p_num_recs)
 {
    FILE *file;
@@ -175,10 +175,10 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                      p_distance++;
                      //printf(", calories = %dkcal", record->calories);
                      //printf(", cadence = %d", record->cadence);
-                     *p_cadence = (int) (record->cadence);
+                     *p_cadence = (float) (record->cadence);
                      p_cadence++;
                      //printf(", heart_rate = %d", record->heart_rate);
-                     *p_heart_rate = (int) (record->heart_rate);
+                     *p_heart_rate = (float) (record->heart_rate);
                      p_heart_rate++;
                      *p_num_recs = *p_num_recs + 1;
                      break;
