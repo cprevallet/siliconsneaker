@@ -486,7 +486,6 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   // printf("%d, %d\n", width, height);
 
   if (pd == NULL) {
-    printf("damn it\n");
     return TRUE;
   }
 
@@ -838,7 +837,6 @@ void on_rb_altitude(GtkToggleButton *togglebutton) {
 void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
-  printf("open fname = %s\n", fname);
   init_plot_data();
   if (pd == NULL) { pd = ppace; }
   gtk_widget_queue_draw(GTK_WIDGET(da));

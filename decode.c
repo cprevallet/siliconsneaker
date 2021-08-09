@@ -240,7 +240,7 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
    }
 
    if (convert_return == FIT_CONVERT_END_OF_FILE)
-      printf("File converted successfully.\n");
+      //printf("File converted successfully.\n");
 
    fclose(file);
 
