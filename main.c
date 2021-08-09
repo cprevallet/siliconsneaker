@@ -88,6 +88,9 @@ typedef struct PlotData {
   PLFLT *lng;
   char *start_time;
   char *symbol;
+  char *xaxislabel;
+  char *yaxislabel;
+  int linecolor[3]; //rgba
   enum UnitSystem units;
 } PlotData;
 
@@ -117,6 +120,9 @@ PlotData paceplot = {.ptype = PacePlot,
                      .zm_endy = 0,
                      .lat = NULL,
                      .lng = NULL,
+                     .xaxislabel=NULL,
+                     .yaxislabel=NULL,
+                     .linecolor = {156, 100, 134},  // light magenta for pace
                      .start_time = ""};
 PlotData cadenceplot = {.ptype = CadencePlot,
                         .symbol = "⏺",
@@ -141,6 +147,9 @@ PlotData cadenceplot = {.ptype = CadencePlot,
                         .zm_endy = 0,
                         .lat = NULL,
                         .lng = NULL,
+                        .xaxislabel=NULL,
+                        .yaxislabel=NULL,
+                        .linecolor = {31, 119, 180},  // light blue for heartrate
                         .start_time = ""};
 PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .symbol = "⏺",
@@ -165,6 +174,9 @@ PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .zm_endy = 0,
                           .lat = NULL,
                           .lng = NULL,
+                          .xaxislabel=NULL,
+                          .yaxislabel=NULL,
+                          .linecolor = {255, 127, 14},   // light yellow for altitude
                           .start_time = ""};
 PlotData altitudeplot = {.ptype = AltitudePlot,
                          .symbol = "⏺",
@@ -189,6 +201,9 @@ PlotData altitudeplot = {.ptype = AltitudePlot,
                          .zm_endy = 0,
                          .lat = NULL,
                          .lng = NULL,
+                         .xaxislabel=NULL,
+                         .yaxislabel=NULL,
+                         .linecolor = {77, 175, 74},    // light green for heartrate
                          .start_time = ""};
 struct PlotData *ppace = &paceplot;
 struct PlotData *pcadence = &cadenceplot;
@@ -354,6 +369,46 @@ void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
       pdest->ymax = pdest->y[i];
     }
   }
+
+  /* Set axis labels based on plot type and unit system. */
+  switch (pdest->ptype) {
+    case PacePlot:
+      if (pdest->units == English) {
+        pdest->xaxislabel = "Distance(miles)";
+        pdest->yaxislabel = "Pace(min/mile)";
+      } else {
+        pdest->xaxislabel = "Distance(km)";
+        pdest->yaxislabel = "Pace(min/km)";
+      }
+      break;
+    case CadencePlot:
+      if (pdest->units == English) {
+        pdest->xaxislabel = "Distance(miles)";
+        pdest->yaxislabel = "Cadence(steps/min)";
+      } else {
+        pdest->xaxislabel = "Distance(km)";
+        pdest->yaxislabel = "Cadence(steps/min)";
+      }
+      break;
+    case AltitudePlot:
+      if (pdest->units == English) {
+        pdest->xaxislabel = "Distance(miles)";
+        pdest->yaxislabel = "Altitude (feet)";
+      } else {
+        pdest->xaxislabel = "Distance(km)";
+        pdest->yaxislabel = "Altitude(meters)";
+      }
+      break;
+    case HeartRatePlot:
+      if (pdest->units == English) {
+        pdest->xaxislabel = "Distance(miles)";
+        pdest->yaxislabel = "Heart rate (bpm)";
+      } else {
+        pdest->xaxislabel = "Distance(km)";
+        pdest->yaxislabel = "Heart rate (bpm)";
+      }
+  } 
+
   /* Set the view to the data extents. */
   pdest->xvmax = pdest->xmax;
   pdest->yvmin = pdest->ymin;
@@ -500,6 +555,10 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Color */
     plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
     plscol0a(15, 200, 200, 200, 0.9); // light gray for background
+    plscol0a(2, pd->linecolor[0],
+                pd->linecolor[1],
+                pd->linecolor[2],
+                0.8);
     plscol0a(5, 156, 100, 134, 0.8);  // light magenta for pace
     plscol0a(6, 31, 119, 180, 0.8);   // light blue for heartrate
     plscol0a(7, 255, 127, 14, 0.8);   // light yellow for altitude
@@ -518,19 +577,15 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Setup a custom axis tick label function. */
     switch (pd->ptype) {
     case PacePlot:
-      // plcol0(5);
       plslabelfunc(pace_plot_labeler, NULL);
       break;
     case CadencePlot:
-      // plcol0(6);
       plslabelfunc(cadence_plot_labeler, NULL);
       break;
     case AltitudePlot:
-      // plcol0(7);
       plslabelfunc(altitude_plot_labeler, NULL);
       break;
     case HeartRatePlot:
-      // plcol0(8);
       plslabelfunc(heart_rate_plot_labeler, NULL);
       break;
     }
@@ -542,40 +597,9 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     plaxes(pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
 
     /* Setup axis labels and titles. */
-    switch (pd->ptype) {
-    case PacePlot:
-      if (pd->units == English) {
-        pllab("Distance(miles)", "Pace(min/mile)", pd->start_time);
-      } else {
-        pllab("Distance(km)", "Pace(min/km)", pd->start_time);
-      }
-      plcol0(5);
-      break;
-    case CadencePlot:
-      if (pd->units == English) {
-        pllab("Distance(miles)", "Cadence(steps/min)", pd->start_time);
-      } else {
-        pllab("Distance(km)", "Cadence(steps/min)", pd->start_time);
-      }
-      plcol0(6);
-      break;
-    case AltitudePlot:
-      if (pd->units == English) {
-        pllab("Distance(miles)", "Altitude (feet)", pd->start_time);
-      } else {
-        pllab("Distance(km)", "Altitude(meters)", pd->start_time);
-      }
-      plcol0(7);
-      break;
-    case HeartRatePlot:
-      if (pd->units == English) {
-        pllab("Distance(miles)", "Heart rate (bpm)", pd->start_time);
-      } else {
-        pllab("Distance(km)", "Heart rate (bpm)", pd->start_time);
-      }
-      plcol0(8);
-      break;
-    }
+    pllab(pd->xaxislabel, pd->yaxislabel, pd->start_time);
+    /* Set line color to the second pallette color. */
+    plcol0(2);
     /* Plot the data that was loaded. */
     plline(pd->num_pts, pd->x, pd->y);
     /* Plot symbols for individual data points. */
