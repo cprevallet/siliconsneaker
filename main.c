@@ -252,8 +252,12 @@ void reset_zoom() {
   pd->zm_endx = 0;
   pd->zm_endy = 0;
 }
-
-void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
+/*  This routine is where the bulk of the plot data initialization 
+ *  occurs.  We take the raw values from the fit file conversion 
+ *  routines, convert the units to display-appropriate values, and
+ *  set labels and range limits to initial values.  
+ */
+void init_graphs(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
                         float y_raw[NSIZE], float lat_raw[NSIZE],
                         float lng_raw[NSIZE], time_t time_stamp[NSIZE]) {
   PlotData *pdest;
@@ -369,7 +373,6 @@ void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
       pdest->ymax = pdest->y[i];
     }
   }
-
   /* Set axis labels based on plot type and unit system. */
   switch (pdest->ptype) {
     case PacePlot:
@@ -408,7 +411,6 @@ void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
         pdest->yaxislabel = "Heart rate (bpm)";
       }
   } 
-
   /* Set the view to the data extents. */
   pdest->xvmax = pdest->xmax;
   pdest->yvmin = pdest->ymin;
@@ -422,7 +424,7 @@ void convert_and_assign(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
 }
 
 /* Read data from file, convert to display plot structures. */
-gboolean load_data() {
+gboolean init_plot_data() {
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE],
       cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
@@ -447,21 +449,15 @@ gboolean load_data() {
   if (rtnval != 100) {
     return FALSE;
   } else {
-    convert_and_assign(PacePlot, num_recs, dist, speed, lat, lng, time_stamp);
-    convert_and_assign(CadencePlot, num_recs, dist, cadence, lat, lng,
+    /* Initialize the display data structures based on the data. */
+    init_graphs(PacePlot, num_recs, dist, speed, lat, lng, time_stamp);
+    init_graphs(CadencePlot, num_recs, dist, cadence, lat, lng,
                        time_stamp);
-    convert_and_assign(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
+    init_graphs(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
                        time_stamp);
-    convert_and_assign(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
+    init_graphs(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
     return TRUE;
   }
-}
-
-/* Load data into memory and prepare data to be plotted. */
-void init_plot_data() {
-  load_data();
-  reset_view_limits();
-  reset_zoom();
 }
 
 /* A custom axis labeling function for pace chart in English units. */
@@ -559,11 +555,6 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
                 pd->linecolor[1],
                 pd->linecolor[2],
                 0.8);
-    plscol0a(5, 156, 100, 134, 0.8);  // light magenta for pace
-    plscol0a(6, 31, 119, 180, 0.8);   // light blue for heartrate
-    plscol0a(7, 255, 127, 14, 0.8);   // light yellow for altitude
-    plscol0a(8, 77, 175, 74, 0.8);    // light green for heartrate
-
     /* Viewport and window */
     pladv(0);
     plvpor(0.15, 0.85, 0.15, 0.85);
