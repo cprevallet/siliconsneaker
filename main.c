@@ -804,16 +804,6 @@ gboolean default_chart() {
   return TRUE;
 }
 
-gboolean do_plot() {
-  if ((fname != NULL) && (fname[0] != '\0')) {
-    init_plot_data();
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    return FALSE;
-  } else {
-    return TRUE;
-  }
-}
-
 /* User has changed unit system.*/
 void on_cb_units_changed(GtkComboBox *cb_Units) { 
   init_plot_data(); //got to reconvert the raw data
