@@ -52,7 +52,13 @@
  */
 #include "decode.h"
 
-#define NSIZE 2880 // long enough for 4 hour marathon at 5 sec intervals
+//
+// Declarations section
+//
+
+// Maximum readable elements from a fit file.  
+// 2880 is large enough for 4 hour marathon at 5 sec intervals
+#define NSIZE 2880 
 
 enum ZoomState { Press = 0, Move = 1, Release = 2 };
 enum UnitSystem { Metric = 1, English = 0 };
@@ -63,12 +69,16 @@ enum PlotType {
   AltitudePlot = 4
 };
 
+/* The main data structure for the program defining
+ * values for various aspects of displaying a plot
+ * including the actual x,y pairs, axis labels,
+ * line colors, etc. */
 typedef struct PlotData {
   enum PlotType ptype;
   int num_pts;
-  PLFLT *x;
+  PLFLT *x; // xy data pairs, world coordinates
   PLFLT *y;
-  PLFLT xmin; // data, world coordinates
+  PLFLT xmin;  
   PLFLT xmax;
   PLFLT ymin;
   PLFLT ymax;
@@ -84,18 +94,22 @@ typedef struct PlotData {
   PLFLT zm_starty;
   PLFLT zm_endx;
   PLFLT zm_endy;
-  PLFLT *lat;
+  PLFLT *lat; // activity location, degrees lat,lng
   PLFLT *lng;
-  char *start_time;
-  char *symbol;
-  char *xaxislabel;
+  char *start_time;  // activity start time 
+  char *symbol;      // plot symbol character
+  char *xaxislabel;  //axis labels
   char *yaxislabel;
-  int linecolor[3]; //rgba
+  int linecolor[3];  //rgb attributes
   enum UnitSystem units;
 } PlotData;
 
 /*
- * define global UI elements and structs (ick)
+ * Declare global instances of the main data structure (one for 
+ * each type of plot).
+ *
+ * There must be a better way make all this available to the 
+ * relevant routines but I haven't discovered anything cleaner.
  */
 PlotData paceplot = {.ptype = PacePlot,
                      .symbol = "⏺",
@@ -122,7 +136,8 @@ PlotData paceplot = {.ptype = PacePlot,
                      .lng = NULL,
                      .xaxislabel=NULL,
                      .yaxislabel=NULL,
-                     .linecolor = {156, 100, 134},  // light magenta for pace
+                     // light magenta for pace
+                     .linecolor = {156, 100, 134},  
                      .start_time = ""};
 PlotData cadenceplot = {.ptype = CadencePlot,
                         .symbol = "⏺",
@@ -149,7 +164,8 @@ PlotData cadenceplot = {.ptype = CadencePlot,
                         .lng = NULL,
                         .xaxislabel=NULL,
                         .yaxislabel=NULL,
-                        .linecolor = {31, 119, 180},  // light blue for heartrate
+                        // light blue for heartrate
+                        .linecolor = {31, 119, 180},  
                         .start_time = ""};
 PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .symbol = "⏺",
@@ -176,7 +192,8 @@ PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .lng = NULL,
                           .xaxislabel=NULL,
                           .yaxislabel=NULL,
-                          .linecolor = {255, 127, 14},   // light yellow for altitude
+                          // light yellow for altitude
+                          .linecolor = {255, 127, 14},   
                           .start_time = ""};
 PlotData altitudeplot = {.ptype = AltitudePlot,
                          .symbol = "⏺",
@@ -203,14 +220,22 @@ PlotData altitudeplot = {.ptype = AltitudePlot,
                          .lng = NULL,
                          .xaxislabel=NULL,
                          .yaxislabel=NULL,
-                         .linecolor = {77, 175, 74},    // light green for heartrate
+                         // light green for heartrate
+                         .linecolor = {77, 175, 74},    
                          .start_time = ""};
+
+/* The pointers for the data plots.  There is one for each
+ * type of plot and an additional pointer, pd, that is assigned
+ * from one of the other four depending on what the user is currently
+ * displaying.
+ */
 struct PlotData *ppace = &paceplot;
 struct PlotData *pcadence = &cadenceplot;
 struct PlotData *pheart = &heartrateplot;
 struct PlotData *paltitude = &altitudeplot;
 struct PlotData *pd;
 
+/* Declarations for the GUI widgets. */
 GtkDrawingArea *da;
 GtkRadioButton *rb_Pace;
 GtkRadioButton *rb_Cadence;
@@ -222,13 +247,16 @@ GtkWidget *champlain_widget;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 GtkComboBoxText *cb_Units;
 
+/* Declaration for the fit filename. */
 char *fname = "";
+
+/* Declarations for Champlain maps. */
 ChamplainView *c_view;
 static ChamplainPathLayer *c_path_layer;
 static ChamplainMarkerLayer *c_marker_layer;
 
 //
-// Graph stuff
+// Plot routines.
 //
 
 /* Set the view limits to the data extents. */
@@ -252,12 +280,17 @@ void reset_zoom() {
   pd->zm_endx = 0;
   pd->zm_endy = 0;
 }
-/*  This routine is where the bulk of the plot data initialization 
- *  occurs.  We take the raw values from the fit file conversion 
- *  routines, convert the units to display-appropriate values, and
- *  set labels and range limits to initial values.  
+
+/*  This routine is where the bulk of the plot initialization 
+ *  occurs.  
+ *
+ *  We take the raw values from the fit file conversion 
+ *  routines and convert them to display-appropriate values based
+ *  on the selected unit system as well as seting labels and range 
+ *  limits to initial values.  
+ *
  */
-void init_graphs(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
+void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
                         float y_raw[NSIZE], float lat_raw[NSIZE],
                         float lng_raw[NSIZE], time_t time_stamp[NSIZE]) {
   PlotData *pdest;
@@ -423,8 +456,9 @@ void init_graphs(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
   return;
 }
 
-/* Read data from file, convert to display plot structures. */
+/* Read file data, convert to display plot structures. */
 gboolean init_plot_data() {
+  /* Sensor declarations */
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE],
       cadence[NSIZE], heart_rate[NSIZE];
   time_t time_stamp[NSIZE];
@@ -447,20 +481,21 @@ gboolean init_plot_data() {
   int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence,
                                heart_rate, alt, time_stamp, &num_recs);
   if (rtnval != 100) {
+    /* Something blew up. */
     return FALSE;
   } else {
     /* Initialize the display data structures based on the data. */
-    init_graphs(PacePlot, num_recs, dist, speed, lat, lng, time_stamp);
-    init_graphs(CadencePlot, num_recs, dist, cadence, lat, lng,
+    init_plots(PacePlot, num_recs, dist, speed, lat, lng, time_stamp);
+    init_plots(CadencePlot, num_recs, dist, cadence, lat, lng,
                        time_stamp);
-    init_graphs(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
+    init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
                        time_stamp);
-    init_graphs(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
+    init_plots(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
     return TRUE;
   }
 }
 
-/* A custom axis labeling function for pace chart in English units. */
+/* A custom axis labeling function for a pace plot. */
 void pace_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
                        PLPointer label_data) {
   PLFLT label_val = 0.0;
@@ -484,7 +519,7 @@ void pace_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
   }
 }
 
-/* A custom axis labeling function for cadence chart in English units. */
+/* A custom axis labeling function for a cadence plot. */
 void cadence_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
                           PLPointer label_data) {
   if (axis == PL_Y_AXIS) {
@@ -495,7 +530,7 @@ void cadence_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
   }
 }
 
-/* A custom axis labeling function for heart rate chart in English units. */
+/* A custom axis labeling function for a heart rate plot. */
 void heart_rate_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
                              PLPointer label_data) {
   if (axis == PL_Y_AXIS) {
@@ -506,7 +541,7 @@ void heart_rate_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
   }
 }
 
-/* A custom axis labeling function for altitude chart in English units. */
+/* A custom axis labeling function for an altitude plot. */
 void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
                            PLPointer label_data) {
   if (axis == PL_Y_AXIS) {
@@ -517,7 +552,14 @@ void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
   }
 }
 
-/* Drawing area callback. */
+/* Drawing area callback. 
+ *
+ * The GUI definition wraps a GTKDrawing area inside a GTK widget.
+ * This routine recasts the widget as a GDKWindow which is then used
+ * with a device-independent vector-graphics based API (Cairo) and a
+ * plotting library API (PLPlot) that supports Cairo to generate the
+ * user's plots.
+ */
 gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
@@ -526,8 +568,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width;
   int height = allocation.height;
-  // printf("%d, %d\n", width, height);
-
+  /* Can't plot uninitialized. */
   if (pd == NULL) {
     return TRUE;
   }
@@ -544,7 +585,6 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Do your drawing. */
     /* Initialize plplot using the external cairo backend. */
     plsdev("extcairo");
-
     /* Device attributes */
     plinit();
     pl_cmd(PLESC_DEVINIT, cr);
@@ -558,13 +598,10 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Viewport and window */
     pladv(0);
     plvpor(0.15, 0.85, 0.15, 0.85);
-
     plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
-
     /* Adjust character size. */
     plschr(ch_size, scf);
     plcol0(15);
-
     /* Setup a custom axis tick label function. */
     switch (pd->ptype) {
     case PacePlot:
@@ -580,13 +617,11 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
       plslabelfunc(heart_rate_plot_labeler, NULL);
       break;
     }
-
     /* Create a labelled box to hold the plot using custom x,y labels. */
-    // Do we want finer control here?  Let's try.
+    // We want finer control here, so we ignore the convenience function.
     char *xopt = "bnost";
     char *yopt = "bgnost";
     plaxes(pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
-
     /* Setup axis labels and titles. */
     pllab(pd->xaxislabel, pd->yaxislabel, pd->start_time);
     /* Set line color to the second pallette color. */
@@ -628,9 +663,11 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
 
 /* Calculate the graph ("world") x,y coordinates corresponding to the
  * GUI mouse ("device") coordinates.
+ *
  * The plot view bounds (xvmin, xvmax, yvmin, yvmax) and the plot
  * zoom bounds (zmxmin, zmxmax, zmymin, zmymax) are calculated
  * by the draw routine.
+ *
  */
 void gui_to_world(struct PlotData *pd, GdkEventButton *event,
                   enum ZoomState state) {
@@ -649,14 +686,13 @@ void gui_to_world(struct PlotData *pd, GdkEventButton *event,
   }
 }
 
-/* Change the cursor style. */
+/* Convenience routine to change the cursor style. */
 void change_cursor(GtkWidget *widget, const gchar *name) {
-  /* Change cursor to cross. */
   GdkDisplay *display = gtk_widget_get_display(widget);
   GdkCursor *cursor;
   cursor = gdk_cursor_new_from_name(display, name);
   gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
-  // Release the reference on the cursor
+  // Release the (memory) reference on the cursor.
   g_object_unref(cursor);
 }
 
@@ -673,7 +709,7 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event) {
   if (buttonnum == 1) {
     change_cursor(widget, "hand1");
   }
-  /* Get start x, y */
+  /* Set user selected starting x, y in world coordinates. */
   gui_to_world(pd, (GdkEventButton *)event, Press);
   return TRUE;
 }
@@ -694,6 +730,7 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event) {
     return TRUE;
   }
   /* Zoom in if left mouse button release. */
+  /* Set user selected ending x, y in world coordinates. */
   gui_to_world(pd, (GdkEventButton *)event, Release);
   if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
     /* Zoom */
@@ -735,14 +772,28 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
 // Map Stuff
 //
 
-/* Add a latitude, longitude to the path. */
+/* Instantiate a (global) instance of a champlain map widget and 
+ * its associated view.  Add it to a GTKFrame named viewport. 
+ * The function assumes clutter has already been initialized.
+ */
+static void init_map() {
+  champlain_widget = gtk_champlain_embed_new();
+  c_view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
+  clutter_actor_set_reactive(CLUTTER_ACTOR(c_view), TRUE);
+  g_object_set(G_OBJECT(c_view), "kinetic-mode", TRUE, "zoom-level", 14, NULL);
+  gtk_widget_set_size_request(champlain_widget, 640, 480);
+  /* Add the global widget to the global GTKFrame named viewport */
+  gtk_container_add(GTK_CONTAINER(viewport), champlain_widget);
+}
+
+/* Convenience routine to add a latitude, longitude to a path layer. */
 static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
   ChamplainCoordinate *coord;
   coord = champlain_coordinate_new_full(lon, lat);
   champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
 }
 
-/* Add a marker to the marker layer. */
+/* Convenience routine to add a marker to the marker layer. */
 static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
                        gdouble lat, const ClutterColor *color) {
   ClutterActor *my_marker = champlain_point_new_full(12, color);
@@ -802,15 +853,16 @@ static void zoom_out(GtkWidget *widget, ChamplainView *c_view) {
 }
 
 //
-// Navigation Stuff
+// GTK GUI Stuff
 //
-/* Default to the pace chart.  */
+
+/* Default to the pace chart. */
 gboolean default_chart() {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
   return TRUE;
 }
 
-/* User has changed unit system.*/
+/* User has changed unit system. */
 void on_cb_units_changed(GtkComboBox *cb_Units) {
   init_plot_data(); // got to reconvert the raw data
   gtk_widget_queue_draw(GTK_WIDGET(da));
@@ -856,8 +908,10 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
 // Main
 //
 
-/* This is the program entry point.  The builder reads an XML file (generated
+/*
+ * This is the program entry point.  The builder reads an XML file (generated
  * by the Glade application and instantiate the associated (global) objects.
+ *
  */
 int main(int argc, char *argv[]) {
 
@@ -890,12 +944,7 @@ int main(int argc, char *argv[]) {
    */
   if (gtk_clutter_init(&argc, &argv) != CLUTTER_INIT_SUCCESS)
     return 1;
-  champlain_widget = gtk_champlain_embed_new();
-  c_view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
-  clutter_actor_set_reactive(CLUTTER_ACTOR(c_view), TRUE);
-  g_object_set(G_OBJECT(c_view), "kinetic-mode", TRUE, "zoom-level", 14, NULL);
-  gtk_widget_set_size_request(champlain_widget, 640, 480);
-  gtk_container_add(GTK_CONTAINER(viewport), champlain_widget);
+  init_map();
   gtk_widget_show_all(window);
 
   /* Signals and events */
@@ -930,8 +979,7 @@ int main(int argc, char *argv[]) {
   /* Release the builder memory. */
   g_object_unref(builder);
 
-  /* Required to display champlain widget. */
-  gtk_widget_show(window);
+  gtk_widget_show(window); // Required to display champlain widget.
   gtk_main();
 
   return 0;
