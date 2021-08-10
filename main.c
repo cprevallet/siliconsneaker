@@ -564,15 +564,13 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
-  GtkAllocation allocation;
-  gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width;
-  int height = allocation.height;
+  PLFLT xdpi, ydpi;
+  PLINT width, height, xoff, yoff;
+
   /* Can't plot uninitialized. */
   if (pd == NULL) {
     return TRUE;
   }
-
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow *window = gtk_widget_get_window(widget);
   cairo_region_t *cairoRegion = cairo_region_create();
@@ -588,6 +586,10 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Device attributes */
     plinit();
     pl_cmd(PLESC_DEVINIT, cr);
+    /* Retrieve "page" height, width in pixels.  Note this is different
+     *  from the widget size.
+     */
+    plgpage(&xdpi, &ydpi, &width, &height, &xoff, &yoff);
     /* Color */
     plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
     plscol0a(15, 200, 200, 200, 0.9); // light gray for background
@@ -597,7 +599,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
                 0.8);
     /* Viewport and window */
     pladv(0);
-    plvpor(0.15, 0.85, 0.15, 0.85);
+    plvasp((float)height/(float)width);
     plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
     /* Adjust character size. */
     plschr(ch_size, scf);
@@ -792,6 +794,7 @@ static void init_map() {
 static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
   ChamplainCoordinate *coord;
   coord = champlain_coordinate_new_full(lon, lat);
+  //TODO This line throwing assertion errors.  Borrowed from example so why?
   champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
 }
 

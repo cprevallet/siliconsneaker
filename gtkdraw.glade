@@ -82,7 +82,7 @@
             <property name="can-focus">False</property>
             <child>
               <object class="GtkFrame" id="frame1">
-                <property name="width-request">400</property>
+                <property name="width-request">350</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="margin-start">5</property>
@@ -173,8 +173,6 @@
             </child>
             <child>
               <object class="GtkFrame" id="frame3">
-                <property name="width-request">700</property>
-                <property name="height-request">600</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="margin-start">5</property>
@@ -277,7 +275,7 @@
                           <object class="GtkDrawingArea" id="da">
                             <property name="name">da</property>
                             <property name="width-request">700</property>
-                            <property name="height-request">600</property>
+                            <property name="height-request">550</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="tooltip-text" translatable="yes">Right mouse drag to pan.
