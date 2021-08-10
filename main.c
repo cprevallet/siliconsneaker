@@ -621,6 +621,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     // We want finer control here, so we ignore the convenience function.
     char *xopt = "bnost";
     char *yopt = "bgnost";
+    //TODO valgrind reports mem lost on below line...
     plaxes(pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
     /* Setup axis labels and titles. */
     pllab(pd->xaxislabel, pd->yaxislabel, pd->start_time);
@@ -629,6 +630,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Plot the data that was loaded. */
     plline(pd->num_pts, pd->x, pd->y);
     /* Plot symbols for individual data points. */
+    //TODO valgrind reports mem lost on below line...
     plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
     /* Calculate the zoom limits (in pixels) for the graph. */
     plgvpd(&n_xmin, &n_xmax, &n_ymin, &n_ymax);
@@ -985,5 +987,28 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+/* Release the allocated memory. */
+void destroy_plots() {
+  if (ppace->x != NULL) {free(ppace->x);} 
+  if (ppace->y != NULL) {free(ppace->y);}
+  if (ppace->lat != NULL) {free(ppace->lat);}
+  if (ppace->lng != NULL) {free(ppace->lng);}
+  if (pcadence->x != NULL) {free(pcadence->x);}
+  if (pcadence->y != NULL) {free(pcadence->y);}
+  if (pcadence->lat != NULL) {free(pcadence->lat);}
+  if (pcadence->lng != NULL) {free(pcadence->lng);}
+  if (pheart->x != NULL) {free(pheart->x);}
+  if (pheart->y != NULL) {free(pheart->y);}
+  if (pheart->lat != NULL) {free(pheart->lat);}
+  if (pheart->lng != NULL) {free(pheart->lng);}
+  if (paltitude->x != NULL) {free(paltitude->x);}
+  if (paltitude->y != NULL) {free(paltitude->y);}
+  if (paltitude->lat != NULL) {free(paltitude->lat);}
+  if (paltitude->lng != NULL) {free(paltitude->lng);}
+}
+
 /* Call when the window is closed.*/
-void on_window1_destroy() { gtk_main_quit(); }
+void on_window1_destroy() { 
+  destroy_plots();
+  gtk_main_quit(); 
+}
