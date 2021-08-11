@@ -246,6 +246,7 @@ GtkFrame *viewport;
 GtkWidget *champlain_widget;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 GtkComboBoxText *cb_Units;
+GtkScale *sc_IdxPct;
 
 /* Declaration for the fit filename. */
 char *fname = "";
@@ -254,6 +255,23 @@ char *fname = "";
 ChamplainView *c_view;
 static ChamplainPathLayer *c_path_layer;
 static ChamplainMarkerLayer *c_marker_layer;
+
+/* Current index */
+int currIdx = 0;
+
+//
+// Index routines.
+//
+
+void on_update_index(GtkScale *widget, gpointer *data ) {
+  GtkAdjustment* adj;
+  adj = gtk_range_get_adjustment ((GtkRange*)widget);
+  gdouble val = gtk_adjustment_get_value (adj);
+  currIdx = (int)floor(val/100.0 * (float)ppace->num_pts);
+  printf("curridx=%d\n", currIdx);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+  //update_map();
+}
 
 //
 // Plot routines.
@@ -971,6 +989,7 @@ int main(int argc, char *argv[]) {
   btn_Zoom_In = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_In"));
   btn_Zoom_Out = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_Out"));
   cb_Units = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "cb_Units"));
+  sc_IdxPct = GTK_SCALE(gtk_builder_get_object(builder, "sc_IdxPct"));
 
   /* Select a default chart to start. */
   default_chart();
@@ -1010,6 +1029,8 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_cb_units_changed), NULL);
   g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
                    G_CALLBACK(on_btnFileOpen_file_set), NULL);
+  g_signal_connect(GTK_SCALE(sc_IdxPct), "value-changed", 
+                   G_CALLBACK(on_update_index), NULL);
 
   /* Release the builder memory. */
   g_object_unref(builder);
