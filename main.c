@@ -932,30 +932,35 @@ gboolean default_chart() {
 void on_cb_units_changed(GtkComboBox *cb_Units) {
   init_plot_data(); // got to reconvert the raw data
   gtk_widget_queue_draw(GTK_WIDGET(da));
+  g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Pace Graph. */
 void on_rb_pace(GtkToggleButton *togglebutton) {
   pd = ppace;
   gtk_widget_queue_draw(GTK_WIDGET(da));
+  g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Cadence Graph. */
 void on_rb_cadence(GtkToggleButton *togglebutton) {
   pd = pcadence;
   gtk_widget_queue_draw(GTK_WIDGET(da));
+  g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Heartrate Graph. */
 void on_rb_heartrate(GtkToggleButton *togglebutton) {
   pd = pheart;
   gtk_widget_queue_draw(GTK_WIDGET(da));
+  g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Altitude Graph. */
 void on_rb_altitude(GtkToggleButton *togglebutton) {
   pd = paltitude;
   gtk_widget_queue_draw(GTK_WIDGET(da));
+  g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has pressed open a new file. */
