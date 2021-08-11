@@ -281,6 +281,33 @@ void reset_zoom() {
   pd->zm_endy = 0;
 }
 
+/* Smooth the data via a 5 element Savitzky-Golay filter (destructively). 
+ * Ref: https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter */
+void sg_smooth(PlotData *pdest) {
+  /* Set up an array with 4 extra elements to handle the start and 
+   * end of the series. */
+  PLFLT *smooth_arr = NULL;
+  int np = pdest->num_pts;
+  smooth_arr = (PLFLT *)malloc((np + 4) * sizeof(PLFLT));
+  smooth_arr[0] = pdest->y[2];
+  smooth_arr[1] = pdest->y[1];
+  smooth_arr[np+1] = pdest->y[np-1];
+  smooth_arr[np+2] = pdest->y[np-2];
+  for (int i = 0; i < np; i++) {
+    smooth_arr[i+2] = pdest->y[i];
+  }
+  for (int i = 0; i < pdest->num_pts; i++) {
+    pdest->y[i] = 1.0 / 35.0 * 
+      ((-3.0 * smooth_arr[i]) + 
+       (12.0 * smooth_arr[i+1]) + 
+       (17.0 * smooth_arr[i+2]) +
+       (12.0 * smooth_arr[i+3]) +
+       (-3.0 * smooth_arr[i+4]));
+  }
+  free(smooth_arr);
+}
+
+
 /*  This routine is where the bulk of the plot initialization 
  *  occurs.  
  *
@@ -382,6 +409,9 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
     pdest->lat[i] = (PLFLT)lat_raw[i];
     pdest->lng[i] = (PLFLT)lng_raw[i];
   }
+  /* Smooth the Y values. */
+  gboolean filter = TRUE;
+  if (filter) { sg_smooth(pdest);}
   /* Set start time in UTC (for title) */
   if (pdest->num_pts > 0) {
     struct tm *ptm = gmtime(&time_stamp[0]);
@@ -633,7 +663,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     plline(pd->num_pts, pd->x, pd->y);
     /* Plot symbols for individual data points. */
     //TODO valgrind reports mem lost on below line...
-    plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
+    //plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
     /* Calculate the zoom limits (in pixels) for the graph. */
     plgvpd(&n_xmin, &n_xmax, &n_ymin, &n_ymax);
     pd->zmxmin = width * n_xmin;
