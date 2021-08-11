@@ -56,9 +56,9 @@
 // Declarations section
 //
 
-// Maximum readable elements from a fit file.  
+// Maximum readable elements from a fit file.
 // 2880 is large enough for 4 hour marathon at 5 sec intervals
-#define NSIZE 2880 
+#define NSIZE 2880
 
 enum ZoomState { Press = 0, Move = 1, Release = 2 };
 enum UnitSystem { Metric = 1, English = 0 };
@@ -70,9 +70,9 @@ enum PlotType {
 };
 
 /* Map colors */
-  ClutterColor my_green;
-  ClutterColor my_magenta;
-  ClutterColor my_blue;
+ClutterColor my_green;
+ClutterColor my_magenta;
+ClutterColor my_blue;
 
 /* The main data structure for the program defining
  * values for various aspects of displaying a plot
@@ -83,7 +83,7 @@ typedef struct PlotData {
   int num_pts;
   PLFLT *x; // xy data pairs, world coordinates
   PLFLT *y;
-  PLFLT xmin;  
+  PLFLT xmin;
   PLFLT xmax;
   PLFLT ymin;
   PLFLT ymax;
@@ -101,19 +101,19 @@ typedef struct PlotData {
   PLFLT zm_endy;
   PLFLT *lat; // activity location, degrees lat,lng
   PLFLT *lng;
-  char *start_time;  // activity start time 
-  char *symbol;      // plot symbol character
-  char *xaxislabel;  //axis labels
+  char *start_time; // activity start time
+  char *symbol;     // plot symbol character
+  char *xaxislabel; // axis labels
   char *yaxislabel;
-  int linecolor[3];  //rgb attributes
+  int linecolor[3]; // rgb attributes
   enum UnitSystem units;
 } PlotData;
 
 /*
- * Declare global instances of the main data structure (one for 
+ * Declare global instances of the main data structure (one for
  * each type of plot).
  *
- * There must be a better way make all this available to the 
+ * There must be a better way make all this available to the
  * relevant routines but I haven't discovered anything cleaner.
  */
 PlotData paceplot = {.ptype = PacePlot,
@@ -139,10 +139,10 @@ PlotData paceplot = {.ptype = PacePlot,
                      .zm_endy = 0,
                      .lat = NULL,
                      .lng = NULL,
-                     .xaxislabel=NULL,
-                     .yaxislabel=NULL,
+                     .xaxislabel = NULL,
+                     .yaxislabel = NULL,
                      // light magenta for pace
-                     .linecolor = {156, 100, 134},  
+                     .linecolor = {156, 100, 134},
                      .start_time = ""};
 PlotData cadenceplot = {.ptype = CadencePlot,
                         .symbol = "⏺",
@@ -167,10 +167,10 @@ PlotData cadenceplot = {.ptype = CadencePlot,
                         .zm_endy = 0,
                         .lat = NULL,
                         .lng = NULL,
-                        .xaxislabel=NULL,
-                        .yaxislabel=NULL,
+                        .xaxislabel = NULL,
+                        .yaxislabel = NULL,
                         // light blue for heartrate
-                        .linecolor = {31, 119, 180},  
+                        .linecolor = {31, 119, 180},
                         .start_time = ""};
 PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .symbol = "⏺",
@@ -195,10 +195,10 @@ PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .zm_endy = 0,
                           .lat = NULL,
                           .lng = NULL,
-                          .xaxislabel=NULL,
-                          .yaxislabel=NULL,
+                          .xaxislabel = NULL,
+                          .yaxislabel = NULL,
                           // light yellow for altitude
-                          .linecolor = {255, 127, 14},   
+                          .linecolor = {255, 127, 14},
                           .start_time = ""};
 PlotData altitudeplot = {.ptype = AltitudePlot,
                          .symbol = "⏺",
@@ -223,10 +223,10 @@ PlotData altitudeplot = {.ptype = AltitudePlot,
                          .zm_endy = 0,
                          .lat = NULL,
                          .lng = NULL,
-                         .xaxislabel=NULL,
-                         .yaxislabel=NULL,
+                         .xaxislabel = NULL,
+                         .yaxislabel = NULL,
                          // light green for heartrate
-                         .linecolor = {77, 175, 74},    
+                         .linecolor = {77, 175, 74},
                          .start_time = ""};
 
 /* The pointers for the data plots.  There is one for each
@@ -290,45 +290,42 @@ void reset_zoom() {
   pd->zm_endy = 0;
 }
 
-/* Smooth the data via a 5 element Savitzky-Golay filter (destructively). 
+/* Smooth the data via a 5 element Savitzky-Golay filter (destructively).
  * Ref: https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter */
 void sg_smooth(PlotData *pdest) {
-  /* Set up an array with 4 extra elements to handle the start and 
+  /* Set up an array with 4 extra elements to handle the start and
    * end of the series. */
   PLFLT *smooth_arr = NULL;
   int np = pdest->num_pts;
   smooth_arr = (PLFLT *)malloc((np + 4) * sizeof(PLFLT));
   smooth_arr[0] = pdest->y[2];
   smooth_arr[1] = pdest->y[1];
-  smooth_arr[np+1] = pdest->y[np-1];
-  smooth_arr[np+2] = pdest->y[np-2];
+  smooth_arr[np + 1] = pdest->y[np - 1];
+  smooth_arr[np + 2] = pdest->y[np - 2];
   for (int i = 0; i < np; i++) {
-    smooth_arr[i+2] = pdest->y[i];
+    smooth_arr[i + 2] = pdest->y[i];
   }
   for (int i = 0; i < pdest->num_pts; i++) {
-    pdest->y[i] = 1.0 / 35.0 * 
-      ((-3.0 * smooth_arr[i]) + 
-       (12.0 * smooth_arr[i+1]) + 
-       (17.0 * smooth_arr[i+2]) +
-       (12.0 * smooth_arr[i+3]) +
-       (-3.0 * smooth_arr[i+4]));
+    pdest->y[i] = 1.0 / 35.0 *
+                  ((-3.0 * smooth_arr[i]) + (12.0 * smooth_arr[i + 1]) +
+                   (17.0 * smooth_arr[i + 2]) + (12.0 * smooth_arr[i + 3]) +
+                   (-3.0 * smooth_arr[i + 4]));
   }
   free(smooth_arr);
 }
 
-
-/*  This routine is where the bulk of the plot initialization 
- *  occurs.  
+/*  This routine is where the bulk of the plot initialization
+ *  occurs.
  *
- *  We take the raw values from the fit file conversion 
+ *  We take the raw values from the fit file conversion
  *  routines and convert them to display-appropriate values based
- *  on the selected unit system as well as seting labels and range 
- *  limits to initial values.  
+ *  on the selected unit system as well as seting labels and range
+ *  limits to initial values.
  *
  */
 void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
-                        float y_raw[NSIZE], float lat_raw[NSIZE],
-                        float lng_raw[NSIZE], time_t time_stamp[NSIZE]) {
+                float y_raw[NSIZE], float lat_raw[NSIZE], float lng_raw[NSIZE],
+                time_t time_stamp[NSIZE]) {
   PlotData *pdest;
   float x_cnv, y_cnv;
   /* Store to the correct global variable. */
@@ -419,9 +416,11 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
     pdest->lng[i] = (PLFLT)lng_raw[i];
   }
   /* Smooth the Y values. */
-  //TODO Needs more testing.  I think there are some bugs.
+  // TODO Needs more testing.  I think there are some bugs.
   gboolean filter = FALSE;
-  if (filter) { sg_smooth(pdest);}
+  if (filter) {
+    sg_smooth(pdest);
+  }
   /* Set start time in UTC (for title) */
   if (pdest->num_pts > 0) {
     struct tm *ptm = gmtime(&time_stamp[0]);
@@ -448,42 +447,42 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
   }
   /* Set axis labels based on plot type and unit system. */
   switch (pdest->ptype) {
-    case PacePlot:
-      if (pdest->units == English) {
-        pdest->xaxislabel = "Distance(miles)";
-        pdest->yaxislabel = "Pace(min/mile)";
-      } else {
-        pdest->xaxislabel = "Distance(km)";
-        pdest->yaxislabel = "Pace(min/km)";
-      }
-      break;
-    case CadencePlot:
-      if (pdest->units == English) {
-        pdest->xaxislabel = "Distance(miles)";
-        pdest->yaxislabel = "Cadence(steps/min)";
-      } else {
-        pdest->xaxislabel = "Distance(km)";
-        pdest->yaxislabel = "Cadence(steps/min)";
-      }
-      break;
-    case AltitudePlot:
-      if (pdest->units == English) {
-        pdest->xaxislabel = "Distance(miles)";
-        pdest->yaxislabel = "Altitude (feet)";
-      } else {
-        pdest->xaxislabel = "Distance(km)";
-        pdest->yaxislabel = "Altitude(meters)";
-      }
-      break;
-    case HeartRatePlot:
-      if (pdest->units == English) {
-        pdest->xaxislabel = "Distance(miles)";
-        pdest->yaxislabel = "Heart rate (bpm)";
-      } else {
-        pdest->xaxislabel = "Distance(km)";
-        pdest->yaxislabel = "Heart rate (bpm)";
-      }
-  } 
+  case PacePlot:
+    if (pdest->units == English) {
+      pdest->xaxislabel = "Distance(miles)";
+      pdest->yaxislabel = "Pace(min/mile)";
+    } else {
+      pdest->xaxislabel = "Distance(km)";
+      pdest->yaxislabel = "Pace(min/km)";
+    }
+    break;
+  case CadencePlot:
+    if (pdest->units == English) {
+      pdest->xaxislabel = "Distance(miles)";
+      pdest->yaxislabel = "Cadence(steps/min)";
+    } else {
+      pdest->xaxislabel = "Distance(km)";
+      pdest->yaxislabel = "Cadence(steps/min)";
+    }
+    break;
+  case AltitudePlot:
+    if (pdest->units == English) {
+      pdest->xaxislabel = "Distance(miles)";
+      pdest->yaxislabel = "Altitude (feet)";
+    } else {
+      pdest->xaxislabel = "Distance(km)";
+      pdest->yaxislabel = "Altitude(meters)";
+    }
+    break;
+  case HeartRatePlot:
+    if (pdest->units == English) {
+      pdest->xaxislabel = "Distance(miles)";
+      pdest->yaxislabel = "Heart rate (bpm)";
+    } else {
+      pdest->xaxislabel = "Distance(km)";
+      pdest->yaxislabel = "Heart rate (bpm)";
+    }
+  }
   /* Set the view to the data extents. */
   pdest->xvmax = pdest->xmax;
   pdest->yvmin = pdest->ymin;
@@ -526,10 +525,8 @@ gboolean init_plot_data() {
   } else {
     /* Initialize the display data structures based on the data. */
     init_plots(PacePlot, num_recs, dist, speed, lat, lng, time_stamp);
-    init_plots(CadencePlot, num_recs, dist, cadence, lat, lng,
-                       time_stamp);
-    init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
-                       time_stamp);
+    init_plots(CadencePlot, num_recs, dist, cadence, lat, lng, time_stamp);
+    init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng, time_stamp);
     init_plots(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
     return TRUE;
   }
@@ -592,7 +589,7 @@ void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
   }
 }
 
-/* Drawing area callback. 
+/* Drawing area callback.
  *
  * The GUI definition wraps a GTKDrawing area inside a GTK widget.
  * This routine recasts the widget as a GDKWindow which is then used
@@ -635,13 +632,10 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Color */
     plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
     plscol0a(15, 200, 200, 200, 0.9); // light gray for background
-    plscol0a(2, pd->linecolor[0],
-                pd->linecolor[1],
-                pd->linecolor[2],
-                0.8);
+    plscol0a(2, pd->linecolor[0], pd->linecolor[1], pd->linecolor[2], 0.8);
     /* Viewport and window */
     pladv(0);
-    plvasp((float)height/(float)width);
+    plvasp((float)height / (float)width);
     plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
     /* Adjust character size. */
     plschr(ch_size, scf);
@@ -665,7 +659,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     // We want finer control here, so we ignore the convenience function.
     char *xopt = "bnost";
     char *yopt = "bgnost";
-    //TODO valgrind reports mem lost on below line...
+    // TODO valgrind reports mem lost on below line...
     plaxes(pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
     /* Setup axis labels and titles. */
     pllab(pd->xaxislabel, pd->yaxislabel, pd->start_time);
@@ -674,8 +668,8 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
     /* Plot the data that was loaded. */
     plline(pd->num_pts, pd->x, pd->y);
     /* Plot symbols for individual data points. */
-    //TODO valgrind reports mem lost on below line...
-    //plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
+    // TODO valgrind reports mem lost on below line...
+    // plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
     /* Calculate the zoom limits (in pixels) for the graph. */
     plgvpd(&n_xmin, &n_xmax, &n_ymin, &n_ymax);
     pd->zmxmin = width * n_xmin;
@@ -700,7 +694,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   }
   /* Add a hairline */
   plcol0(15);
-  /* If we are between the view limits, draw a line from the 
+  /* If we are between the view limits, draw a line from the
    * current index on the x scale from the bottom to the top
    * of the view. */
   x_hair = pd->x[currIdx];
@@ -834,8 +828,8 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
 // Map Stuff
 //
 
-/* Instantiate a (global) instance of a champlain map widget and 
- * its associated view.  Add it to a GTKFrame named viewport. 
+/* Instantiate a (global) instance of a champlain map widget and
+ * its associated view.  Add it to a GTKFrame named viewport.
  * The function assumes clutter has already been initialized.
  */
 static void init_map() {
@@ -852,7 +846,7 @@ static void init_map() {
 static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
   ChamplainCoordinate *coord;
   coord = champlain_coordinate_new_full(lon, lat);
-  //TODO This line throwing assertion errors.  Borrowed from example so why?
+  // TODO This line throwing assertion errors.  Borrowed from example so why?
   champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
 }
 
@@ -866,15 +860,13 @@ static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
 }
 
 /* Convenience routine to move marker. */
-static void move_marker(ChamplainMarkerLayer *my_marker_layer, 
-    ChamplainMarker *my_marker, gdouble new_lng, gdouble new_lat, 
-    const ClutterColor *color) {
+static void move_marker(ChamplainMarkerLayer *my_marker_layer,
+                        ChamplainMarker *my_marker, gdouble new_lng,
+                        gdouble new_lat, const ClutterColor *color) {
   if (my_marker != NULL) {
-    champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), new_lat, new_lng);
+    champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), new_lat,
+                                    new_lng);
   }
-  //printf("marker lat = %f, marker lng=%f", my_marker)
-  printf("lng=%f, lat=%f\n", new_lng, new_lat);
-    //champlain_marker_layer_remove_marker (*my_marker_layer, *my_marker);
 }
 
 /* Update the map. */
@@ -903,7 +895,6 @@ static void create_map() {
                pd->lat[pd->num_pts - 1], &my_magenta);
     add_marker(c_marker_layer, pd->lng[0], pd->lat[0], &my_green);
     /* Add current position marker */
-    printf("currIdx=%d", currIdx);
     add_marker(c_marker_layer, pd->lng[currIdx], pd->lat[currIdx], &my_blue);
     /* Add a path */
     for (int i = 0; i < pd->num_pts; i++) {
@@ -983,38 +974,27 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
 // Slider/Index routines.
 //
 
-void on_update_index(GtkScale *widget, gpointer *data ) {
-  GtkAdjustment* adj;
-  GList *marker_list, *start_marker, *end_marker, *position_marker;
-  adj = gtk_range_get_adjustment ((GtkRange*)widget);
-  gdouble val = gtk_adjustment_get_value (adj);
-  currIdx = (int)floor(val/100.0 * (float)ppace->num_pts);
+void on_update_index(GtkScale *widget, gpointer *data) {
+  GtkAdjustment *adj;
+  GList *marker_list, *position_marker;
+  adj = gtk_range_get_adjustment((GtkRange *)widget);
+  gdouble val = gtk_adjustment_get_value(adj);
+  currIdx = (int)floor(val / 100.0 * (float)ppace->num_pts);
   gtk_widget_queue_draw(GTK_WIDGET(da));
-  printf("mrkr=%d\n", c_marker_layer);
-  printf("view=%d\n", c_view);
   if ((c_marker_layer != NULL) && (c_view != NULL)) {
-    marker_list = champlain_marker_layer_get_markers (c_marker_layer);
+    marker_list = champlain_marker_layer_get_markers(c_marker_layer);
     /*Danger! This depends on the order markers are added in create_map!!!
-      Last in, first out in linked list.
+      Last in, first out in linked list. If more are added you might
+      need to walk the list (marker_list->next).
      */
-    position_marker = marker_list; 
-    printf("position=%d\n", position_marker);
-    /*
-    end_marker = marker_list->next;
-    printf("end=%d\n", end_marker);
-    start_marker = end_marker->next;
-    printf("start=%d\n", start_marker);
-    */
+    position_marker = marker_list; // position marker is the zero-eth element
     if (position_marker != NULL) {
-      move_marker(c_marker_layer, position_marker->data, 
-          pd->lng[currIdx], pd->lat[currIdx], &my_blue);
+      move_marker(c_marker_layer, position_marker->data, pd->lng[currIdx],
+                  pd->lat[currIdx], &my_blue);
     }
-    g_signal_emit_by_name (c_view, "layer-relocated");
-    //free(marker_list);
+    g_signal_emit_by_name(c_view, "layer-relocated");
   }
-  //printf("curridx=%d\n", currIdx);
 }
-
 
 //
 // Main
@@ -1088,7 +1068,7 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_cb_units_changed), NULL);
   g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
                    G_CALLBACK(on_btnFileOpen_file_set), NULL);
-  g_signal_connect(GTK_SCALE(sc_IdxPct), "value-changed", 
+  g_signal_connect(GTK_SCALE(sc_IdxPct), "value-changed",
                    G_CALLBACK(on_update_index), NULL);
 
   /* Release the builder memory. */
@@ -1102,26 +1082,58 @@ int main(int argc, char *argv[]) {
 
 /* Release the allocated memory. */
 void destroy_plots() {
-  if (ppace->x != NULL) {free(ppace->x);} 
-  if (ppace->y != NULL) {free(ppace->y);}
-  if (ppace->lat != NULL) {free(ppace->lat);}
-  if (ppace->lng != NULL) {free(ppace->lng);}
-  if (pcadence->x != NULL) {free(pcadence->x);}
-  if (pcadence->y != NULL) {free(pcadence->y);}
-  if (pcadence->lat != NULL) {free(pcadence->lat);}
-  if (pcadence->lng != NULL) {free(pcadence->lng);}
-  if (pheart->x != NULL) {free(pheart->x);}
-  if (pheart->y != NULL) {free(pheart->y);}
-  if (pheart->lat != NULL) {free(pheart->lat);}
-  if (pheart->lng != NULL) {free(pheart->lng);}
-  if (paltitude->x != NULL) {free(paltitude->x);}
-  if (paltitude->y != NULL) {free(paltitude->y);}
-  if (paltitude->lat != NULL) {free(paltitude->lat);}
-  if (paltitude->lng != NULL) {free(paltitude->lng);}
+  if (ppace->x != NULL) {
+    free(ppace->x);
+  }
+  if (ppace->y != NULL) {
+    free(ppace->y);
+  }
+  if (ppace->lat != NULL) {
+    free(ppace->lat);
+  }
+  if (ppace->lng != NULL) {
+    free(ppace->lng);
+  }
+  if (pcadence->x != NULL) {
+    free(pcadence->x);
+  }
+  if (pcadence->y != NULL) {
+    free(pcadence->y);
+  }
+  if (pcadence->lat != NULL) {
+    free(pcadence->lat);
+  }
+  if (pcadence->lng != NULL) {
+    free(pcadence->lng);
+  }
+  if (pheart->x != NULL) {
+    free(pheart->x);
+  }
+  if (pheart->y != NULL) {
+    free(pheart->y);
+  }
+  if (pheart->lat != NULL) {
+    free(pheart->lat);
+  }
+  if (pheart->lng != NULL) {
+    free(pheart->lng);
+  }
+  if (paltitude->x != NULL) {
+    free(paltitude->x);
+  }
+  if (paltitude->y != NULL) {
+    free(paltitude->y);
+  }
+  if (paltitude->lat != NULL) {
+    free(paltitude->lat);
+  }
+  if (paltitude->lng != NULL) {
+    free(paltitude->lng);
+  }
 }
 
 /* Call when the window is closed.*/
-void on_window1_destroy() { 
+void on_window1_destroy() {
   destroy_plots();
-  gtk_main_quit(); 
+  gtk_main_quit();
 }
