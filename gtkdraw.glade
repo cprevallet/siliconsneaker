@@ -131,9 +131,6 @@
                             <property name="position">1</property>
                           </packing>
                         </child>
-                        <child>
-                          <placeholder/>
-                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -299,6 +296,7 @@ Middle mouse to zoom extents.</property>
                       <object class="GtkScale" id="sc_IdxPct">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">Slide to step through activity.  Left-most is start of activity, right-most is end of activity.</property>
                         <property name="adjustment">adjustment1</property>
                         <property name="round-digits">1</property>
                         <property name="draw-value">False</property>
