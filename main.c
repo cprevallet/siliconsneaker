@@ -252,6 +252,7 @@ GtkWidget *champlain_widget;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
+GtkLabel *lbl_val;
 
 /* Declaration for the fit filename. */
 char *fname = "";
@@ -691,23 +692,28 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
       plcol0(1);
       plfill(4, rb_x, rb_y);
     }
+    /* Add a hairline */
+    plcol0(15);
+    /* If we are between the view limits, draw a line from the
+     * current index on the x scale from the bottom to the top
+     * of the view. */
+    x_hair = pd->x[currIdx];
+    if ((x_hair >= pd->xvmin) && (x_hair <= pd->xvmax)) {
+      hairline_x[0] = x_hair;
+      hairline_x[1] = x_hair;
+      hairline_y[0] = pd->yvmin;
+      hairline_y[1] = pd->yvmax;
+      pllsty(2);
+      plline(2, hairline_x, hairline_y);
+      pllsty(1);
+      /* Label showing the current value. */
+      //char hair_label[30];
+      //snprintf(hair_label, 30, "%3.2f", pd->y[currIdx]);
+      //plcol0(2);
+      //plptex(x_hair, 0.9 * (pd->yvmax - pd->yvmin) + pd->yvmin, 0.0, 0.0, 0, hair_label);
+      //plmtex("b", 5.0, 0.5, 0 ,hair_label);
+    }
   }
-  /* Add a hairline */
-  plcol0(15);
-  /* If we are between the view limits, draw a line from the
-   * current index on the x scale from the bottom to the top
-   * of the view. */
-  x_hair = pd->x[currIdx];
-  if ((x_hair >= pd->xvmin) && (x_hair <= pd->xvmax)) {
-    hairline_x[0] = x_hair;
-    hairline_x[1] = x_hair;
-    hairline_y[0] = pd->yvmin;
-    hairline_y[1] = pd->yvmax;
-    pllsty(2);
-    plline(2, hairline_x, hairline_y);
-    pllsty(1);
-  }
-
   /* Close PLplot library */
   plend();
   /* Say: "I'm finished drawing. */
@@ -979,8 +985,10 @@ void on_update_index(GtkScale *widget, gpointer *data) {
   GList *marker_list, *position_marker;
   adj = gtk_range_get_adjustment((GtkRange *)widget);
   gdouble val = gtk_adjustment_get_value(adj);
+  // Slider from zero to 100 - normalized.  Calculate portion of activity.
   currIdx = (int)floor(val / 100.0 * (float)ppace->num_pts);
   gtk_widget_queue_draw(GTK_WIDGET(da));
+  // Redraw the position marker on the map.
   if ((c_marker_layer != NULL) && (c_view != NULL)) {
     marker_list = champlain_marker_layer_get_markers(c_marker_layer);
     /*Danger! This depends on the order markers are added in create_map!!!
@@ -993,6 +1001,43 @@ void on_update_index(GtkScale *widget, gpointer *data) {
                   pd->lat[currIdx], &my_blue);
     }
     g_signal_emit_by_name(c_view, "layer-relocated");
+
+    char yval[15];
+    char xval[15];
+
+    switch (pd->ptype) {
+    case PacePlot:
+      pace_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+      pace_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+      break;
+    case CadencePlot:
+      cadence_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+      cadence_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+      break;
+    case AltitudePlot:
+      altitude_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+      altitude_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+      break;
+    case HeartRatePlot:
+      heart_rate_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+      heart_rate_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+      break;
+    }
+//    printf("%s\n", yval);
+//    printf("%f\n", pd->y[currIdx]);
+    char * curr_vals;
+    curr_vals = malloc(
+        strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
+        strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
+    strcpy(curr_vals, pd->xaxislabel);
+    strcat(curr_vals, ": ");
+    strcat(curr_vals, xval);
+    strcat(curr_vals, ", ");
+    strcat(curr_vals, pd->yaxislabel);
+    strcat(curr_vals, ": ");
+    strcat(curr_vals, yval);
+    gtk_label_set_text(lbl_val, curr_vals);
+    free(curr_vals);
   }
 }
 
@@ -1029,6 +1074,7 @@ int main(int argc, char *argv[]) {
   btn_Zoom_Out = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_Out"));
   cb_Units = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "cb_Units"));
   sc_IdxPct = GTK_SCALE(gtk_builder_get_object(builder, "sc_IdxPct"));
+  lbl_val = GTK_LABEL(gtk_builder_get_object(builder, "lbl_val"));
 
   /* Select a default chart to start. */
   default_chart();

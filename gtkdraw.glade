@@ -282,7 +282,7 @@
                             <property name="can-focus">False</property>
                             <property name="tooltip-text" translatable="yes">Right mouse drag to pan.
 Left mouse click-drag  graph to zoom in.  
-Middle mouse to zoom extents.</property>
+Middle mouse to zoom out full.</property>
                           </object>
                         </child>
                       </object>
@@ -293,13 +293,36 @@ Middle mouse to zoom extents.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkScale" id="sc_IdxPct">
+                      <object class="GtkBox">
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="tooltip-text" translatable="yes">Slide to step through activity.  Left-most is start of activity, right-most is end of activity.</property>
-                        <property name="adjustment">adjustment1</property>
-                        <property name="round-digits">1</property>
-                        <property name="draw-value">False</property>
+                        <property name="can-focus">False</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkScale" id="sc_IdxPct">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="tooltip-text" translatable="yes">Slide to step through activity.  Left-most is start of activity, right-most is end of activity.</property>
+                            <property name="adjustment">adjustment1</property>
+                            <property name="round-digits">1</property>
+                            <property name="draw-value">False</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="lbl_val">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
