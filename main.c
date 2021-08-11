@@ -706,12 +706,6 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
       pllsty(2);
       plline(2, hairline_x, hairline_y);
       pllsty(1);
-      /* Label showing the current value. */
-      //char hair_label[30];
-      //snprintf(hair_label, 30, "%3.2f", pd->y[currIdx]);
-      //plcol0(2);
-      //plptex(x_hair, 0.9 * (pd->yvmax - pd->yvmin) + pd->yvmin, 0.0, 0.0, 0, hair_label);
-      //plmtex("b", 5.0, 0.5, 0 ,hair_label);
     }
   }
   /* Close PLplot library */
@@ -1023,12 +1017,9 @@ void on_update_index(GtkScale *widget, gpointer *data) {
       heart_rate_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
       break;
     }
-//    printf("%s\n", yval);
-//    printf("%f\n", pd->y[currIdx]);
-    char * curr_vals;
-    curr_vals = malloc(
-        strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
-        strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
+    char *curr_vals;
+    curr_vals = malloc(strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
+                       strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
     strcpy(curr_vals, pd->xaxislabel);
     strcat(curr_vals, ": ");
     strcat(curr_vals, xval);
