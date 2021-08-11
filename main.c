@@ -69,6 +69,11 @@ enum PlotType {
   AltitudePlot = 4
 };
 
+/* Map colors */
+  ClutterColor my_green;
+  ClutterColor my_magenta;
+  ClutterColor my_blue;
+
 /* The main data structure for the program defining
  * values for various aspects of displaying a plot
  * including the actual x,y pairs, axis labels,
@@ -258,20 +263,6 @@ static ChamplainMarkerLayer *c_marker_layer;
 
 /* Current index */
 int currIdx = 0;
-
-//
-// Index routines.
-//
-
-void on_update_index(GtkScale *widget, gpointer *data ) {
-  GtkAdjustment* adj;
-  adj = gtk_range_get_adjustment ((GtkRange*)widget);
-  gdouble val = gtk_adjustment_get_value (adj);
-  currIdx = (int)floor(val/100.0 * (float)ppace->num_pts);
-  //printf("curridx=%d\n", currIdx);
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  //update_map();
-}
 
 //
 // Plot routines.
@@ -874,12 +865,21 @@ static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
                                     CHAMPLAIN_MARKER(my_marker));
 }
 
+/* Convenience routine to move marker. */
+static void move_marker(ChamplainMarkerLayer *my_marker_layer, 
+    ChamplainMarker *my_marker, gdouble new_lng, gdouble new_lat, 
+    const ClutterColor *color) {
+  if (my_marker != NULL) {
+    champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), new_lat, new_lng);
+  }
+  //printf("marker lat = %f, marker lng=%f", my_marker)
+  printf("lng=%f, lat=%f\n", new_lng, new_lat);
+    //champlain_marker_layer_remove_marker (*my_marker_layer, *my_marker);
+}
+
 /* Update the map. */
-static void update_map() {
+static void create_map() {
   /* Define colors for start, end markers.*/
-  ClutterColor my_green;
-  ClutterColor my_magenta;
-  ClutterColor my_blue;
   clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
   clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
   clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
@@ -902,6 +902,9 @@ static void update_map() {
     add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
                pd->lat[pd->num_pts - 1], &my_magenta);
     add_marker(c_marker_layer, pd->lng[0], pd->lat[0], &my_green);
+    /* Add current position marker */
+    printf("currIdx=%d", currIdx);
+    add_marker(c_marker_layer, pd->lng[currIdx], pd->lat[currIdx], &my_blue);
     /* Add a path */
     for (int i = 0; i < pd->num_pts; i++) {
       append_point(c_path_layer, pd->lat[i], pd->lng[i]);
@@ -973,8 +976,45 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
     pd = ppace;
   }
   gtk_widget_queue_draw(GTK_WIDGET(da));
-  update_map();
+  create_map();
 }
+
+//
+// Slider/Index routines.
+//
+
+void on_update_index(GtkScale *widget, gpointer *data ) {
+  GtkAdjustment* adj;
+  GList *marker_list, *start_marker, *end_marker, *position_marker;
+  adj = gtk_range_get_adjustment ((GtkRange*)widget);
+  gdouble val = gtk_adjustment_get_value (adj);
+  currIdx = (int)floor(val/100.0 * (float)ppace->num_pts);
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+  printf("mrkr=%d\n", c_marker_layer);
+  printf("view=%d\n", c_view);
+  if ((c_marker_layer != NULL) && (c_view != NULL)) {
+    marker_list = champlain_marker_layer_get_markers (c_marker_layer);
+    /*Danger! This depends on the order markers are added in create_map!!!
+      Last in, first out in linked list.
+     */
+    position_marker = marker_list; 
+    printf("position=%d\n", position_marker);
+    /*
+    end_marker = marker_list->next;
+    printf("end=%d\n", end_marker);
+    start_marker = end_marker->next;
+    printf("start=%d\n", start_marker);
+    */
+    if (position_marker != NULL) {
+      move_marker(c_marker_layer, position_marker->data, 
+          pd->lng[currIdx], pd->lat[currIdx], &my_blue);
+    }
+    g_signal_emit_by_name (c_view, "layer-relocated");
+    //free(marker_list);
+  }
+  //printf("curridx=%d\n", currIdx);
+}
+
 
 //
 // Main
