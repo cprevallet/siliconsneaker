@@ -268,7 +268,7 @@ void on_update_index(GtkScale *widget, gpointer *data ) {
   adj = gtk_range_get_adjustment ((GtkRange*)widget);
   gdouble val = gtk_adjustment_get_value (adj);
   currIdx = (int)floor(val/100.0 * (float)ppace->num_pts);
-  printf("curridx=%d\n", currIdx);
+  //printf("curridx=%d\n", currIdx);
   gtk_widget_queue_draw(GTK_WIDGET(da));
   //update_map();
 }
@@ -428,7 +428,8 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
     pdest->lng[i] = (PLFLT)lng_raw[i];
   }
   /* Smooth the Y values. */
-  gboolean filter = TRUE;
+  //TODO Needs more testing.  I think there are some bugs.
+  gboolean filter = FALSE;
   if (filter) { sg_smooth(pdest);}
   /* Set start time in UTC (for title) */
   if (pdest->num_pts > 0) {
@@ -614,6 +615,8 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
   PLFLT xdpi, ydpi;
   PLINT width, height, xoff, yoff;
+  PLFLT x_hair = 0;
+  PLFLT hairline_x[2], hairline_y[2];
 
   /* Can't plot uninitialized. */
   if (pd == NULL) {
@@ -704,6 +707,22 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
       plfill(4, rb_x, rb_y);
     }
   }
+  /* Add a hairline */
+  plcol0(15);
+  /* If we are between the view limits, draw a line from the 
+   * current index on the x scale from the bottom to the top
+   * of the view. */
+  x_hair = pd->x[currIdx];
+  if ((x_hair >= pd->xvmin) && (x_hair <= pd->xvmax)) {
+    hairline_x[0] = x_hair;
+    hairline_x[1] = x_hair;
+    hairline_y[0] = pd->yvmin;
+    hairline_y[1] = pd->yvmax;
+    pllsty(2);
+    plline(2, hairline_x, hairline_y);
+    pllsty(1);
+  }
+
   /* Close PLplot library */
   plend();
   /* Say: "I'm finished drawing. */
