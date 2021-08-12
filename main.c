@@ -1026,11 +1026,11 @@ void on_update_index(GtkScale *widget, gpointer *data) {
     curr_vals = malloc(strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
                        strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
     strcpy(curr_vals, pd->xaxislabel);
-    strcat(curr_vals, ": ");
+    strcat(curr_vals, "= ");
     strcat(curr_vals, xval);
     strcat(curr_vals, ", ");
     strcat(curr_vals, pd->yaxislabel);
-    strcat(curr_vals, ": ");
+    strcat(curr_vals, "= ");
     strcat(curr_vals, yval);
     gtk_label_set_text(lbl_val, curr_vals);
     free(curr_vals);
