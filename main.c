@@ -832,6 +832,73 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
  * its associated view.  Add it to a GTKFrame named viewport.
  * The function assumes clutter has already been initialized.
  */
+
+float avg(PLFLT *data, int array_size) {
+    float sum = 0.0;
+    for (int i = 0; i < array_size; ++i) {
+        sum += *data;
+        data++;
+    }
+    return sum / (float)array_size;
+}
+
+ClutterColor pick_color(float average, float speed, enum UnitSystem units ) {
+  ClutterColor slowest;
+  ClutterColor slower;
+  ClutterColor slow;
+  ClutterColor fast;
+  ClutterColor faster;
+  ClutterColor fastest;
+  /*
+  clutter_color_from_string(&slowest, "rgba(239,243,255, 1.0)");
+  clutter_color_from_string(&slower,  "rgba(198,219,239, 1.0)");
+  clutter_color_from_string(&slow,    "rgba(158,202,225, 1.0)");
+  clutter_color_from_string(&fast,    "rgba(107,174,214, 1.0)");
+  clutter_color_from_string(&faster,  "rgba(49,130,189, 1.0)");
+  clutter_color_from_string(&fastest, "rgba(8,81,156, 1.0)");
+  */
+  clutter_color_from_string(&slowest,"rgba(255,255,212, 1.0)");
+  clutter_color_from_string(&slower, "rgba(254,227,145, 1.0)");
+  clutter_color_from_string(&slow,   "rgba(254,196,79, 1.0)");
+  clutter_color_from_string(&fast,   "rgba(254,153,41, 1.0)");
+  clutter_color_from_string(&faster, "rgba(217,95,14, 1.0)");
+  clutter_color_from_string(&fastest,"rgba(153,52,4, 1.0)");
+
+  float pace, fastest_limit, faster_limit, fast_limit, slow_limit, slower_limit;
+
+
+  if (speed > 0.0) 
+    pace = 1.0 / speed;
+  else
+    return slowest;
+
+  if (units == Metric) {
+    //km per mile above average
+    fastest_limit = 1.24274;
+    faster_limit = 0.621371;
+    fast_limit = 0.0;
+    slow_limit = -0.621371;
+    slower_limit = -1.24274;
+  } else {
+    //min per mile above average
+    fastest_limit = 2.0;
+    faster_limit = 1.0;
+    fast_limit = 0.0;
+    slow_limit = -1.0;
+    slower_limit = -2.0;
+  }
+  printf("pace-avg=%f\n", pace-average);
+  //return fastest;
+  if ((pace - average) > fastest_limit ) return fastest;
+  if ((pace - average) > faster_limit) return faster;
+  if ((pace - average) > fast_limit) return fast;
+  if ((pace - average) > slow_limit) return slow;
+  if ((pace - average) > slower_limit) return slower;
+  return slowest;
+}
+
+
+
 static void init_map() {
   champlain_widget = gtk_champlain_embed_new();
   c_view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
@@ -875,6 +942,9 @@ static void create_map() {
   clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
   clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
   clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
+
+
+
   if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
     /* Center at the start. */
     champlain_view_center_on(CHAMPLAIN_VIEW(c_view), pd->lat[0], pd->lng[0]);
@@ -888,7 +958,6 @@ static void create_map() {
     champlain_view_reload_tiles(c_view);
     /*Create new layers. */
     c_path_layer = champlain_path_layer_new();
-    champlain_path_layer_set_stroke_color(c_path_layer, &my_blue);
     c_marker_layer = champlain_marker_layer_new();
     /* Add start and stop markers. Green for start. Red for end. */
     add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
@@ -897,7 +966,21 @@ static void create_map() {
     /* Add current position marker */
     add_marker(c_marker_layer, pd->lng[currIdx], pd->lat[currIdx], &my_blue);
     /* Add a path */
+    float avg_speed, avg_pace;
+    avg_speed = avg(ppace->y, ppace->num_pts);
+    printf("%f\n", avg_speed);
+    if (avg_speed > 0.0) {
+      avg_pace = 1.0 / avg_speed;
+    } else {
+      return;
+    }
+    printf("%f\n", avg_pace);
     for (int i = 0; i < pd->num_pts; i++) {
+      ClutterColor stroke_color;
+      stroke_color = pick_color(avg_pace, ppace->y[i], ppace->units);
+      //champlain_path_layer_set_stroke_color(c_path_layer, &stroke_color);
+      champlain_path_layer_set_stroke_color(c_path_layer, &stroke_color);
+      champlain_path_layer_set_stroke_width(c_path_layer, 3);
       append_point(c_path_layer, pd->lat[i], pd->lng[i]);
     }
     champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
@@ -1026,11 +1109,11 @@ void on_update_index(GtkScale *widget, gpointer *data) {
     curr_vals = malloc(strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
                        strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
     strcpy(curr_vals, pd->xaxislabel);
-    strcat(curr_vals, ": ");
+    strcat(curr_vals, "= ");
     strcat(curr_vals, xval);
     strcat(curr_vals, ", ");
     strcat(curr_vals, pd->yaxislabel);
-    strcat(curr_vals, ": ");
+    strcat(curr_vals, "= ");
     strcat(curr_vals, yval);
     gtk_label_set_text(lbl_val, curr_vals);
     free(curr_vals);
