@@ -56,9 +56,11 @@
 // Declarations section
 //
 
-// Maximum readable elements from a fit file.
+// Maximum readable records from a fit file.
 // 2880 is large enough for 4 hour marathon at 5 sec intervals
 #define NSIZE 2880
+// Maximum readable laps from a fit file.
+#define LSIZE 400
 
 enum ZoomState { Press = 0, Move = 1, Release = 2 };
 enum UnitSystem { Metric = 1, English = 0 };
@@ -501,6 +503,11 @@ gboolean init_plot_data() {
   /* Sensor declarations */
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE],
       cadence[NSIZE], heart_rate[NSIZE];
+  float lap_start_lat[LSIZE], lap_start_lng[LSIZE], 
+        lap_end_lat[LSIZE], lap_end_lng[LSIZE],
+        lap_total_distance[LSIZE], lap_total_calories[LSIZE],
+        lap_total_elapsed_time[LSIZE], lap_total_timer_time[LSIZE];
+  int lap_num_recs = 0;
   time_t time_stamp[NSIZE];
   int num_recs = 0;
   /* Unit system first. */
@@ -519,7 +526,21 @@ gboolean init_plot_data() {
   g_free(user_units);
   /* Load data from fit file. */
   int rtnval = get_fit_records(fname, speed, dist, lat, lng, cadence,
-                               heart_rate, alt, time_stamp, &num_recs);
+                               heart_rate, alt, time_stamp, &num_recs,
+                               lap_start_lat, lap_start_lng, 
+                               lap_end_lat, lap_end_lng,
+                               lap_total_distance, lap_total_calories,
+                               lap_total_elapsed_time, lap_total_timer_time,
+                               &lap_num_recs
+                               );
+  for (int i=0; i < lap_num_recs; i++) {
+    printf("start_lat=%f, start_lng=%f\n", lap_start_lat[i], lap_start_lng[i]);
+    printf("end_lat=%f, end_lng=%f\n", lap_end_lat[i], lap_end_lng[i]);
+    printf("lap_total_distance=%f\n", lap_total_distance[i]);
+    printf("lap_total_calories=%f\n", lap_total_calories[i]);
+    printf("elapsed t=%f, timer t=%f\n", lap_total_elapsed_time[i], lap_total_timer_time[i]);
+  }
+  printf("lap_num_recs=%d\n", lap_num_recs);
   if (rtnval != 100) {
     /* Something blew up. */
     return FALSE;

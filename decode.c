@@ -28,7 +28,12 @@
 
 int get_fit_records(char* fname, float* p_speed, float* p_distance, 
     float* p_lat, float* p_lng, float* p_cadence, float* p_heart_rate, 
-    float* p_altitude, long int* p_time_stamp, int* p_num_recs)
+    float* p_altitude, long int* p_time_stamp, int* p_num_recs,
+    float* plap_start_lat, float* plap_start_lng, 
+    float* plap_end_lat, float* plap_end_lng, 
+    float* plap_total_distance, float* plap_total_calories,
+    float* plap_total_elapsed_time, float* plap_total_timer_time,
+    int* plap_num_recs )
 {
    FILE *file;
    FIT_UINT8 buf[8];
@@ -132,8 +137,27 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
 
                   case FIT_MESG_NUM_LAP:
                   {
-                     //const FIT_LAP_MESG *lap = (FIT_LAP_MESG *) mesg;
+                     const FIT_LAP_MESG *lap = (FIT_LAP_MESG *) mesg;
                      //printf("Lap: timestamp=%u\n", lap->timestamp);
+
+                     *plap_start_lat = (float) (lap->start_position_lat * (180.0/pow(2,31)));
+                     plap_start_lat++; 
+                     *plap_start_lng = (float) (lap->start_position_long * (180.0/pow(2,31)));
+                     plap_start_lng++; 
+                     *plap_end_lat = (float) (lap->end_position_lat * (180.0/pow(2,31)));
+                     plap_end_lat++; 
+                     *plap_end_lng = (float) (lap->end_position_long * (180.0/pow(2,31)));
+                     plap_end_lng++; 
+
+                     *plap_total_distance = (float) (lap->total_distance/100.0);
+                     plap_total_distance++;
+                     *plap_total_calories = (float) (lap->total_calories);
+                     plap_total_calories++;
+                     *plap_total_elapsed_time = (float) (lap->total_elapsed_time / 1000.0 ); 
+                     plap_total_elapsed_time++; 
+                     *plap_total_timer_time = (float) (lap->total_timer_time /  1000.0 ) ;
+                     plap_total_timer_time++;
+                     *plap_num_recs = *plap_num_recs + 1;
                      break;
                   }
 
