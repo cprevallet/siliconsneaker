@@ -264,7 +264,7 @@
                         </child>
                         <child>
                           <object class="GtkRadioButton" id="rb_Splits">
-                            <property name="label" translatable="yes">Splits</property>
+                            <property name="label" translatable="yes">Splits Graph</property>
                             <property name="width-request">127</property>
                             <property name="height-request">23</property>
                             <property name="visible">True</property>
@@ -354,7 +354,7 @@ Middle mouse to zoom out full.</property>
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes">Graph</property>
+                    <property name="label" translatable="yes">Graphs</property>
                   </object>
                 </child>
               </object>

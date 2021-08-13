@@ -442,10 +442,10 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
    break;
   case LapPlot:
     if (pdest->units == English) {
-      x_cnv = 1.0;            // laps to laps
+      x_cnv = 0.00062137119; // meters to miles
       y_cnv = 1.0/60.0;       // seconds/lap to minutes/lap
     } else {
-      x_cnv = 1.0;            // laps to laps
+      x_cnv = 0.001; // meters to kilometers
       y_cnv = 1.0/60.0;       // seconds/lap to minutes/lap
     }
   }
@@ -558,7 +558,7 @@ gboolean init_plot_data() {
   float lap_start_lat[LSIZE], lap_start_lng[LSIZE], 
         lap_end_lat[LSIZE], lap_end_lng[LSIZE],
         lap_total_distance[LSIZE], lap_total_calories[LSIZE],
-        lap_total_elapsed_time[LSIZE], lap_total_timer_time[LSIZE], lap_number[LSIZE];
+        lap_total_elapsed_time[LSIZE], lap_total_timer_time[LSIZE];
   int lap_num_recs = 0;
   time_t time_stamp[NSIZE], lap_time_stamp[LSIZE];
   /* Unit system first. */
@@ -568,11 +568,13 @@ gboolean init_plot_data() {
     pcadence->units = Metric;
     pheart->units = Metric;
     paltitude->units = Metric;
+    plap->units = Metric;
   } else {
     ppace->units = English;
     pcadence->units = English;
     pheart->units = English;
     paltitude->units = English;
+    plap->units = English;
   }
   g_free(user_units);
   /* Load data from fit file. */
@@ -584,9 +586,6 @@ gboolean init_plot_data() {
                                lap_total_elapsed_time, lap_total_timer_time,
                                lap_time_stamp, &lap_num_recs
                                );
-  for (int i=0; i < lap_num_recs; i++) {
-    lap_number[i] = i+1;
-  }
   if (rtnval != 100) {
     /* Something blew up. */
     return FALSE;
@@ -596,7 +595,7 @@ gboolean init_plot_data() {
     init_plots(CadencePlot, num_recs, dist, cadence, lat, lng, time_stamp);
     init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng, time_stamp);
     init_plots(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
-    init_plots(LapPlot, lap_num_recs, lap_number, lap_total_elapsed_time, lap_start_lat, lap_start_lng, time_stamp);
+    init_plots(LapPlot, lap_num_recs, lap_total_distance, lap_total_elapsed_time, lap_start_lat, lap_start_lng, time_stamp);
     return TRUE;
   }
 }
@@ -750,7 +749,7 @@ void draw_xy(int width, int height) {
 }
 
 /* Draw a filled box. */
-void plfbox( PLFLT x0, PLFLT y0 )
+void plfbox( PLFLT x0, PLFLT y0, PLINT color )
 {
     PLFLT x[4], y[4];
 
@@ -762,7 +761,7 @@ void plfbox( PLFLT x0, PLFLT y0 )
     y[2] = y0;
     x[3] = x0 + 1.;
     y[3] = 0.;
-    plcol0( 2 );
+    plcol0( color );
     plfill( 4, x, y );
     plcol0( 15 );
     pllsty( 1 );
@@ -776,16 +775,25 @@ void draw_bar(int width, int height) {
   plscol0a(15, 128, 128, 128, 0.9); // light gray for background
   plcol0( 15 );
   plbox( "bc", 1.0, 0, "bcnv", 1.0, 0 );
-  //pllab( plap->xaxislabel, plap->yaxislabel, "Splits" );
   pllab( plap->xaxislabel, plap->yaxislabel, plap->start_time );
+  // Normal color.
   plscol0a(2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.3);
+  // Highlight (progress) color.
+  plscol0a(3, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.5);
+  float tot_dist = 0.0;
   for (int i = 0; i < plap->num_pts-1; i++ )
   {
+      tot_dist = plap->x[i] + tot_dist;
       plcol0( 15 );
       plpsty( 0 );
-      plfbox(plap->x[i] - 1.0, plap->y[i]);
+      if (ppace->x[currIdx] > tot_dist) { 
+        plfbox(i, plap->y[i], 3);
+      }
+      else {
+        plfbox(i, plap->y[i], 2);
+      }
       /* x axis */
-      sprintf( string, "%1.0f", plap->x[i] );
+      sprintf( string, "%1.0f", (float)i + 1.0);
       float bar_width = 1.0 / ( (float)(plap->num_pts) - 1.0);
       float xposn =  (i + 0.5) * bar_width;
       plmtex( "b", 1.0, xposn, 0.5, string );
@@ -794,7 +802,7 @@ void draw_bar(int width, int height) {
       secs = modf(plap->y[i], &mins);
       secs *= 60.0;
       snprintf(string, 8, "%2.0f:%02.0f", mins, secs);
-      plptex( plap->x[i] - 0.5, (1.1 * plap->ymin ), 0.0, 90.0, 0.0, string );
+      plptex( (float)i + 0.5, (1.1 * plap->ymin ), 0.0, 90.0, 0.0, string );
   }
 }
 
@@ -1089,8 +1097,8 @@ gboolean default_chart() {
 /* User has changed unit system. */
 void on_cb_units_changed(GtkComboBox *cb_Units) {
   init_plot_data(); // got to reconvert the raw data
-  gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
 /* User has selected Pace Graph. */
