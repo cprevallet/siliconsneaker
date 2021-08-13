@@ -68,7 +68,8 @@ enum PlotType {
   PacePlot = 1,
   CadencePlot = 2,
   HeartRatePlot = 3,
-  AltitudePlot = 4
+  AltitudePlot = 4,
+  LapPlot = 5
 };
 
 /* Map colors */
@@ -230,6 +231,34 @@ PlotData altitudeplot = {.ptype = AltitudePlot,
                          // light green for heartrate
                          .linecolor = {77, 175, 74},
                          .start_time = ""};
+PlotData lapplot = {.ptype = LapPlot,
+                         .symbol = "⏺",
+                         .xmin = 0,
+                         .xmax = 0,
+                         .ymin = 0,
+                         .ymax = 0,
+                         .num_pts = 0,
+                         .x = NULL,
+                         .y = NULL,
+                         .xvmax = 0,
+                         .yvmin = 0,
+                         .yvmax = 0,
+                         .xvmin = 0,
+                         .zmxmin = 0,
+                         .zmxmax = 0,
+                         .zmymin = 0,
+                         .zmymax = 0,
+                         .zm_startx = 0,
+                         .zm_starty = 0,
+                         .zm_endx = 0,
+                         .zm_endy = 0,
+                         .lat = NULL,
+                         .lng = NULL,
+                         .xaxislabel = NULL,
+                         .yaxislabel = NULL,
+                         // light blue for laps
+                         .linecolor = {31, 119, 180},
+                         .start_time = ""};
 
 /* The pointers for the data plots.  There is one for each
  * type of plot and an additional pointer, pd, that is assigned
@@ -240,7 +269,8 @@ struct PlotData *ppace = &paceplot;
 struct PlotData *pcadence = &cadenceplot;
 struct PlotData *pheart = &heartrateplot;
 struct PlotData *paltitude = &altitudeplot;
-struct PlotData *pd;
+struct PlotData *plap = &lapplot;
+struct PlotData *pd;  //for xy-plots
 
 /* Declarations for the GUI widgets. */
 GtkDrawingArea *da;
@@ -345,6 +375,9 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
   case AltitudePlot:
     pdest = paltitude;
     break;
+  case LapPlot:
+    pdest = plap;
+    break;
   }
   /* Housekeeping. Release any memory previously allocated before
    * reinitializing.
@@ -405,7 +438,15 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
       x_cnv = 0.001; // meters to kilometers
       y_cnv = 1.0;   // meters to meters
     }
-    break;
+   break;
+  case LapPlot:
+    if (pdest->units == English) {
+      x_cnv = 1.0;            // laps to laps
+      y_cnv = 1.0/60.0;       // seconds/lap to minutes/lap
+    } else {
+      x_cnv = 1.0;            // laps to laps
+      y_cnv = 1.0/60.0;       // seconds/lap to minutes/lap
+    }
   }
   /* Convert (or in the case of positions/time, copy) the raw values to the
    * displayed values.
@@ -485,6 +526,15 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
       pdest->xaxislabel = "Distance(km)";
       pdest->yaxislabel = "Heart rate (bpm)";
     }
+    break;
+  case LapPlot:
+    if (pdest->units == English) {
+      pdest->xaxislabel = "Lap";
+      pdest->yaxislabel = "Elapsed Split Time(min)";
+    } else {
+      pdest->xaxislabel = "Lap";
+      pdest->yaxislabel = "Elapsed Split Time(min)";
+    }
   }
   /* Set the view to the data extents. */
   pdest->xvmax = pdest->xmax;
@@ -503,13 +553,13 @@ gboolean init_plot_data() {
   /* Sensor declarations */
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE],
       cadence[NSIZE], heart_rate[NSIZE];
+  int num_recs = 0;
   float lap_start_lat[LSIZE], lap_start_lng[LSIZE], 
         lap_end_lat[LSIZE], lap_end_lng[LSIZE],
         lap_total_distance[LSIZE], lap_total_calories[LSIZE],
-        lap_total_elapsed_time[LSIZE], lap_total_timer_time[LSIZE];
+        lap_total_elapsed_time[LSIZE], lap_total_timer_time[LSIZE], lap_number[LSIZE];
   int lap_num_recs = 0;
-  time_t time_stamp[NSIZE];
-  int num_recs = 0;
+  time_t time_stamp[NSIZE], lap_time_stamp[LSIZE];
   /* Unit system first. */
   gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
   if (!strcmp(user_units, "Metric")) {
@@ -531,14 +581,18 @@ gboolean init_plot_data() {
                                lap_end_lat, lap_end_lng,
                                lap_total_distance, lap_total_calories,
                                lap_total_elapsed_time, lap_total_timer_time,
-                               &lap_num_recs
+                               lap_time_stamp, &lap_num_recs
                                );
   for (int i=0; i < lap_num_recs; i++) {
+    /*
+    printf("lap_end_timestamp=%ld\n", lap_time_stamp[i]);
     printf("start_lat=%f, start_lng=%f\n", lap_start_lat[i], lap_start_lng[i]);
     printf("end_lat=%f, end_lng=%f\n", lap_end_lat[i], lap_end_lng[i]);
     printf("lap_total_distance=%f\n", lap_total_distance[i]);
     printf("lap_total_calories=%f\n", lap_total_calories[i]);
     printf("elapsed t=%f, timer t=%f\n", lap_total_elapsed_time[i], lap_total_timer_time[i]);
+    */
+    lap_number[i] = i+1;
   }
   printf("lap_num_recs=%d\n", lap_num_recs);
   if (rtnval != 100) {
@@ -550,6 +604,7 @@ gboolean init_plot_data() {
     init_plots(CadencePlot, num_recs, dist, cadence, lat, lng, time_stamp);
     init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng, time_stamp);
     init_plots(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
+    init_plots(LapPlot, lap_num_recs, lap_number, lap_total_elapsed_time, lap_start_lat, lap_start_lng, time_stamp);
     return TRUE;
   }
 }
@@ -611,53 +666,20 @@ void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
   }
 }
 
-/* Drawing area callback.
- *
- * The GUI definition wraps a GTKDrawing area inside a GTK widget.
- * This routine recasts the widget as a GDKWindow which is then used
- * with a device-independent vector-graphics based API (Cairo) and a
- * plotting library API (PLPlot) that supports Cairo to generate the
- * user's plots.
- */
-gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
+/* Draw an xy plot. */
+
+void draw_xy(int width, int height) {
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
-  PLFLT xdpi, ydpi;
-  PLINT width, height, xoff, yoff;
   PLFLT x_hair = 0;
   PLFLT hairline_x[2], hairline_y[2];
-
-  /* Can't plot uninitialized. */
-  if (pd == NULL) {
-    return TRUE;
-  }
-  /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
-  GdkWindow *window = gtk_widget_get_window(widget);
-  cairo_region_t *cairoRegion = cairo_region_create();
-  GdkDrawingContext *drawingContext;
-  drawingContext = gdk_window_begin_draw_frame(window, cairoRegion);
-  /* Say: "I want to start drawing". */
-  cairo_t *cr = gdk_drawing_context_get_cairo_context(drawingContext);
-
   if ((pd->x != NULL) && (pd->y != NULL)) {
     /* Do your drawing. */
-    /* Initialize plplot using the external cairo backend. */
-    plsdev("extcairo");
-    /* Device attributes */
-    plinit();
-    pl_cmd(PLESC_DEVINIT, cr);
-    /* Retrieve "page" height, width in pixels.  Note this is different
-     *  from the widget size.
-     */
-    plgpage(&xdpi, &ydpi, &width, &height, &xoff, &yoff);
     /* Color */
     plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
     plscol0a(15, 200, 200, 200, 0.9); // light gray for background
     plscol0a(2, pd->linecolor[0], pd->linecolor[1], pd->linecolor[2], 0.8);
-    /* Viewport and window */
-    pladv(0);
-    plvasp((float)height / (float)width);
     plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
     /* Adjust character size. */
     plschr(ch_size, scf);
@@ -675,6 +697,8 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
       break;
     case HeartRatePlot:
       plslabelfunc(heart_rate_plot_labeler, NULL);
+      break;
+    case LapPlot:
       break;
     }
     /* Create a labelled box to hold the plot using custom x,y labels. */
@@ -729,6 +753,95 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
       pllsty(1);
     }
   }
+}
+
+/* Draw a filled box. */
+void plfbox( PLFLT x0, PLFLT y0 )
+{
+    PLFLT x[4], y[4];
+
+    x[0] = x0;
+    y[0] = 0.;
+    x[1] = x0;
+    y[1] = y0;
+    x[2] = x0 + 1.;
+    y[2] = y0;
+    x[3] = x0 + 1.;
+    y[3] = 0.;
+    plcol0( 2 );
+    plfill( 4, x, y );
+    plcol0( 15 );
+    pllsty( 1 );
+    plline( 4, x, y );
+}
+
+/* Draw a bar chart */
+void draw_bar(int width, int height) {
+  char         string[8];
+  plwind( 0.0, (float)plap->num_pts - 1.0, plap->ymin, plap->ymax);
+  plcol0( 15 );
+  plbox( "bc", 1.0, 0, "bcnv", 1.0, 0 );
+  pllab( plap->xaxislabel, plap->yaxislabel, "Splits" );
+  plscol0a(2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.8);
+  for (int i = 0; i < plap->num_pts-1; i++ )
+  {
+      plcol0( 15 );
+      plpsty( 0 );
+      plfbox(plap->x[i] - 1.0, plap->y[i]);
+      /* x axis */
+      sprintf( string, "%1.0f", plap->x[i] );
+      float bar_width = 1.0 / ( (float)(plap->num_pts) - 1.0);
+      float xposn =  (i + 0.5) * bar_width;
+      plmtex( "b", 1.0, xposn, 0.5, string );
+      /* bar label */
+      double secs, mins;
+      secs = modf(plap->y[i], &mins);
+      secs *= 60.0;
+      snprintf(string, 8, "%2.0f:%02.0f", mins, secs);
+      plptex( plap->x[i] - 0.5, (1.1 * plap->ymin ), 0.0, 90.0, 0.0, string );
+  }
+}
+
+/* Drawing area callback.
+ *
+ * The GUI definition wraps a GTKDrawing area inside a GTK widget.
+ * This routine recasts the widget as a GDKWindow which is then used
+ * with a device-independent vector-graphics based API (Cairo) and a
+ * plotting library API (PLPlot) that supports Cairo to generate the
+ * user's plots.
+ */
+gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
+  PLFLT xdpi, ydpi;
+  PLINT width, height, xoff, yoff;
+  /* Can't plot uninitialized. */
+  if (pd == NULL) {
+    return TRUE;
+  }
+  /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
+  GdkWindow *window = gtk_widget_get_window(widget);
+  cairo_region_t *cairoRegion = cairo_region_create();
+  GdkDrawingContext *drawingContext;
+  drawingContext = gdk_window_begin_draw_frame(window, cairoRegion);
+  /* Say: "I want to start drawing". */
+  cairo_t *cr = gdk_drawing_context_get_cairo_context(drawingContext);
+  /* Initialize plplot using the external cairo backend. */
+  plsdev("extcairo");
+  /* Device attributes */
+  plinit();
+  pl_cmd(PLESC_DEVINIT, cr);
+  /* Retrieve "page" height, width in pixels.  Note this is different
+   *  from the widget size.
+   */
+  plgpage(&xdpi, &ydpi, &width, &height, &xoff, &yoff);
+  /* Viewport and window */
+  pladv(0);
+  plvasp((float)height / (float)width);
+
+  /* Draw an xy plot. */
+  //draw_xy(width, height);
+  draw_bar(width, height);
+
+
   /* Close PLplot library */
   plend();
   /* Say: "I'm finished drawing. */
@@ -1041,6 +1154,8 @@ void on_update_index(GtkScale *widget, gpointer *data) {
     case HeartRatePlot:
       heart_rate_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
       heart_rate_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+      break;
+    case LapPlot:
       break;
     }
     char *curr_vals;

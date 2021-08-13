@@ -33,7 +33,7 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
     float* plap_end_lat, float* plap_end_lng, 
     float* plap_total_distance, float* plap_total_calories,
     float* plap_total_elapsed_time, float* plap_total_timer_time,
-    int* plap_num_recs )
+    long int* plap_time_stamp, int* plap_num_recs )
 {
    FILE *file;
    FIT_UINT8 buf[8];
@@ -139,6 +139,8 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                   {
                      const FIT_LAP_MESG *lap = (FIT_LAP_MESG *) mesg;
                      //printf("Lap: timestamp=%u\n", lap->timestamp);
+                     *plap_time_stamp = lap->timestamp + 631065600;
+                     plap_time_stamp++;
 
                      *plap_start_lat = (float) (lap->start_position_lat * (180.0/pow(2,31)));
                      plap_start_lat++; 
