@@ -679,7 +679,7 @@ void draw_xy(int width, int height) {
     /* Do your drawing. */
     /* Color */
     plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
-    plscol0a(15, 200, 200, 200, 0.9); // light gray for background
+    plscol0a(15, 128, 128, 128, 0.9); // light gray for background
     plscol0a(2, pd->linecolor[0], pd->linecolor[1], pd->linecolor[2], 0.8);
     plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
     /* Adjust character size. */
@@ -713,7 +713,9 @@ void draw_xy(int width, int height) {
     /* Set line color to the second pallette color. */
     plcol0(2);
     /* Plot the data that was loaded. */
+    plwidth(2);
     plline(pd->num_pts, pd->x, pd->y);
+    plwidth(0);
     /* Plot symbols for individual data points. */
     // TODO valgrind reports mem lost on below line...
     // plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
@@ -780,10 +782,12 @@ void plfbox( PLFLT x0, PLFLT y0 )
 void draw_bar(int width, int height) {
   char         string[8];
   plwind( 0.0, (float)plap->num_pts - 1.0, plap->ymin, plap->ymax);
+  plscol0a(15, 128, 128, 128, 0.9); // light gray for background
   plcol0( 15 );
   plbox( "bc", 1.0, 0, "bcnv", 1.0, 0 );
-  pllab( plap->xaxislabel, plap->yaxislabel, "Splits" );
-  plscol0a(2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.1);
+  //pllab( plap->xaxislabel, plap->yaxislabel, "Splits" );
+  pllab( plap->xaxislabel, plap->yaxislabel, plap->start_time );
+  plscol0a(2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.3);
   for (int i = 0; i < plap->num_pts-1; i++ )
   {
       plcol0( 15 );

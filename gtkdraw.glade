@@ -270,7 +270,7 @@
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
                             <property name="receives-default">False</property>
-                            <property name="tooltip-text" translatable="yes">Altitude vs. Distance</property>
+                            <property name="tooltip-text" translatable="yes">Lap Splits</property>
                             <property name="draw-indicator">True</property>
                             <property name="group">radiobutton1</property>
                           </object>
