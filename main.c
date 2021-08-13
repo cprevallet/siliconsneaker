@@ -585,14 +585,6 @@ gboolean init_plot_data() {
                                lap_time_stamp, &lap_num_recs
                                );
   for (int i=0; i < lap_num_recs; i++) {
-    /*
-    printf("lap_end_timestamp=%ld\n", lap_time_stamp[i]);
-    printf("start_lat=%f, start_lng=%f\n", lap_start_lat[i], lap_start_lng[i]);
-    printf("end_lat=%f, end_lng=%f\n", lap_end_lat[i], lap_end_lng[i]);
-    printf("lap_total_distance=%f\n", lap_total_distance[i]);
-    printf("lap_total_calories=%f\n", lap_total_calories[i]);
-    printf("elapsed t=%f, timer t=%f\n", lap_total_elapsed_time[i], lap_total_timer_time[i]);
-    */
     lap_number[i] = i+1;
   }
   printf("lap_num_recs=%d\n", lap_num_recs);
