@@ -278,6 +278,7 @@ GtkRadioButton *rb_Pace;
 GtkRadioButton *rb_Cadence;
 GtkRadioButton *rb_HeartRate;
 GtkRadioButton *rb_Altitude;
+GtkRadioButton *rb_Splits;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
 GtkWidget *champlain_widget;
@@ -802,6 +803,20 @@ void draw_bar(int width, int height) {
   }
 }
 
+/* Convenience function to find active radio button. */
+enum PlotType checkRadioButtons()
+{
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_Pace))==TRUE)
+    return PacePlot ;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_Cadence))==TRUE)
+    return CadencePlot ;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_HeartRate))==TRUE)
+    return HeartRatePlot ;
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON(rb_Altitude))==TRUE)
+    return AltitudePlot;
+  return LapPlot;
+}
+
 /* Drawing area callback.
  *
  * The GUI definition wraps a GTKDrawing area inside a GTK widget.
@@ -811,10 +826,11 @@ void draw_bar(int width, int height) {
  * user's plots.
  */
 gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
+  enum PlotType ptype;
   PLFLT xdpi, ydpi;
   PLINT width, height, xoff, yoff;
   /* Can't plot uninitialized. */
-  if (pd == NULL) {
+  if ((pd == NULL) || (plap == NULL)) {
     return TRUE;
   }
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
@@ -837,10 +853,24 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   pladv(0);
   plvasp((float)height / (float)width);
 
-  /* Draw an xy plot. */
-  //draw_xy(width, height);
-  draw_bar(width, height);
-
+  /* Draw an xy plot or a bar chart. */
+  switch (checkRadioButtons()) {
+  case PacePlot:
+    draw_xy(width, height);
+    break;
+  case CadencePlot:
+    draw_xy(width, height);
+    break;
+  case HeartRatePlot:
+    draw_xy(width, height);
+    break;
+  case AltitudePlot:
+    draw_xy(width, height);
+    break;
+  case LapPlot:
+    draw_bar(width, height);
+    break;
+  }
 
   /* Close PLplot library */
   plend();
@@ -1097,6 +1127,13 @@ void on_rb_altitude(GtkToggleButton *togglebutton) {
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
+/* User has selected Splits Graph. */
+void on_rb_splits(GtkToggleButton *togglebutton) {
+  gtk_widget_queue_draw(GTK_WIDGET(da));
+  g_signal_emit_by_name(sc_IdxPct, "value-changed");
+}
+
+
 /* User has pressed open a new file. */
 void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
   /* fname is a global */
@@ -1200,6 +1237,8 @@ int main(int argc, char *argv[]) {
       GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_HeartRate"));
   rb_Altitude =
       GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Altitude"));
+  rb_Splits =
+      GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Splits"));
   btnFileOpen =
       GTK_FILE_CHOOSER_BUTTON(gtk_builder_get_object(builder, "btnFileOpen"));
   btn_Zoom_In = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_In"));
@@ -1238,6 +1277,8 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_rb_heartrate), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
                    G_CALLBACK(on_rb_altitude), NULL);
+  g_signal_connect(GTK_RADIO_BUTTON(rb_Splits), "toggled",
+                   G_CALLBACK(on_rb_splits), NULL);
   g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
                    c_view);
   g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
