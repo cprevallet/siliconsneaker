@@ -200,8 +200,8 @@ PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .lng = NULL,
                           .xaxislabel = NULL,
                           .yaxislabel = NULL,
-                          // light yellow for altitude
-                          .linecolor = {255, 127, 14},
+                          // light yellow for heartrate
+                         .linecolor = {247, 250, 191},
                           .start_time = ""};
 PlotData altitudeplot = {.ptype = AltitudePlot,
                          .symbol = "⏺",
@@ -256,8 +256,8 @@ PlotData lapplot = {.ptype = LapPlot,
                          .lng = NULL,
                          .xaxislabel = NULL,
                          .yaxislabel = NULL,
-                         // light blue for laps
-                         .linecolor = {31, 119, 180},
+                          // light orange for laps
+                          .linecolor = {255, 127, 14},
                          .start_time = ""};
 
 /* The pointers for the data plots.  There is one for each
@@ -783,7 +783,7 @@ void draw_bar(int width, int height) {
   plcol0( 15 );
   plbox( "bc", 1.0, 0, "bcnv", 1.0, 0 );
   pllab( plap->xaxislabel, plap->yaxislabel, "Splits" );
-  plscol0a(2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.8);
+  plscol0a(2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.1);
   for (int i = 0; i < plap->num_pts-1; i++ )
   {
       plcol0( 15 );
@@ -826,7 +826,6 @@ enum PlotType checkRadioButtons()
  * user's plots.
  */
 gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
-  enum PlotType ptype;
   PLFLT xdpi, ydpi;
   PLINT width, height, xoff, yoff;
   /* Can't plot uninitialized. */
