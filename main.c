@@ -587,7 +587,6 @@ gboolean init_plot_data() {
   for (int i=0; i < lap_num_recs; i++) {
     lap_number[i] = i+1;
   }
-  printf("lap_num_recs=%d\n", lap_num_recs);
   if (rtnval != 100) {
     /* Something blew up. */
     return FALSE;
