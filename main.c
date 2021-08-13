@@ -23,10 +23,22 @@
  * - Craig S. Prevallet, July, 2020
  */
 
-/*
- * Required external Debian libraries: libplplot-dev, plplot-driver-cairo,
- * libgtk-3-dev
+/* Required external top level-dependencies.
+ *  libplplot.so.17
+ *	libchamplain-gtk-0.12.so.0
+ *	libchamplain-0.12.so.0
+ *	libclutter-gtk-1.0.so.0
+ *	libclutter-1.0.so.0
+ *	libgtk-3.so.0
+ *	libgdk-3.so.0
+ *	libcairo.so.2
+ *	libgobject-2.0.so.0
+ *	libglib-2.0.so.0
+ *	libm.so.6 =>
+ *	libc.so.6
  */
+
+
 #include <float.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
