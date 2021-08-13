@@ -1,5 +1,5 @@
 # change application name here (executable output name)
-TARGET=gtkdraw
+TARGET=runplotter
 
 # compiler
 CC=gcc
