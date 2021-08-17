@@ -324,6 +324,7 @@ struct PlotData *pd;  //for xy-plots
 struct SessionData *psd = &sess;
 
 /* Declarations for the GUI widgets. */
+GtkTextBuffer *textbuffer1;
 GtkDrawingArea *da;
 GtkRadioButton *rb_Pace;
 GtkRadioButton *rb_Cadence;
@@ -384,10 +385,8 @@ void print_timer_val(float timer, char* plabel, FILE* fp) {
 }
 
 /* Generate the summary report */
-void generate_report(SessionData *psd) {
-  FILE *fp;
-  fp = fopen("runplotter.txt", "w");
-  if (fp != NULL) {
+void create_summary(FILE *fp) {
+  if ((fp != NULL) && (psd != NULL)) {
     fprintf( fp, "%-30s", "Start time");
     fprintf( fp, "%3s", " = ");
     fprintf( fp, "%s", asctime(gmtime(&psd->start_time)));
@@ -448,10 +447,37 @@ void generate_report(SessionData *psd) {
     fprintf( fp, "%-30s", "End time");
     fprintf( fp, "%3s", " = ");
     fprintf( fp, "%s", asctime(gmtime(&psd->timestamp)));
-    fclose (fp);
   }
 }
 
+/* Create a summary report to disk and display. */
+void update_summary() 
+{
+  GtkTextMark *mark;
+  GtkTextIter iter;
+  GtkTextIter start;
+  GtkTextIter end;
+
+  char line[80];
+  /*Create a new summary file.*/
+  FILE *fp;
+  fp = fopen("runplotter.txt", "w");
+  create_summary(fp);
+  fclose (fp);
+  /* Display the summary file in the textbuffer, textbuffer1*/
+  fp = fopen("runplotter.txt", "r");
+  /* Clear out anything already in the text buffer. */
+  gtk_text_buffer_get_bounds(textbuffer1, &start, &end);
+  gtk_text_buffer_delete(textbuffer1, &start, &end);
+  /* Read the output from the file a line at a time and display it.
+   */
+  while (fgets(line, sizeof(line), fp) != NULL) {
+    mark = gtk_text_buffer_get_insert(textbuffer1);
+    gtk_text_buffer_get_iter_at_mark(textbuffer1, &iter, mark);
+    gtk_text_buffer_insert(textbuffer1, &iter, line, -1);
+  }
+  fclose(fp);
+}
 
 //
 // Plot routines.
@@ -919,8 +945,7 @@ gboolean init_plot_data() {
     init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng, time_stamp);
     init_plots(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
     init_plots(LapPlot, lap_num_recs, lap_total_distance, lap_total_elapsed_time, lap_start_lat, lap_start_lng, time_stamp);
-
-    //TESTING
+    /* Initialize the data for the summary display. */
     init_session(psd ,
                  sess_timestamp ,
                  sess_start_time ,
@@ -952,10 +977,8 @@ gboolean init_plot_data() {
                  sess_max_temperature ,
                  sess_min_heart_rate ,
                  sess_total_anaerobic_training_effect
-                 ),
-
-    generate_report(psd);
-
+                 );
+    update_summary();
     return TRUE;
   }
 }
@@ -1591,6 +1614,7 @@ int main(int argc, char *argv[]) {
   builder = gtk_builder_new_from_file("gtkdraw.glade");
 
   window = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
+  textbuffer1 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textbuffer1"));
   viewport = GTK_FRAME(gtk_builder_get_object(builder, "viewport"));
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
   rb_Pace = GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Pace"));
