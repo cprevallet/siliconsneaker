@@ -124,6 +124,40 @@ typedef struct PlotData {
   enum UnitSystem units;
 } PlotData;
 
+typedef struct SessionData {
+  long int timestamp ;
+  long int start_time ;
+  float start_position_lat ;
+  float start_position_long ;
+  float total_elapsed_time ; 
+  float total_timer_time ;
+  float total_distance ;
+  float nec_lat ;
+  float nec_long ;
+  float swc_lat ;
+  float swc_long ;
+  float total_work ;
+  float total_moving_time ;
+  float avg_lap_time ;
+  float total_calories ;
+  float avg_speed ;
+  float max_speed ;
+  float total_ascent ;
+  float total_descent ;
+  float avg_altitude ;
+  float max_altitude ;
+  float min_altitude ;
+  float max_heart_rate ;
+  float avg_heart_rate ;
+  float max_cadence ;
+  float avg_cadence ;
+  float avg_temperature ;
+  float max_temperature ;
+  float min_heart_rate ;
+  float total_anaerobic_training_effect ;
+  enum UnitSystem units;
+} SessionData;
+
 /*
  * Declare global instances of the main data structure (one for
  * each type of plot).
@@ -272,6 +306,9 @@ PlotData lapplot = {.ptype = LapPlot,
                           .linecolor = {255, 127, 14},
                          .start_time = ""};
 
+/* Rely on the default values for C structures = 0, 0.0 for ints, floats */
+struct SessionData sess; 
+
 /* The pointers for the data plots.  There is one for each
  * type of plot and an additional pointer, pd, that is assigned
  * from one of the other four depending on what the user is currently
@@ -283,6 +320,8 @@ struct PlotData *pheart = &heartrateplot;
 struct PlotData *paltitude = &altitudeplot;
 struct PlotData *plap = &lapplot;
 struct PlotData *pd;  //for xy-plots
+/* The pointer for the session summary. */
+struct SessionData *psd = &sess;
 
 /* Declarations for the GUI widgets. */
 GtkDrawingArea *da;
@@ -309,6 +348,110 @@ static ChamplainMarkerLayer *c_marker_layer;
 
 /* Current index */
 int currIdx = 0;
+//
+// Convenience functions.
+//
+void printfloat(float x, char * name) {
+  printf("%s = %f \n", name, x);
+}
+//
+// Summary routines.
+//
+
+/* Convenience routine to print a floating point line. */
+void print_float_val(float val, char* plabel, char* punit, FILE* fp ){
+  if ((plabel != NULL) && (punit != NULL) && (val < FLT_MAX - 1.0)) {
+    fprintf( fp, "%-30s", plabel);
+    fprintf( fp, "%3s", " = ");
+    fprintf( fp, "%10.2f", val );
+    fprintf( fp, "%3s", " ");
+    fprintf( fp, "%-20s", punit);
+    fprintf( fp, "\n");
+  }
+}
+
+void print_timer_val(float timer, char* plabel, FILE* fp) {
+  if (timer < FLT_MAX - 1.0) {
+    double hours, secs, mins, extra;
+    extra = modf(timer/3600.0, &hours);
+    secs = modf(extra * 60.0, &mins);
+    secs *= 60.0;
+    fprintf( fp, "%-30s", plabel);
+    fprintf( fp, "%3s", " = ");
+    fprintf(fp, "%4.0f:%02.0f:%02.0f", hours, mins, secs);
+    fprintf( fp, "\n");
+  }
+}
+
+/* Generate the summary report */
+void generate_report(SessionData *psd) {
+  FILE *fp;
+  fp = fopen("runplotter.txt", "w");
+  if (fp != NULL) {
+    fprintf( fp, "%-30s", "Start time");
+    fprintf( fp, "%3s", " = ");
+    fprintf( fp, "%s", asctime(gmtime(&psd->start_time)));
+    print_float_val(psd->start_position_lat ,"Starting latitude", "deg", fp);
+    print_float_val(psd->start_position_long , "Starting longitude", "deg", fp);
+    print_timer_val(psd->total_elapsed_time, "Total elapsed time", fp);
+    print_timer_val(psd->total_timer_time , "Total timer time", fp);
+    if (psd->units == English) 
+      print_float_val(psd->total_distance , "Total distance","miles" ,fp);
+    else 
+      print_float_val(psd->total_distance , "Total distance","kilometers" ,fp);
+
+    //print_float_val(psd->nec_lat , "nec_lat","" ,fp);
+    //print_float_val(psd->nec_long , "nec_long","" ,fp);
+    //print_float_val(psd->swc_lat , "swc_lat","" ,fp);
+    //print_float_val(psd->swc_long , "swc_long","" ,fp);
+    //TODO Why is this coming out bogus???
+    //print_float_val(psd->total_work , "total_work","" ,fp);
+    print_timer_val(psd->total_moving_time , "Total moving time",fp);
+    print_timer_val(psd->avg_lap_time , "Average lap time",fp);
+    print_float_val(psd->total_calories , "Total calories","kcal" ,fp);
+    if (psd->units == English) {
+      print_float_val(psd->avg_speed , "Average speed","miles/hour" ,fp);
+      print_float_val(psd->max_speed , "Maximum speed","miles/hour" ,fp);
+    }
+    else {
+      print_float_val(psd->avg_speed , "Average speed","kilometers/hour" ,fp);
+      print_float_val(psd->max_speed , "Maxium speed","kilometers/hour" ,fp);
+    }
+    if (psd->units == English) {
+      print_float_val(psd->total_ascent , "Total ascent","feet" ,fp);
+      print_float_val(psd->total_descent , "Total descent","feet" ,fp);
+      print_float_val(psd->avg_altitude , "Average altitude","feet" ,fp);
+      print_float_val(psd->max_altitude , "Maximum altitude","feet" ,fp);
+      print_float_val(psd->min_altitude , "Minimum altitude","feet" ,fp);
+    }
+    else {
+      print_float_val(psd->total_ascent , "Total ascent","meters" ,fp);
+      print_float_val(psd->total_descent , "Total descent","meters" ,fp);
+      print_float_val(psd->avg_altitude , "Average altitude","meters" ,fp);
+      print_float_val(psd->max_altitude , "Maximum altitude","meters" ,fp);
+      print_float_val(psd->min_altitude , "Minimum altitude","meters" ,fp);
+    }
+    print_float_val(psd->max_heart_rate , "Maximum heart rate","" ,fp);
+    print_float_val(psd->avg_heart_rate , "Average heart rate","" ,fp);
+    print_float_val(psd->max_cadence , "Maximum cadence","" ,fp);
+    print_float_val(psd->avg_cadence , "Average cadence","" ,fp);
+    if (psd->units == English) {
+      print_float_val(psd->avg_temperature , "Average temperature","deg F" ,fp);
+      print_float_val(psd->max_temperature , "Maximum temperature","deg F" ,fp);
+    }
+    else {
+      print_float_val(psd->avg_temperature , "Average temperature","deg C" ,fp);
+      print_float_val(psd->max_temperature , "Maximum temperature","deg C" ,fp);
+    }
+    print_float_val(psd->min_heart_rate , "Minimum heart_rate","" ,fp);
+    print_float_val(psd->total_anaerobic_training_effect, "Total anaerobic training effect", "", fp);
+    fprintf( fp, "%-30s", "End time");
+    fprintf( fp, "%3s", " = ");
+    fprintf( fp, "%s", asctime(gmtime(&psd->timestamp)));
+    fclose (fp);
+  }
+}
+
 
 //
 // Plot routines.
@@ -359,6 +502,109 @@ void sg_smooth(PlotData *pdest) {
   }
   free(smooth_arr);
 }
+/*  This routine is where the bulk of the session report
+ *  initialization occurs.
+ *
+ *  We take the raw values from the fit file conversion
+ *  routines and convert them to display-appropriate values based
+ *  on the selected unit system.
+ *
+ */
+
+void init_session(SessionData* psd,
+                 time_t sess_timestamp ,
+                 time_t sess_start_time ,
+                 float sess_start_position_lat ,
+                 float sess_start_position_long ,
+                 float sess_total_elapsed_time , 
+                 float sess_total_timer_time ,
+                 float sess_total_distance ,
+                 float sess_nec_lat ,
+                 float sess_nec_long ,
+                 float sess_swc_lat ,
+                 float sess_swc_long ,
+                 float sess_total_work ,
+                 float sess_total_moving_time ,
+                 float sess_avg_lap_time ,
+                 float sess_total_calories ,
+                 float sess_avg_speed ,
+                 float sess_max_speed ,
+                 float sess_total_ascent ,
+                 float sess_total_descent ,
+                 float sess_avg_altitude ,
+                 float sess_max_altitude ,
+                 float sess_min_altitude ,
+                 float sess_max_heart_rate ,
+                 float sess_avg_heart_rate ,
+                 float sess_max_cadence ,
+                 float sess_avg_cadence ,
+                 float sess_avg_temperature ,
+                 float sess_max_temperature ,
+                 float sess_min_heart_rate ,
+                 float sess_total_anaerobic_training_effect
+                 ) 
+{
+    psd->timestamp = sess_timestamp ;
+    psd->start_time = sess_start_time ;
+    psd->start_position_lat = sess_start_position_lat ;
+    psd->start_position_long = sess_start_position_long ;
+    psd->total_elapsed_time = sess_total_elapsed_time ; 
+    psd->total_timer_time = sess_total_timer_time ;
+    if (psd->units == English) {
+      psd->total_distance = sess_total_distance * 0.00062137119; // meters to miles
+    } else {
+      psd->total_distance = sess_total_distance * 0.001; //meters to kilometers
+    }
+    psd->nec_lat = sess_nec_lat ;
+    psd->nec_long = sess_nec_long ;
+    psd->swc_lat = sess_swc_lat ;
+    psd->swc_long = sess_swc_long ;
+    psd->total_work = sess_total_work / 1000.0 ; //J to kJ
+
+    psd->total_moving_time = sess_total_moving_time ;
+    psd->avg_lap_time = sess_avg_lap_time ;
+    psd->total_calories = sess_total_calories ;
+
+    if (psd->units == English) {
+      psd->avg_speed = sess_avg_speed * 2.2369363; // meters/s to miles/hr
+      psd->max_speed = sess_max_speed * 2.2369363; // meters/s to miles/hr
+    } else {
+      psd->avg_speed = sess_avg_speed * 3.6; //meters/s to kilometers/hr
+      psd->max_speed = sess_max_speed * 3.6; //meters/s to kilometers/hr
+    }
+    
+    if (psd->units == English) {
+      psd->total_ascent = sess_total_ascent * 3.2808399; // meters to feet
+      psd->total_descent = sess_total_descent * 3.2808399; // meters to feet
+      psd->avg_altitude = sess_avg_altitude * 3.2808399; // meters to feet
+      psd->max_altitude = sess_max_altitude * 3.2808399; // meters to feet
+      psd->min_altitude = sess_min_altitude * 3.2808399; // meters to feet
+    } else {
+      psd->total_ascent = sess_total_ascent * 1.0; //meters to meters
+      psd->total_descent = sess_total_descent * 1.0; //meters to meters
+      psd->avg_altitude = sess_avg_altitude * 1.0; //meters to meters
+      psd->max_altitude = sess_max_altitude * 1.0; //meters to meters
+      psd->min_altitude = sess_min_altitude * 1.0; //meters to meters
+    }
+
+    psd->max_heart_rate = sess_max_heart_rate ;
+    psd->avg_heart_rate = sess_avg_heart_rate ;
+    psd->max_cadence = sess_max_cadence ;
+    psd->avg_cadence = sess_avg_cadence ;
+
+    if (psd->units == English) {
+      psd->avg_temperature = 1.8 * sess_avg_temperature + 32.0;
+      psd->max_temperature = 1.8 * sess_max_temperature + 32.0;
+    } else {
+      psd->avg_temperature = sess_avg_temperature * 1.0;
+      psd->max_temperature = sess_max_temperature * 1.0 ;
+    }
+    
+    psd->min_heart_rate = sess_min_heart_rate ;
+    psd->total_anaerobic_training_effect = sess_total_anaerobic_training_effect;
+}
+
+
 
 /*  This routine is where the bulk of the plot initialization
  *  occurs.
@@ -573,6 +819,38 @@ gboolean init_plot_data() {
         lap_total_elapsed_time[LSIZE], lap_total_timer_time[LSIZE];
   int lap_num_recs = 0;
   time_t time_stamp[NSIZE], lap_time_stamp[LSIZE];
+
+  time_t sess_timestamp ;
+  time_t sess_start_time ;
+  float sess_start_position_lat ;
+  float sess_start_position_long ;
+  float sess_total_elapsed_time ; 
+  float sess_total_timer_time ;
+  float sess_total_distance ;
+  float sess_nec_lat ;
+  float sess_nec_long ;
+  float sess_swc_lat ;
+  float sess_swc_long ;
+  float sess_total_work ;
+  float sess_total_moving_time ;
+  float sess_avg_lap_time ;
+  float sess_total_calories ;
+  float sess_avg_speed ;
+  float sess_max_speed ;
+  float sess_total_ascent ;
+  float sess_total_descent ;
+  float sess_avg_altitude ;
+  float sess_max_altitude ;
+  float sess_min_altitude ;
+  float sess_max_heart_rate ;
+  float sess_avg_heart_rate ;
+  float sess_max_cadence ;
+  float sess_avg_cadence ;
+  float sess_avg_temperature ;
+  float sess_max_temperature ;
+  float sess_min_heart_rate ;
+  float sess_total_anaerobic_training_effect;
+
   /* Unit system first. */
   gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
   if (!strcmp(user_units, "Metric")) {
@@ -581,12 +859,14 @@ gboolean init_plot_data() {
     pheart->units = Metric;
     paltitude->units = Metric;
     plap->units = Metric;
+    psd->units = Metric;
   } else {
     ppace->units = English;
     pcadence->units = English;
     pheart->units = English;
     paltitude->units = English;
     plap->units = English;
+    psd->units = English;
   }
   g_free(user_units);
   /* Load data from fit file. */
@@ -596,8 +876,39 @@ gboolean init_plot_data() {
                                lap_end_lat, lap_end_lng,
                                lap_total_distance, lap_total_calories,
                                lap_total_elapsed_time, lap_total_timer_time,
-                               lap_time_stamp, &lap_num_recs
+                               lap_time_stamp, &lap_num_recs,
+                               &sess_timestamp ,
+                               &sess_start_time ,
+                               &sess_start_position_lat ,
+                               &sess_start_position_long ,
+                               &sess_total_elapsed_time , 
+                               &sess_total_timer_time ,
+                               &sess_total_distance ,
+                               &sess_nec_lat ,
+                               &sess_nec_long ,
+                               &sess_swc_lat ,
+                               &sess_swc_long ,
+                               &sess_total_work ,
+                               &sess_total_moving_time ,
+                               &sess_avg_lap_time ,
+                               &sess_total_calories ,
+                               &sess_avg_speed ,
+                               &sess_max_speed ,
+                               &sess_total_ascent ,
+                               &sess_total_descent ,
+                               &sess_avg_altitude ,
+                               &sess_max_altitude ,
+                               &sess_min_altitude ,
+                               &sess_max_heart_rate ,
+                               &sess_avg_heart_rate ,
+                               &sess_max_cadence ,
+                               &sess_avg_cadence ,
+                               &sess_avg_temperature ,
+                               &sess_max_temperature ,
+                               &sess_min_heart_rate ,
+                               &sess_total_anaerobic_training_effect
                                );
+
   if (rtnval != 100) {
     /* Something blew up. */
     return FALSE;
@@ -608,6 +919,43 @@ gboolean init_plot_data() {
     init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng, time_stamp);
     init_plots(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
     init_plots(LapPlot, lap_num_recs, lap_total_distance, lap_total_elapsed_time, lap_start_lat, lap_start_lng, time_stamp);
+
+    //TESTING
+    init_session(psd ,
+                 sess_timestamp ,
+                 sess_start_time ,
+                 sess_start_position_lat ,
+                 sess_start_position_long ,
+                 sess_total_elapsed_time , 
+                 sess_total_timer_time ,
+                 sess_total_distance ,
+                 sess_nec_lat ,
+                 sess_nec_long ,
+                 sess_swc_lat ,
+                 sess_swc_long ,
+                 sess_total_work ,
+                 sess_total_moving_time ,
+                 sess_avg_lap_time ,
+                 sess_total_calories ,
+                 sess_avg_speed ,
+                 sess_max_speed ,
+                 sess_total_ascent ,
+                 sess_total_descent ,
+                 sess_avg_altitude ,
+                 sess_max_altitude ,
+                 sess_min_altitude ,
+                 sess_max_heart_rate ,
+                 sess_avg_heart_rate ,
+                 sess_max_cadence ,
+                 sess_avg_cadence ,
+                 sess_avg_temperature ,
+                 sess_max_temperature ,
+                 sess_min_heart_rate ,
+                 sess_total_anaerobic_training_effect
+                 ),
+
+    generate_report(psd);
+
     return TRUE;
   }
 }

@@ -24,6 +24,9 @@
 #include "stdio.h"
 #include "string.h"
 
+#include "limits.h" //max and min for various integers
+#include "float.h"  //max and min for various floats
+
 #include "./fit/fit_convert.h"
 
 int get_fit_records(char* fname, float* p_speed, float* p_distance, 
@@ -33,7 +36,39 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
     float* plap_end_lat, float* plap_end_lng, 
     float* plap_total_distance, float* plap_total_calories,
     float* plap_total_elapsed_time, float* plap_total_timer_time,
-    long int* plap_time_stamp, int* plap_num_recs )
+    long int* plap_time_stamp, int* plap_num_recs,
+    long int *sess_timestamp ,
+    long int *sess_start_time ,
+    float *sess_start_position_lat ,
+    float *sess_start_position_long ,
+    float *sess_total_elapsed_time , 
+    float *sess_total_timer_time ,
+    float *sess_total_distance ,
+    float *sess_nec_lat ,
+    float *sess_nec_long ,
+    float *sess_swc_lat ,
+    float *sess_swc_long ,
+    float *sess_total_work ,
+    float *sess_total_moving_time ,
+    float *sess_avg_lap_time ,
+    float *sess_total_calories ,
+    float *sess_avg_speed ,
+    float *sess_max_speed ,
+    float *sess_total_ascent ,
+    float *sess_total_descent ,
+    float *sess_avg_altitude ,
+    float *sess_max_altitude ,
+    float *sess_min_altitude ,
+    float *sess_max_heart_rate ,
+    float *sess_avg_heart_rate ,
+    float *sess_max_cadence ,
+    float *sess_avg_cadence ,
+    float *sess_avg_temperature ,
+    float *sess_max_temperature ,
+    float *sess_min_heart_rate ,
+    float *sess_total_anaerobic_training_effect 
+    )
+
 {
    FILE *file;
    FIT_UINT8 buf[8];
@@ -130,8 +165,151 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
 
                   case FIT_MESG_NUM_SESSION:
                   {
-                     //const FIT_SESSION_MESG *session = (FIT_SESSION_MESG *) mesg;
+                     const FIT_SESSION_MESG *session = (FIT_SESSION_MESG *) mesg;
                      //printf("Session: timestamp=%u\n", session->timestamp);
+                     
+                     *sess_timestamp = session->timestamp + 631065600;
+                     *sess_start_time = session->start_time + 631065600;
+                     
+                     if  (session->start_position_lat == INT_MAX)
+                        *sess_start_position_lat = FLT_MAX;
+                     else
+                        *sess_start_position_lat = (float) (session->start_position_lat * (180.0/pow(2,31)));
+
+                     if  (session->start_position_long == INT_MAX)
+                        *sess_start_position_long = FLT_MAX;
+                     else
+                        *sess_start_position_long = (float) (session->start_position_long * (180.0/pow(2,31)));
+
+                     if (session->total_elapsed_time == UINT_MAX)
+                       *sess_total_elapsed_time = FLT_MAX;
+                     else 
+                       *sess_total_elapsed_time = (float) (session->total_elapsed_time / 1000.0 ); 
+
+                     if (session->total_timer_time == UINT_MAX)
+                       *sess_total_timer_time = FLT_MAX;
+                     else 
+                       *sess_total_timer_time = (float) (session->total_timer_time / 1000.0 ); 
+
+                     if (session->total_distance == UINT_MAX)
+                       *sess_total_distance = FLT_MAX;
+                     else 
+                       *sess_total_distance = (float) (session->total_distance/100.0);
+
+                     if  (session->nec_lat == INT_MAX)
+                        *sess_nec_lat = FLT_MAX;
+                     else
+                        *sess_nec_lat = (float) (session->nec_lat * (180.0/pow(2,31)));
+
+                     if  (session->nec_long == INT_MAX)
+                        *sess_nec_long = FLT_MAX;
+                     else
+                        *sess_nec_long = (float) (session->nec_long * (180.0/pow(2,31)));
+
+                     if  (session->swc_lat == INT_MAX)
+                        *sess_swc_lat = FLT_MAX;
+                     else
+                        *sess_swc_lat = (float) (session->swc_lat * (180.0/pow(2,31)));
+
+                     if  (session->swc_long == INT_MAX)
+                        *sess_swc_long = FLT_MAX;
+                     else
+                        *sess_swc_long = (float) (session->swc_long * (180.0/pow(2,31)));
+
+                     if (session->total_work == UINT_MAX)
+                       *sess_total_work = FLT_MAX;
+                     else 
+                       *sess_total_work = (float) (session->total_work); 
+
+                     if (session->total_moving_time == UINT_MAX)
+                       *sess_total_moving_time = FLT_MAX;
+                     else 
+                       *sess_total_moving_time = (float) (session->total_moving_time / 1000.0 ); 
+
+                     if (session->avg_lap_time == UINT_MAX)
+                       *sess_avg_lap_time = FLT_MAX;
+                     else 
+                       *sess_avg_lap_time = (float) (session->avg_lap_time / 1000.0 ); 
+
+                     if  (session->total_calories == USHRT_MAX)
+                        *sess_total_calories = FLT_MAX;
+                     else
+                       *sess_total_calories = (float) (session->total_calories);
+
+                     if (session->avg_speed == USHRT_MAX)
+                       *sess_avg_speed = FLT_MAX;
+                     else
+                       *sess_avg_speed = (float) (session->avg_speed) / 1000.0;
+
+                     if (session->max_speed == USHRT_MAX)
+                       *sess_max_speed = FLT_MAX;
+                     else
+                       *sess_max_speed = (float) (session->max_speed) / 1000.0;
+
+                    if (session->total_ascent == USHRT_MAX)
+                      *sess_total_ascent = FLT_MAX;
+                    else
+                      *sess_total_ascent = (float) (session->total_ascent);
+
+                    if (session->total_descent == USHRT_MAX)
+                      *sess_total_descent = FLT_MAX;
+                    else
+                      *sess_total_descent = (float) (session->total_descent);
+
+                    if (session->avg_altitude == USHRT_MAX)
+                      *sess_avg_altitude = FLT_MAX;
+                    else
+                      *sess_avg_altitude = (float) (session->avg_altitude) / 5.0 - 500.0;
+
+                    if (session->max_altitude == USHRT_MAX)
+                      *sess_max_altitude = FLT_MAX;
+                    else
+                      *sess_max_altitude = (float) (session->max_altitude) / 5.0 - 500.0;
+
+                    if (session->min_altitude == USHRT_MAX)
+                      *sess_min_altitude = FLT_MAX;
+                    else
+                      *sess_min_altitude = (float) (session->min_altitude) / 5.0 - 500.0;
+
+                    if (session->max_heart_rate == UCHAR_MAX)
+                      *sess_max_heart_rate = FLT_MAX;
+                    else
+                      *sess_max_heart_rate = (float) (session->max_heart_rate);
+
+                    if (session->avg_heart_rate == UCHAR_MAX)
+                      *sess_avg_heart_rate = FLT_MAX;
+                    else
+                      *sess_avg_heart_rate = (float) (session->avg_heart_rate);
+
+                    if (session->max_cadence == UCHAR_MAX)
+                      *sess_max_cadence = FLT_MAX;
+                    else
+                      *sess_max_cadence = (float) (session->max_cadence);
+
+                    if (session->avg_cadence == UCHAR_MAX)
+                      *sess_avg_cadence = FLT_MAX;
+                    else
+                      *sess_avg_cadence = (float) (session->avg_cadence);
+
+                    if (session->avg_temperature == SCHAR_MAX)
+                      *sess_avg_temperature = FLT_MAX;
+                    else
+                      *sess_avg_temperature = (float) (session->avg_temperature);
+
+                    if (session->max_temperature == SCHAR_MAX)
+                      *sess_max_temperature = FLT_MAX;
+                    else
+                      *sess_max_temperature = (float) (session->max_temperature);
+
+                    if (session->min_heart_rate == UCHAR_MAX)
+                      *sess_min_heart_rate = FLT_MAX;
+                    else
+                      *sess_min_heart_rate = (float) (session->min_heart_rate);
+
+                    if (session->total_anaerobic_training_effect == UCHAR_MAX)
+                      *sess_total_anaerobic_training_effect = FLT_MAX;
+                    else
+                      *sess_total_anaerobic_training_effect = (float) (session->total_anaerobic_training_effect);
                      break;
                   }
 
