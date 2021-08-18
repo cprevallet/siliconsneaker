@@ -191,7 +191,7 @@ PlotData paceplot = {.ptype = PacePlot,
                      .yaxislabel = NULL,
                      // light magenta for pace
                      .linecolor = {156, 100, 134},
-                     .start_time = ""};
+                     .start_time = NULL};
 PlotData cadenceplot = {.ptype = CadencePlot,
                         .symbol = "⏺",
                         .xmin = 0,
@@ -219,7 +219,7 @@ PlotData cadenceplot = {.ptype = CadencePlot,
                         .yaxislabel = NULL,
                         // light blue for heartrate
                         .linecolor = {31, 119, 180},
-                        .start_time = ""};
+                        .start_time = NULL};
 PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .symbol = "⏺",
                           .xmin = 0,
@@ -247,7 +247,7 @@ PlotData heartrateplot = {.ptype = HeartRatePlot,
                           .yaxislabel = NULL,
                           // light yellow for heartrate
                           .linecolor = {247, 250, 191},
-                          .start_time = ""};
+                          .start_time = NULL};
 PlotData altitudeplot = {.ptype = AltitudePlot,
                          .symbol = "⏺",
                          .xmin = 0,
@@ -275,7 +275,7 @@ PlotData altitudeplot = {.ptype = AltitudePlot,
                          .yaxislabel = NULL,
                          // light green for heartrate
                          .linecolor = {77, 175, 74},
-                         .start_time = ""};
+                         .start_time = NULL};
 PlotData lapplot = {.ptype = LapPlot,
                     .symbol = "⏺",
                     .xmin = 0,
@@ -303,7 +303,7 @@ PlotData lapplot = {.ptype = LapPlot,
                     .yaxislabel = NULL,
                     // light orange for laps
                     .linecolor = {255, 127, 14},
-                    .start_time = ""};
+                    .start_time = NULL};
 
 /* Rely on the default values for C structures = 0, 0.0 for ints, floats */
 struct SessionData sess;
@@ -368,6 +368,7 @@ void print_float_val(float val, char *plabel, char *punit, FILE *fp) {
   }
 }
 
+/* Convenience routine to print a formatted timer value. */
 void print_timer_val(float timer, char *plabel, FILE *fp) {
   if (timer < FLT_MAX - 1.0) {
     double hours, secs, mins, extra;
@@ -522,17 +523,16 @@ void sg_smooth(PlotData *pdest) {
   }
   free(smooth_arr);
 }
+
 /*  This routine is where the bulk of the session report
  *  initialization occurs.
  *
  *  We take the raw values from the fit file conversion
  *  routines and convert them to display-appropriate values based
- *  on the selected unit system.
- *
+ *  on the selected unit system and local time zone.
  */
-
-void init_session(
-  SessionData *psd, time_t sess_timestamp, time_t sess_start_time,
+void raw_to_user_session(
+    SessionData *psd, time_t sess_timestamp, time_t sess_start_time,
     float sess_start_position_lat, float sess_start_position_long,
     float sess_total_elapsed_time, float sess_total_timer_time,
     float sess_total_distance, float sess_nec_lat, float sess_nec_long,
@@ -543,9 +543,11 @@ void init_session(
     float sess_max_altitude, float sess_min_altitude, float sess_max_heart_rate,
     float sess_avg_heart_rate, float sess_max_cadence, float sess_avg_cadence,
     float sess_avg_temperature, float sess_max_temperature,
-    float sess_min_heart_rate, float sess_total_anaerobic_training_effect) {
-  psd->timestamp = sess_timestamp;
-  psd->start_time = sess_start_time;
+    float sess_min_heart_rate, float sess_total_anaerobic_training_effect,
+    time_t tz_offset) {
+  /* Correct the start and end times to local time. */
+  psd->timestamp = sess_timestamp + tz_offset;
+  psd->start_time = sess_start_time + tz_offset;
   psd->start_position_lat = sess_start_position_lat;
   psd->start_position_long = sess_start_position_long;
   psd->total_elapsed_time = sess_total_elapsed_time;
@@ -610,13 +612,17 @@ void init_session(
  *
  *  We take the raw values from the fit file conversion
  *  routines and convert them to display-appropriate values based
- *  on the selected unit system as well as seting labels and range
- *  limits to initial values.
+ *  on:
+ *  1. the selected unit system
+ *  2. the local time zone
+ *
+ *  as well as setting labels and range limits to initial values.
  *
  */
-void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
-                float y_raw[NSIZE], float lat_raw[NSIZE], float lng_raw[NSIZE],
-                time_t time_stamp[NSIZE]) {
+void raw_to_user_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
+                       float y_raw[NSIZE], float lat_raw[NSIZE],
+                       float lng_raw[NSIZE], time_t sess_start_time,
+                       time_t tz_offset) {
   PlotData *pdest;
   float x_cnv, y_cnv;
   /* Store to the correct global variable. */
@@ -723,11 +729,10 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
   if (filter) {
     sg_smooth(pdest);
   }
-  /* Set start time in UTC (for title) */
-  if (pdest->num_pts > 0) {
-    struct tm *ptm = gmtime(&time_stamp[0]);
-    pdest->start_time = asctime(ptm);
-  }
+  /* Set start time in local time (for title) */
+  time_t l_time = sess_start_time + tz_offset;
+  pdest->start_time = strdup(asctime(gmtime(&l_time)));
+
   /* Find plot data min, max */
   pdest->xmin = FLT_MAX;
   pdest->xmax = -FLT_MAX;
@@ -806,7 +811,8 @@ void init_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
   return;
 }
 
-/* Read file data, convert to display plot structures. */
+/* Read the raw file data, call helper routines to convert to user-facing
+   values. */
 gboolean init_plot_data() {
   /* Sensor declarations */
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE],
@@ -816,7 +822,7 @@ gboolean init_plot_data() {
       lap_end_lng[LSIZE], lap_total_distance[LSIZE], lap_total_calories[LSIZE],
       lap_total_elapsed_time[LSIZE], lap_total_timer_time[LSIZE];
   int lap_num_recs = 0;
-  time_t time_stamp[NSIZE], lap_time_stamp[LSIZE];
+  time_t rec_time_stamp[NSIZE], lap_time_stamp[LSIZE];
 
   time_t sess_timestamp;
   time_t sess_start_time;
@@ -848,6 +854,7 @@ gboolean init_plot_data() {
   float sess_max_temperature;
   float sess_min_heart_rate;
   float sess_total_anaerobic_training_effect;
+  time_t tz_offset = 0;
 
   /* Unit system first. */
   gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
@@ -869,7 +876,7 @@ gboolean init_plot_data() {
   g_free(user_units);
   /* Load data from fit file. */
   int rtnval = get_fit_records(
-      fname, speed, dist, lat, lng, cadence, heart_rate, alt, time_stamp,
+      fname, speed, dist, lat, lng, cadence, heart_rate, alt, rec_time_stamp,
       &num_recs, lap_start_lat, lap_start_lng, lap_end_lat, lap_end_lng,
       lap_total_distance, lap_total_calories, lap_total_elapsed_time,
       lap_total_timer_time, lap_time_stamp, &lap_num_recs, &sess_timestamp,
@@ -882,32 +889,36 @@ gboolean init_plot_data() {
       &sess_max_altitude, &sess_min_altitude, &sess_max_heart_rate,
       &sess_avg_heart_rate, &sess_max_cadence, &sess_avg_cadence,
       &sess_avg_temperature, &sess_max_temperature, &sess_min_heart_rate,
-      &sess_total_anaerobic_training_effect);
+      &sess_total_anaerobic_training_effect, &tz_offset);
 
   if (rtnval != 100) {
     /* Something blew up. */
     return FALSE;
   } else {
-    /* Initialize the display data structures based on the data. */
-    init_plots(PacePlot, num_recs, dist, speed, lat, lng, time_stamp);
-    init_plots(CadencePlot, num_recs, dist, cadence, lat, lng, time_stamp);
-    init_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng, time_stamp);
-    init_plots(AltitudePlot, num_recs, dist, alt, lat, lng, time_stamp);
-    init_plots(LapPlot, lap_num_recs, lap_total_distance,
-               lap_total_elapsed_time, lap_start_lat, lap_start_lng,
-               time_stamp);
-    /* Initialize the data for the summary display. */
-    init_session(psd, sess_timestamp, sess_start_time, sess_start_position_lat,
-                 sess_start_position_long, sess_total_elapsed_time,
-                 sess_total_timer_time, sess_total_distance, sess_nec_lat,
-                 sess_nec_long, sess_swc_lat, sess_swc_long, sess_total_work,
-                 sess_total_moving_time, sess_avg_lap_time, sess_total_calories,
-                 sess_avg_speed, sess_max_speed, sess_total_ascent,
-                 sess_total_descent, sess_avg_altitude, sess_max_altitude,
-                 sess_min_altitude, sess_max_heart_rate, sess_avg_heart_rate,
-                 sess_max_cadence, sess_avg_cadence, sess_avg_temperature,
-                 sess_max_temperature, sess_min_heart_rate,
-                 sess_total_anaerobic_training_effect);
+    /* Convert the raw values to user-facing values. */
+    raw_to_user_plots(PacePlot, num_recs, dist, speed, lat, lng,
+                      sess_start_time, tz_offset);
+    raw_to_user_plots(CadencePlot, num_recs, dist, cadence, lat, lng,
+                      sess_start_time, tz_offset);
+    raw_to_user_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
+                      sess_start_time, tz_offset);
+    raw_to_user_plots(AltitudePlot, num_recs, dist, alt, lat, lng,
+                      sess_start_time, tz_offset);
+    raw_to_user_plots(LapPlot, lap_num_recs, lap_total_distance,
+                      lap_total_elapsed_time, lap_start_lat, lap_start_lng,
+                      sess_start_time, tz_offset);
+    /* Convert the raw values to user-facing values. */
+    raw_to_user_session(
+        psd, sess_timestamp, sess_start_time, sess_start_position_lat,
+        sess_start_position_long, sess_total_elapsed_time,
+        sess_total_timer_time, sess_total_distance, sess_nec_lat, sess_nec_long,
+        sess_swc_lat, sess_swc_long, sess_total_work, sess_total_moving_time,
+        sess_avg_lap_time, sess_total_calories, sess_avg_speed, sess_max_speed,
+        sess_total_ascent, sess_total_descent, sess_avg_altitude,
+        sess_max_altitude, sess_min_altitude, sess_max_heart_rate,
+        sess_avg_heart_rate, sess_max_cadence, sess_avg_cadence,
+        sess_avg_temperature, sess_max_temperature, sess_min_heart_rate,
+        sess_total_anaerobic_training_effect, tz_offset);
     update_summary();
     return TRUE;
   }

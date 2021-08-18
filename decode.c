@@ -66,7 +66,8 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
     float *sess_avg_temperature ,
     float *sess_max_temperature ,
     float *sess_min_heart_rate ,
-    float *sess_total_anaerobic_training_effect 
+    float *sess_total_anaerobic_training_effect,
+    long int *tz_offset
     )
 
 {
@@ -146,8 +147,28 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
                   }
 
                   case FIT_MESG_NUM_ACTIVITY:
-                  {  /*
+                  {  
+                     /* Timestamps in FIT messages are almost always given 
+                        as the number of seconds since the Garmin Epoch 
+                        1989–12–31T00:00:00Z. The Z indicates that the 
+                        reference timezone is UTC, but most of the time 
+                        we will want to display values in the user’s 
+                        local timezone.
+
+                        The Activity message includes the Local Timestamp 
+                        property which is the number of seconds since 
+                        1989–12–31T00:00:00 in local time. 
+                        When provided, this property can be used to 
+                        calculate the timezone offset for the activity.
+
+                        Not all manufacturers include the Local Timestamp 
+                        property, so it should always be checked for a 
+                        valid value before using.
+                     */
                      const FIT_ACTIVITY_MESG *activity = (FIT_ACTIVITY_MESG *) mesg;
+                     
+                     *tz_offset = ((int)(activity->local_timestamp) - (int)(activity->timestamp));  //seconds
+                     /*
                      printf("Activity: timestamp=%u, type=%u, event=%u, event_type=%u, num_sessions=%u\n", activity->timestamp, activity->type, activity->event, activity->event_type, activity->num_sessions);
                      {
                         FIT_ACTIVITY_MESG old_mesg;

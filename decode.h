@@ -38,5 +38,6 @@ int get_fit_records(char* fname, float* p_speed, float* p_distance,
     float *sess_avg_temperature ,
     float *sess_max_temperature ,
     float *sess_min_heart_rate ,
-    float *sess_total_anaerobic_training_effect 
+    float *sess_total_anaerobic_training_effect,
+    long int *tz_offset
     );
