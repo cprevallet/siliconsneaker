@@ -532,7 +532,7 @@ void sg_smooth(PlotData *pdest) {
  */
 
 void init_session(
-    SessionData *psd, time_t sess_timestamp, time_t sess_start_time,
+  SessionData *psd, time_t sess_timestamp, time_t sess_start_time,
     float sess_start_position_lat, float sess_start_position_long,
     float sess_total_elapsed_time, float sess_total_timer_time,
     float sess_total_distance, float sess_nec_lat, float sess_nec_long,
