@@ -224,10 +224,8 @@ func parse_fit_file(fname *C.char, recSize int, lapSize int) (
   pLapTotalElapsedTime,
   pLapTotalTimerTime,
   nLaps :=  make_arrays(af, recSize, lapSize)
-  /* Find the local time zone value. */
-  //tOffset := C.long(af.Activity.LocalTimestamp.Unix()) - C.long(af.Activity.Timestamp.Unix())
-  //fmt.Println(af.Activity.LocalTimestamp);
-  //fmt.Println(af.Activity.Timestamp);
+  /* Find the local time zone offset from UTC. */
+  _, tzOffset := af.Activity.LocalTimestamp.Zone();
 
   return C.size_t(recSize), (*C.long)(pRecTimestamp),
          C.size_t(recSize), (*C.float)(pRecDistance),
@@ -263,13 +261,13 @@ func parse_fit_file(fname *C.char, recSize int, lapSize int) (
          C.float(af.Sessions[0].GetTotalMovingTimeScaled()),
          C.float(af.Sessions[0].GetAvgLapTimeScaled()),
          C.float(af.Sessions[0].TotalCalories),
-         C.float(af.Sessions[0].AvgSpeed),
-         C.float(af.Sessions[0].MaxSpeed),
+         C.float(af.Sessions[0].GetAvgSpeedScaled()),
+         C.float(af.Sessions[0].GetMaxSpeedScaled()),
          C.float(af.Sessions[0].TotalAscent),
          C.float(af.Sessions[0].TotalDescent),
-         C.float(af.Sessions[0].AvgAltitude),
-         C.float(af.Sessions[0].MaxAltitude),
-         C.float(af.Sessions[0].MinAltitude),
+         C.float(af.Sessions[0].GetAvgAltitudeScaled()),
+         C.float(af.Sessions[0].GetMaxAltitudeScaled()),
+         C.float(af.Sessions[0].GetMinAltitudeScaled()),
          C.float(af.Sessions[0].AvgHeartRate),
          C.float(af.Sessions[0].MaxHeartRate),
          C.float(af.Sessions[0].MinHeartRate),
@@ -278,7 +276,7 @@ func parse_fit_file(fname *C.char, recSize int, lapSize int) (
          C.float(af.Sessions[0].AvgTemperature),
          C.float(af.Sessions[0].MaxTemperature),
          C.float(af.Sessions[0].TotalAnaerobicTrainingEffect),
-         C.long(af.Activity.LocalTimestamp.Unix())
+         C.long(tzOffset)
 }
 
 /* Dummy function (required for cgo) */

@@ -949,7 +949,7 @@ gboolean init_plot_data() {
   float sessAvgTemperature = result.r63;
   float sessMaxTemperature = result.r64;
   float sessTotalAnaerobicTrainingEffect = result.r65;
-  long localtime = result.r66;
+  long tzOffset = result.r66;
 
 //  if (rtnval != 100) {
     /* Something blew up. */
@@ -970,17 +970,17 @@ gboolean init_plot_data() {
                       sess_start_time, tz_offset);
     */
     raw_to_user_plots(PacePlot, nRecs, pRecDistance, pRecSpeed, pRecLat, 
-                      pRecLong, sessStartTime, localtime);
+                      pRecLong, sessStartTime, tzOffset);
     raw_to_user_plots(CadencePlot, nRecs, pRecDistance, pRecCadence, pRecLat, 
-                      pRecLong, sessStartTime, localtime);
+                      pRecLong, sessStartTime, tzOffset);
     raw_to_user_plots(HeartRatePlot, nRecs, pRecDistance, pRecHeartRate, pRecLat, 
-                      pRecLong, sessStartTime, localtime);
+                      pRecLong, sessStartTime, tzOffset);
     raw_to_user_plots(AltitudePlot, nRecs, pRecDistance, pRecAltitude, pRecLat, 
-                      pRecLong, sessStartTime, localtime);
+                      pRecLong, sessStartTime, tzOffset);
     raw_to_user_plots(LapPlot, nLaps, pLapTotalDistance,
                       pLapTotalElapsedTime, 
                       pLapStartPositionLat, pLapStartPositionLong,
-                      sessStartTime, localtime);
+                      sessStartTime, tzOffset);
 
     /* Convert the raw values to user-facing values. */
     /*
@@ -1006,7 +1006,7 @@ gboolean init_plot_data() {
         sessMaxAltitude, sessMinAltitude, sessMaxHeartRate,
         sessAvgHeartRate, sessMaxCadence, sessAvgCadence,
         sessAvgTemperature, sessMaxTemperature, sessMinHeartRate,
-        sessTotalAnaerobicTrainingEffect, localtime);
+        sessTotalAnaerobicTrainingEffect, tzOffset);
 
     update_summary();
     return TRUE;
