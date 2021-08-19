@@ -457,6 +457,7 @@ void update_summary() {
   GtkTextIter end;
 
   char line[80];
+  /* TODO writing this out and reading it back in is not that elegant. */
   /*Create a new summary file.*/
   FILE *fp;
   fp = fopen("runplotter.txt", "w");
@@ -951,66 +952,35 @@ gboolean init_plot_data() {
   float sessTotalAnaerobicTrainingEffect = result.r65;
   long tzOffset = result.r66;
 
-//  if (rtnval != 100) {
-    /* Something blew up. */
-//    return FALSE;
-//  } else {
-    /* Convert the raw values to user-facing values. */
-    /*
-    raw_to_user_plots(PacePlot, num_recs, dist, speed, lat, lng,
-                      sess_start_time, tz_offset);
-    raw_to_user_plots(CadencePlot, num_recs, dist, cadence, lat, lng,
-                      sess_start_time, tz_offset);
-    raw_to_user_plots(HeartRatePlot, num_recs, dist, heart_rate, lat, lng,
-                      sess_start_time, tz_offset);
-    raw_to_user_plots(AltitudePlot, num_recs, dist, alt, lat, lng,
-                      sess_start_time, tz_offset);
-    raw_to_user_plots(LapPlot, lap_num_recs, lap_total_distance,
-                      lap_total_elapsed_time, lap_start_lat, lap_start_lng,
-                      sess_start_time, tz_offset);
-    */
-    raw_to_user_plots(PacePlot, nRecs, pRecDistance, pRecSpeed, pRecLat, 
-                      pRecLong, sessStartTime, tzOffset);
-    raw_to_user_plots(CadencePlot, nRecs, pRecDistance, pRecCadence, pRecLat, 
-                      pRecLong, sessStartTime, tzOffset);
-    raw_to_user_plots(HeartRatePlot, nRecs, pRecDistance, pRecHeartRate, pRecLat, 
-                      pRecLong, sessStartTime, tzOffset);
-    raw_to_user_plots(AltitudePlot, nRecs, pRecDistance, pRecAltitude, pRecLat, 
-                      pRecLong, sessStartTime, tzOffset);
-    raw_to_user_plots(LapPlot, nLaps, pLapTotalDistance,
-                      pLapTotalElapsedTime, 
-                      pLapStartPositionLat, pLapStartPositionLong,
-                      sessStartTime, tzOffset);
+  /* Convert the raw values to user-facing values. */
+  raw_to_user_plots(PacePlot, nRecs, pRecDistance, pRecSpeed, pRecLat, 
+                    pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots(CadencePlot, nRecs, pRecDistance, pRecCadence, pRecLat, 
+                    pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots(HeartRatePlot, nRecs, pRecDistance, pRecHeartRate, pRecLat, 
+                    pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots(AltitudePlot, nRecs, pRecDistance, pRecAltitude, pRecLat, 
+                    pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots(LapPlot, nLaps, pLapTotalDistance,
+                    pLapTotalElapsedTime, 
+                    pLapStartPositionLat, pLapStartPositionLong,
+                    sessStartTime, tzOffset);
 
-    /* Convert the raw values to user-facing values. */
-    /*
-    raw_to_user_session(
-        psd, sess_timestamp, sess_start_time, sess_start_position_lat,
-        sess_start_position_long, sess_total_elapsed_time,
-        sess_total_timer_time, sess_total_distance, sess_nec_lat, sess_nec_long,
-        sess_swc_lat, sess_swc_long, sess_total_work, sess_total_moving_time,
-        sess_avg_lap_time, sess_total_calories, sess_avg_speed, sess_max_speed,
-        sess_total_ascent, sess_total_descent, sess_avg_altitude,
-        sess_max_altitude, sess_min_altitude, sess_max_heart_rate,
-        sess_avg_heart_rate, sess_max_cadence, sess_avg_cadence,
-        sess_avg_temperature, sess_max_temperature, sess_min_heart_rate,
-        sess_total_anaerobic_training_effect, tz_offset);
-        */
-    raw_to_user_session(
-        psd, sessTimestamp, sessStartTime, sessStartPositionLat,
-        sessStartPositionLong, sessTotalElapsedTime,
-        sessTotalTimerTime, sessTotalDistance, sessNecLat, sessNecLong,
-        sessSwcLat, sessSwcLong, sessTotalWork, sessTotalMovingTime,
-        sessAvgLapTime, sessTotalCalories, sessAvgSpeed, sessMaxSpeed,
-        sessTotalAscent, sessTotalDescent, sessAvgAltitude,
-        sessMaxAltitude, sessMinAltitude, sessMaxHeartRate,
-        sessAvgHeartRate, sessMaxCadence, sessAvgCadence,
-        sessAvgTemperature, sessMaxTemperature, sessMinHeartRate,
-        sessTotalAnaerobicTrainingEffect, tzOffset);
-
-    update_summary();
-    return TRUE;
-//  }
+  /* Convert the raw values to user-facing values. */
+  raw_to_user_session(
+      psd, sessTimestamp, sessStartTime, sessStartPositionLat,
+      sessStartPositionLong, sessTotalElapsedTime,
+      sessTotalTimerTime, sessTotalDistance, sessNecLat, sessNecLong,
+      sessSwcLat, sessSwcLong, sessTotalWork, sessTotalMovingTime,
+      sessAvgLapTime, sessTotalCalories, sessAvgSpeed, sessMaxSpeed,
+      sessTotalAscent, sessTotalDescent, sessAvgAltitude,
+      sessMaxAltitude, sessMinAltitude, sessMaxHeartRate,
+      sessAvgHeartRate, sessMaxCadence, sessAvgCadence,
+      sessAvgTemperature, sessMaxTemperature, sessMinHeartRate,
+      sessTotalAnaerobicTrainingEffect, tzOffset);
+  /* Update the summary page. */
+  update_summary();
+  return TRUE;
 }
 
 /* A custom axis labeling function for a pace plot. */
