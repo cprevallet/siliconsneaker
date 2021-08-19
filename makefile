@@ -20,25 +20,16 @@ GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo champlain-0.12 champlai
 LD=gcc
 LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic -lm
 
-OBJS= main.o decode.o fit.o fit_convert.o fit_product.o fit_crc.o
+OBJS= main.o fitwrapper.a
 
 all: $(OBJS)	
 	$(LD) -o $(TARGET) $(OBJS) $(LDFLAGS)
     
-main.o: main.c
+main.o: main.c fitwrapper.a
 	$(CC) -c $(CCFLAGS) main.c $(GTKLIB)
     
-decode.o: decode.c
-	$(CC) -c $(CCFLAGS) decode.c 
-
-fit.o: ./fit/fit.c
-	$(CC) -c $(CCFLAGS) ./fit/fit.c
-fit_convert.o: ./fit/fit_convert.c
-	$(CC) -c $(CCFLAGS) ./fit/fit_convert.c
-fit_product.o: ./fit/fit_product.c
-	$(CC) -c $(CCFLAGS) ./fit/fit_product.c
-fit_crc.o: ./fit/fit_crc.c
-	$(CC) -c $(CCFLAGS) ./fit/fit_crc.c
-
+fitwrapper.a: fitwrapper.go 
+	go build -buildmode=c-archive fitwrapper.go
+    
 clean:
-	rm -f *.o $(TARGET)
+	rm -f *.o *.a $(TARGET)

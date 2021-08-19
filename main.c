@@ -61,7 +61,7 @@
 /*
  * Fit file decoding
  */
-#include "decode.h"
+#include "fitwrapper.h"
 
 //
 // Declarations section
@@ -72,6 +72,9 @@
 #define NSIZE 2880
 // Maximum readable laps from a fit file.
 #define LSIZE 400
+
+// the result structure defined by fitwrapper.h
+struct parse_fit_file_return result;
 
 enum ZoomState { Press = 0, Move = 1, Release = 2 };
 enum UnitSystem { Metric = 1, English = 0 };
@@ -815,6 +818,7 @@ void raw_to_user_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
    values. */
 gboolean init_plot_data() {
   /* Sensor declarations */
+  /*
   float speed[NSIZE], dist[NSIZE], lat[NSIZE], lng[NSIZE], alt[NSIZE],
       cadence[NSIZE], heart_rate[NSIZE];
   int num_recs = 0;
@@ -855,7 +859,7 @@ gboolean init_plot_data() {
   float sess_min_heart_rate;
   float sess_total_anaerobic_training_effect;
   time_t tz_offset = 0;
-
+  */
   /* Unit system first. */
   gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
   if (!strcmp(user_units, "Metric")) {
@@ -875,6 +879,7 @@ gboolean init_plot_data() {
   }
   g_free(user_units);
   /* Load data from fit file. */
+  /*
   int rtnval = get_fit_records(
       fname, speed, dist, lat, lng, cadence, heart_rate, alt, rec_time_stamp,
       &num_recs, lap_start_lat, lap_start_lng, lap_end_lat, lap_end_lng,
@@ -890,12 +895,68 @@ gboolean init_plot_data() {
       &sess_avg_heart_rate, &sess_max_cadence, &sess_avg_cadence,
       &sess_avg_temperature, &sess_max_temperature, &sess_min_heart_rate,
       &sess_total_anaerobic_training_effect, &tz_offset);
+  */
+  /* Parse the data from the fit file in a cGO routine and return the
+   * result as a structure defined by fitwrapper.go.
+   */
+  result = parse_fit_file(fname, NSIZE, LSIZE );
+//  long  *pRecTimestamp = result.r1;
+  float *pRecDistance = result.r3;
+  float *pRecSpeed = result.r5;
+  float *pRecAltitude = result.r7;
+  float *pRecCadence = result.r9;
+  float *pRecHeartRate = result.r11;
+  float *pRecLat = result.r13;
+  float *pRecLong = result.r15;
+  long  nRecs = result.r16;
+//  long  *pLapTimestamp = result.r18;
+  float *pLapTotalDistance = result.r20;
+  float *pLapStartPositionLat = result.r22;
+  float *pLapStartPositionLong = result.r24;
+//  float *pLapEndPositionLat = result.r26;
+//  float *pLapEndPositionLong = result.r28;
+//  float *pLapTotalCalories = result.r30;
+  float *pLapTotalElapsedTime = result.r32;
+//  float *pLapTotalTimerTime = result.r34;
+  long  nLaps = result.r35;
+  long  sessTimestamp = result.r36;
+  long  sessStartTime = result.r37;
+  float sessStartPositionLat = result.r38;
+  float sessStartPositionLong = result.r39;
+  float sessTotalElapsedTime = result.r40;
+  float sessTotalTimerTime = result.r41;
+  float sessTotalDistance = result.r42;
+  float sessNecLat = result.r43;
+  float sessNecLong = result.r44;
+  float sessSwcLat = result.r45;
+  float sessSwcLong = result.r46;
+  float sessTotalWork = result.r47;
+  float sessTotalMovingTime = result.r48;
+  float sessAvgLapTime = result.r49;
+  float sessTotalCalories = result.r50;
+  float sessAvgSpeed = result.r51;
+  float sessMaxSpeed = result.r52;
+  float sessTotalAscent = result.r53;
+  float sessTotalDescent = result.r54;
+  float sessAvgAltitude = result.r55;
+  float sessMaxAltitude = result.r56;
+  float sessMinAltitude = result.r57;
+  float sessAvgHeartRate = result.r58;
+  float sessMaxHeartRate = result.r59;
+  float sessMinHeartRate = result.r60;
+  float sessAvgCadence = result.r61;
+  float sessMaxCadence = result.r62;
+  float sessAvgTemperature = result.r63;
+  float sessMaxTemperature = result.r64;
+  float sessTotalAnaerobicTrainingEffect = result.r65;
+  long localtime = result.r66;
 
-  if (rtnval != 100) {
+//  if (rtnval != 100) {
     /* Something blew up. */
-    return FALSE;
-  } else {
+//    return FALSE;
+//  } else {
     /* Convert the raw values to user-facing values. */
+    /*
     raw_to_user_plots(PacePlot, num_recs, dist, speed, lat, lng,
                       sess_start_time, tz_offset);
     raw_to_user_plots(CadencePlot, num_recs, dist, cadence, lat, lng,
@@ -907,7 +968,22 @@ gboolean init_plot_data() {
     raw_to_user_plots(LapPlot, lap_num_recs, lap_total_distance,
                       lap_total_elapsed_time, lap_start_lat, lap_start_lng,
                       sess_start_time, tz_offset);
+    */
+    raw_to_user_plots(PacePlot, nRecs, pRecDistance, pRecSpeed, pRecLat, 
+                      pRecLong, sessStartTime, localtime);
+    raw_to_user_plots(CadencePlot, nRecs, pRecDistance, pRecCadence, pRecLat, 
+                      pRecLong, sessStartTime, localtime);
+    raw_to_user_plots(HeartRatePlot, nRecs, pRecDistance, pRecHeartRate, pRecLat, 
+                      pRecLong, sessStartTime, localtime);
+    raw_to_user_plots(AltitudePlot, nRecs, pRecDistance, pRecAltitude, pRecLat, 
+                      pRecLong, sessStartTime, localtime);
+    raw_to_user_plots(LapPlot, nLaps, pLapTotalDistance,
+                      pLapTotalElapsedTime, 
+                      pLapStartPositionLat, pLapStartPositionLong,
+                      sessStartTime, localtime);
+
     /* Convert the raw values to user-facing values. */
+    /*
     raw_to_user_session(
         psd, sess_timestamp, sess_start_time, sess_start_position_lat,
         sess_start_position_long, sess_total_elapsed_time,
@@ -919,9 +995,22 @@ gboolean init_plot_data() {
         sess_avg_heart_rate, sess_max_cadence, sess_avg_cadence,
         sess_avg_temperature, sess_max_temperature, sess_min_heart_rate,
         sess_total_anaerobic_training_effect, tz_offset);
+        */
+    raw_to_user_session(
+        psd, sessTimestamp, sessStartTime, sessStartPositionLat,
+        sessStartPositionLong, sessTotalElapsedTime,
+        sessTotalTimerTime, sessTotalDistance, sessNecLat, sessNecLong,
+        sessSwcLat, sessSwcLong, sessTotalWork, sessTotalMovingTime,
+        sessAvgLapTime, sessTotalCalories, sessAvgSpeed, sessMaxSpeed,
+        sessTotalAscent, sessTotalDescent, sessAvgAltitude,
+        sessMaxAltitude, sessMinAltitude, sessMaxHeartRate,
+        sessAvgHeartRate, sessMaxCadence, sessAvgCadence,
+        sessAvgTemperature, sessMaxTemperature, sessMinHeartRate,
+        sessTotalAnaerobicTrainingEffect, localtime);
+
     update_summary();
     return TRUE;
-  }
+//  }
 }
 
 /* A custom axis labeling function for a pace plot. */
