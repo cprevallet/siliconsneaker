@@ -121,8 +121,8 @@ func make_arrays(af *fit.ActivityFile, recSize int, lapSize int) (
     LapEndPositionLats[idx] =  C.float(item.EndPositionLat.Degrees())
     LapEndPositionLongs[idx] =  C.float(item.EndPositionLong.Degrees())
     LapTotalCaloriess[idx] =  C.float(item.TotalCalories)
-    LapTotalElapsedTimes[idx] =  C.float(item.TotalElapsedTime)
-    LapTotalTimerTimes[idx] =  C.float(item.TotalTimerTime)
+    LapTotalElapsedTimes[idx] =  C.float(item.GetTotalElapsedTimeScaled())
+    LapTotalTimerTimes[idx] =  C.float(item.GetTotalTimerTimeScaled())
     nLaps = nLaps + 1
   }
   return  pRecTimestamp,
@@ -252,16 +252,16 @@ func parse_fit_file(fname *C.char, recSize int, lapSize int) (
          C.long(af.Sessions[0].StartTime.Unix()),
          C.float(af.Sessions[0].StartPositionLat.Degrees()),
          C.float(af.Sessions[0].StartPositionLong.Degrees()),
-         C.float(af.Sessions[0].TotalElapsedTime),
-         C.float(af.Sessions[0].TotalTimerTime),
+         C.float(af.Sessions[0].GetTotalElapsedTimeScaled()),
+         C.float(af.Sessions[0].GetTotalTimerTimeScaled()),
          C.float(af.Sessions[0].GetTotalDistanceScaled()),
          C.float(af.Sessions[0].NecLat.Degrees()),
          C.float(af.Sessions[0].NecLong.Degrees()),
          C.float(af.Sessions[0].SwcLat.Degrees()),
          C.float(af.Sessions[0].SwcLong.Degrees()),
          C.float(af.Sessions[0].TotalWork),
-         C.float(af.Sessions[0].TotalMovingTime),
-         C.float(af.Sessions[0].AvgLapTime),
+         C.float(af.Sessions[0].GetTotalMovingTimeScaled()),
+         C.float(af.Sessions[0].GetAvgLapTimeScaled()),
          C.float(af.Sessions[0].TotalCalories),
          C.float(af.Sessions[0].AvgSpeed),
          C.float(af.Sessions[0].MaxSpeed),
