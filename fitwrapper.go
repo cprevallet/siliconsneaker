@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/tormoder/fit"
+  "math"
 	"io/ioutil"
 	"os"
 	"unsafe"
@@ -147,6 +148,69 @@ func make_arrays(af *fit.ActivityFile, recSize int, lapSize int) (
 
 }
 
+/* Return a floating point representation or NaN */
+func num_cvt(sessionval interface{}) (C.float) {
+  switch sessionval.(type) {
+    case string:
+      return C.float(math.NaN())
+    case float32:
+      return C.float(sessionval.(float32))
+    case float64:
+      return C.float(sessionval.(float64))
+    case uint8:
+      if (sessionval.(uint8) < math.MaxUint8) {
+        return C.float(sessionval.(uint8))
+      } else {
+        break;
+      }
+    case uint16:
+      if (sessionval.(uint16) < math.MaxUint16) {
+        return C.float(sessionval.(uint16))
+      } else {
+        break;
+      }
+    case uint32:
+      if (sessionval.(uint32) < math.MaxUint32) {
+        return C.float(sessionval.(uint32))
+      } else {
+        break;
+      }
+    /*
+    case uint64:
+      if (sessionval != math.MaxUint64) {
+        return C.float(sessionval.(uint64))
+      } else {
+        break;
+      }
+    */
+    case int8:
+      if (sessionval.(int8) < math.MaxInt8) {
+        return C.float(sessionval.(int8))
+      } else {
+        break;
+      }
+    case int16:
+      if (sessionval.(int16) < math.MaxInt16) {
+        return C.float(sessionval.(int16))
+      } else {
+        break;
+      }
+    case int32:
+      if (sessionval.(int32) < math.MaxInt32) {
+        return C.float(sessionval.(int32))
+      } else {
+        break;
+      }
+    case int64:
+      if (sessionval.(int64) < math.MaxInt64) {
+        return C.float(sessionval.(int64))
+      } else {
+        break;
+      }
+  }
+  return C.float(math.NaN())
+}
+
 /* Export the function to C via CGO with // notation. */
 
 //export parse_fit_file
@@ -248,34 +312,34 @@ func parse_fit_file(fname *C.char, recSize int, lapSize int) (
 		C.long(nLaps),
 		C.long(af.Sessions[0].Timestamp.Unix()),
 		C.long(af.Sessions[0].StartTime.Unix()),
-		C.float(af.Sessions[0].StartPositionLat.Degrees()),
-		C.float(af.Sessions[0].StartPositionLong.Degrees()),
-		C.float(af.Sessions[0].GetTotalElapsedTimeScaled()),
-		C.float(af.Sessions[0].GetTotalTimerTimeScaled()),
-		C.float(af.Sessions[0].GetTotalDistanceScaled()),
-		C.float(af.Sessions[0].NecLat.Degrees()),
-		C.float(af.Sessions[0].NecLong.Degrees()),
-		C.float(af.Sessions[0].SwcLat.Degrees()),
-		C.float(af.Sessions[0].SwcLong.Degrees()),
-		C.float(af.Sessions[0].TotalWork),
-		C.float(af.Sessions[0].GetTotalMovingTimeScaled()),
-		C.float(af.Sessions[0].GetAvgLapTimeScaled()),
-		C.float(af.Sessions[0].TotalCalories),
-		C.float(af.Sessions[0].GetAvgSpeedScaled()),
-		C.float(af.Sessions[0].GetMaxSpeedScaled()),
-		C.float(af.Sessions[0].TotalAscent),
-		C.float(af.Sessions[0].TotalDescent),
-		C.float(af.Sessions[0].GetAvgAltitudeScaled()),
-		C.float(af.Sessions[0].GetMaxAltitudeScaled()),
-		C.float(af.Sessions[0].GetMinAltitudeScaled()),
-		C.float(af.Sessions[0].AvgHeartRate),
-		C.float(af.Sessions[0].MaxHeartRate),
-		C.float(af.Sessions[0].MinHeartRate),
-		C.float(af.Sessions[0].AvgCadence),
-		C.float(af.Sessions[0].MaxCadence),
-		C.float(af.Sessions[0].AvgTemperature),
-		C.float(af.Sessions[0].MaxTemperature),
-		C.float(af.Sessions[0].TotalAnaerobicTrainingEffect),
+		num_cvt(af.Sessions[0].StartPositionLat.Degrees()),
+		num_cvt(af.Sessions[0].StartPositionLong.Degrees()),
+		num_cvt(af.Sessions[0].GetTotalElapsedTimeScaled()),
+		num_cvt(af.Sessions[0].GetTotalTimerTimeScaled()),
+		num_cvt(af.Sessions[0].GetTotalDistanceScaled()),
+		num_cvt(af.Sessions[0].NecLat.Degrees()),
+		num_cvt(af.Sessions[0].NecLong.Degrees()),
+		num_cvt(af.Sessions[0].SwcLat.Degrees()),
+		num_cvt(af.Sessions[0].SwcLong.Degrees()),
+		num_cvt(af.Sessions[0].TotalWork),
+		num_cvt(af.Sessions[0].GetTotalMovingTimeScaled()),
+		num_cvt(af.Sessions[0].GetAvgLapTimeScaled()),
+		num_cvt(af.Sessions[0].TotalCalories),
+		num_cvt(af.Sessions[0].GetAvgSpeedScaled()),
+		num_cvt(af.Sessions[0].GetMaxSpeedScaled()),
+		num_cvt(af.Sessions[0].TotalAscent),
+		num_cvt(af.Sessions[0].TotalDescent),
+		num_cvt(af.Sessions[0].GetAvgAltitudeScaled()),
+		num_cvt(af.Sessions[0].GetMaxAltitudeScaled()),
+		num_cvt(af.Sessions[0].GetMinAltitudeScaled()),
+		num_cvt(af.Sessions[0].AvgHeartRate),
+		num_cvt(af.Sessions[0].MaxHeartRate),
+    num_cvt(af.Sessions[0].MinHeartRate),
+		num_cvt(af.Sessions[0].AvgCadence),
+		num_cvt(af.Sessions[0].MaxCadence),
+		num_cvt(af.Sessions[0].AvgTemperature),
+		num_cvt(af.Sessions[0].MaxTemperature),
+		num_cvt(af.Sessions[0].TotalAnaerobicTrainingEffect),
 		C.long(tzOffset)
 }
 
