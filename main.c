@@ -1322,9 +1322,10 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
  * The function assumes clutter has already been initialized.
  */
 static int init_map() {
-  float latitude = 39.8355;
-  float longitude = -99.0909;
-  int zoom;
+  // Geographical center of contiguous US
+  float default_latitude = 39.8355;
+  float default_longitude = -99.0909;
+  int default_zoom = 4;
   /*
   OSM_GPS_MAP_SOURCE_NULL,
   OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
@@ -1354,10 +1355,7 @@ static int init_map() {
                      "user-agent", "runplotter.c", // Always set user-agent, for better tile-usage compliance
                       NULL);
   map = OSM_GPS_MAP(wid);
-  //zoom = osm_gps_map_source_get_min_zoom(source);
-  zoom = 4;
-  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP(map), latitude,longitude,zoom);
-//  osm_gps_map_layer_add (OSM_GPS_MAP(map), OSM_GPS_MAP_LAYER(osd));
+  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP(map), default_latitude, default_longitude, default_zoom);
   /* Add the global widget to the global GTKFrame named viewport */
   gtk_container_add(GTK_CONTAINER(viewport), wid);
 
@@ -1400,40 +1398,48 @@ static void move_marker(ChamplainMarkerLayer *my_marker_layer,
 
 /* Update the map. */
 static void create_map() {
+  // Geographical center of contiguous US
+  float default_latitude = 39.8355;
+  float default_longitude = -99.0909;
+
   /* Define colors for start, end markers.*/
-  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
-  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
-  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
-  if ((pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
+//  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
+//  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
+//  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
+  if ((map != NULL) && (pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
     /* Center at the start. */
-    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), pd->lat[0], pd->lng[0]);
+    
+
+    osm_gps_map_set_center(OSM_GPS_MAP(map), pd->lat[0], pd->lng[0]);
+//    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), pd->lat[0], pd->lng[0]);
     /* Remove any existing layers if we are reloading. */
-    if (c_path_layer != NULL) {
-      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
-    }
-    if (c_marker_layer != NULL) {
-      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
-    }
-    champlain_view_reload_tiles(c_view);
+//    if (c_path_layer != NULL) {
+//      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
+//    }
+//    if (c_marker_layer != NULL) {
+//      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
+//    }
+//    champlain_view_reload_tiles(c_view);
     /*Create new layers. */
-    c_path_layer = champlain_path_layer_new();
-    champlain_path_layer_set_stroke_color(c_path_layer, &my_blue);
-    c_marker_layer = champlain_marker_layer_new();
+//    c_path_layer = champlain_path_layer_new();
+//    champlain_path_layer_set_stroke_color(c_path_layer, &my_blue);
+//    c_marker_layer = champlain_marker_layer_new();
     /* Add start and stop markers. Green for start. Red for end. */
-    add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
-               pd->lat[pd->num_pts - 1], &my_magenta);
-    add_marker(c_marker_layer, pd->lng[0], pd->lat[0], &my_green);
+//    add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
+//               pd->lat[pd->num_pts - 1], &my_magenta);
+//    add_marker(c_marker_layer, pd->lng[0], pd->lat[0], &my_green);
     /* Add current position marker */
-    add_marker(c_marker_layer, pd->lng[currIdx], pd->lat[currIdx], &my_blue);
+//    add_marker(c_marker_layer, pd->lng[currIdx], pd->lat[currIdx], &my_blue);
     /* Add a path */
-    for (int i = 0; i < pd->num_pts; i++) {
-      append_point(c_path_layer, pd->lat[i], pd->lng[i]);
-    }
-    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
-    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
+//    for (int i = 0; i < pd->num_pts; i++) {
+//      append_point(c_path_layer, pd->lat[i], pd->lng[i]);
+//    }
+//    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
+//    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
   } else {
     /* Start-up. */
-    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), 0, 0);
+      osm_gps_map_set_center(OSM_GPS_MAP(map), default_latitude, default_longitude);
+//    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), 0, 0);
   }
 }
 
@@ -1511,7 +1517,7 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
     pd = ppace;
   }
   gtk_widget_queue_draw(GTK_WIDGET(da));
-  //create_map();
+  create_map();
 }
 
 //
