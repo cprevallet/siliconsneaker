@@ -38,13 +38,13 @@
  *	libc.so.6
  */
 
+#include <clutter-gtk/clutter-gtk.h>
 #include <float.h>
 #include <gdk/gdk.h>
-#include <gtk/gtk.h>
 #include <glib.h>
+#include <gtk/gtk.h>
 #include <math.h>
 #include <string.h>
-
 
 /*
  * PLPlot
@@ -53,12 +53,6 @@
 #include <cairo.h>
 #include <plplot.h>
 
-/*
- * Champlain map
- */
-//#include <champlain-gtk/champlain-gtk.h>
-//#include <champlain/champlain.h>
-#include <clutter-gtk/clutter-gtk.h>
 /*
  *  Map
  */
@@ -91,11 +85,6 @@ enum PlotType {
   AltitudePlot = 4,
   LapPlot = 5
 };
-
-/* Map colors */
-ClutterColor my_green;
-ClutterColor my_magenta;
-ClutterColor my_blue;
 
 /* The main data structure for the program defining
  * values for various aspects of displaying a plot
@@ -350,18 +339,13 @@ GtkLabel *lbl_val;
 /* Declaration for the fit filename. */
 char *fname = "";
 
-/* Declarations for Champlain maps. */
-//ChamplainView *c_view;
-//static ChamplainPathLayer *c_path_layer;
-//static ChamplainMarkerLayer *c_marker_layer;
-
 /* Declarations for OsmGps maps. */
 OsmGpsMap *map;
 OsmGpsMapTrack *routeTrack;
 static GdkPixbuf *starImage = NULL;
-static OsmGpsMapImage * startTrackMarker = NULL;
-static OsmGpsMapImage * endTrackMarker = NULL;
-static OsmGpsMapImage * posnTrackMarker = NULL;
+static OsmGpsMapImage *startTrackMarker = NULL;
+static OsmGpsMapImage *endTrackMarker = NULL;
+static OsmGpsMapImage *posnTrackMarker = NULL;
 
 /* Current index */
 int currIdx = 0;
@@ -1331,8 +1315,7 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
 static int init_map() {
 
   // Load start, stop image for map points of interest.
-  starImage = gdk_pixbuf_new_from_file_at_size ("poi.png", 24,24,NULL);
-
+  starImage = gdk_pixbuf_new_from_file_at_size("poi.png", 24, 24, NULL);
 
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
@@ -1356,63 +1339,31 @@ static int init_map() {
   OSM_GPS_MAP_SOURCE_LAST
   */
 
-  //OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+  // OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
   OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
- // if ( !osm_gps_map_source_is_valid(source) )
- //       return 1;
+  // if ( !osm_gps_map_source_is_valid(source) )
+  //       return 1;
 
-  GtkWidget *wid = g_object_new (OSM_TYPE_GPS_MAP,
-                     "map-source", source,
-                     "tile-cache", "/tmp/",
-                     "user-agent", "runplotter.c", // Always set user-agent, for better tile-usage compliance
-                      NULL);
+  GtkWidget *wid = g_object_new(
+      OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache", "/tmp/",
+      "user-agent",
+      "runplotter.c", // Always set user-agent, for better tile-usage compliance
+      NULL);
   map = OSM_GPS_MAP(wid);
-  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP(map), defaultLatitude, defaultLongitude, defaultzoom);
+  osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), defaultLatitude,
+                                  defaultLongitude, defaultzoom);
   /* Add the global widget to the global GTKFrame named viewport */
   gtk_container_add(GTK_CONTAINER(viewport), wid);
 
   return 0;
-//  champlain_widget = gtk_champlain_embed_new();
-//  c_view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
-//  clutter_actor_set_reactive(CLUTTER_ACTOR(c_view), TRUE);
-//  g_object_set(G_OBJECT(c_view), "kinetic-mode", TRUE, "zoom-level", 14, NULL);
-//  gtk_widget_set_size_request(champlain_widget, 640, 480);
-  /* Add the global widget to the global GTKFrame named viewport */
-//  gtk_container_add(GTK_CONTAINER(viewport), champlain_widget);
 }
 
-/* Convenience routine to add a latitude, longitude to a path layer. */
-//static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
-//  ChamplainCoordinate *coord;
-//  coord = champlain_coordinate_new_full(lon, lat);
-  // TODO This line throwing assertion errors.  Borrowed from example so why?
-//  champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
-//}
-
-/* Convenience routine to add a marker to the marker layer. */
-//static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
-//                       gdouble lat, const ClutterColor *color) {
-//  ClutterActor *my_marker = champlain_point_new_full(12, color);
-//  champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), lat, lng);
-//  champlain_marker_layer_add_marker(my_marker_layer,
-//                                    CHAMPLAIN_MARKER(my_marker));
-//}
-
 /* Convenience routine to move marker. */
-//static void move_marker(ChamplainMarkerLayer *my_marker_layer,
-//                        ChamplainMarker *my_marker, gdouble new_lng,
-//                        gdouble new_lat, const ClutterColor *color) {
 static void move_marker(gdouble new_lat, gdouble new_lng) {
   if (posnTrackMarker != NULL) {
-      osm_gps_map_image_remove(map, posnTrackMarker);
-      posnTrackMarker = osm_gps_map_image_add (map, new_lat, new_lng, starImage);
+    osm_gps_map_image_remove(map, posnTrackMarker);
+    posnTrackMarker = osm_gps_map_image_add(map, new_lat, new_lng, starImage);
   }
-  /*
-  if (my_marker != NULL) {
-    champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), new_lat,
-                                    new_lng);
-  }
-  */
 }
 
 /* Update the map. */
@@ -1422,23 +1373,12 @@ static void create_map() {
   float defaultLongitude = -99.0909;
 
   /* Define colors for start, end markers.*/
-//  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
-//  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
-//  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
+  //  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
+  //  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
+  //  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
   if ((map != NULL) && (pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
     /* Center at the start. */
-    
-
     osm_gps_map_set_center(OSM_GPS_MAP(map), pd->lat[0], pd->lng[0]);
-//    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), pd->lat[0], pd->lng[0]);
-    /* Remove any existing layers if we are reloading. */
-//    if (c_path_layer != NULL) {
-//      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
-//    }
-//    if (c_marker_layer != NULL) {
-//      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
-//    }
-//    champlain_view_reload_tiles(c_view);
     /*Create a "track" for the run. */
     if (routeTrack != NULL) {
       osm_gps_map_track_remove(map, routeTrack);
@@ -1446,12 +1386,10 @@ static void create_map() {
     routeTrack = osm_gps_map_track_new();
     osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
     for (int i = 0; i < pd->num_pts; i++) {
-      OsmGpsMapPoint * mapPoint = osm_gps_map_point_new_degrees(pd->lat[i], pd->lng[i]);
+      OsmGpsMapPoint *mapPoint =
+          osm_gps_map_point_new_degrees(pd->lat[i], pd->lng[i]);
       osm_gps_map_track_add_point(routeTrack, mapPoint);
     }
-//    c_path_layer = champlain_path_layer_new();
-//    champlain_path_layer_set_stroke_color(c_path_layer, &my_blue);
-//    c_marker_layer = champlain_marker_layer_new();
     /* Add start and end markers. */
 
     if (startTrackMarker != NULL) {
@@ -1463,39 +1401,27 @@ static void create_map() {
     if (posnTrackMarker != NULL) {
       osm_gps_map_image_remove(map, posnTrackMarker);
     }
-    startTrackMarker = osm_gps_map_image_add (map, pd->lat[0], pd->lng[0], starImage);
-    endTrackMarker = osm_gps_map_image_add (map, pd->lat[pd->num_pts - 1], pd->lng[pd->num_pts - 1], starImage);
-//    add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
-//               pd->lat[pd->num_pts - 1], &my_magenta);
-//    add_marker(c_marker_layer, pd->lng[0], pd->lat[0], &my_green);
+    startTrackMarker =
+        osm_gps_map_image_add(map, pd->lat[0], pd->lng[0], starImage);
+    endTrackMarker = osm_gps_map_image_add(map, pd->lat[pd->num_pts - 1],
+                                           pd->lng[pd->num_pts - 1], starImage);
     /* Add current position marker */
 
-    posnTrackMarker = osm_gps_map_image_add (map, pd->lat[currIdx], pd->lng[currIdx], starImage);
+    posnTrackMarker = osm_gps_map_image_add(map, pd->lat[currIdx],
+                                            pd->lng[currIdx], starImage);
 
-//    add_marker(c_marker_layer, pd->lng[currIdx], pd->lat[currIdx], &my_blue);
-    /* Add a path */
-//    for (int i = 0; i < pd->num_pts; i++) {
-//      append_point(c_path_layer, pd->lat[i], pd->lng[i]);
-//    }
-//    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_path_layer));
-//    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
   } else {
     /* Start-up. */
-      osm_gps_map_set_center(OSM_GPS_MAP(map), defaultLatitude, defaultLongitude);
-//    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), 0, 0);
+    osm_gps_map_set_center(OSM_GPS_MAP(map), defaultLatitude, defaultLongitude);
   }
 }
 
 /* Zoom in. */
-//static void zoom_in(GtkWidget *widget, ChamplainView *c_view) {
-//  champlain_view_zoom_in(c_view);
 static void zoom_in(GtkWidget *widget) {
   osm_gps_map_zoom_in(OSM_GPS_MAP(map));
 }
 
 /* Zoom out. */
-//static void zoom_out(GtkWidget *widget, ChamplainView *c_view) {
-//  champlain_view_zoom_out(c_view);
 static void zoom_out(GtkWidget *widget) {
   osm_gps_map_zoom_out(OSM_GPS_MAP(map));
 }
@@ -1569,67 +1495,52 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
 
 void on_update_index(GtkScale *widget, gpointer *data) {
   GtkAdjustment *adj;
-//  GList *marker_list, *position_marker;
+  //  GList *marker_list, *position_marker;
   adj = gtk_range_get_adjustment((GtkRange *)widget);
   gdouble val = gtk_adjustment_get_value(adj);
   // Slider from zero to 100 - normalized.  Calculate portion of activity.
   currIdx = (int)floor(val / 100.0 * (float)ppace->num_pts);
   gtk_widget_queue_draw(GTK_WIDGET(da));
 
-  if ((map != NULL) && (posnTrackMarker != NULL)) {
-    move_marker( pd->lat[currIdx], pd->lng[currIdx]); 
-  }
   // Redraw the position marker on the map.
-//  if ((c_marker_layer != NULL) && (c_view != NULL)) {
+  if ((map != NULL) && (posnTrackMarker != NULL)) {
+    move_marker(pd->lat[currIdx], pd->lng[currIdx]);
+  }
+  char yval[15];
+  char xval[15];
 
-//    marker_list = champlain_marker_layer_get_markers(c_marker_layer);
-    /*Danger! This depends on the order markers are added in create_map!!!
-      Last in, first out in linked list. If more are added you might
-      need to walk the list (marker_list->next).
-     */
-//    position_marker = marker_list; // position marker is the zero-eth element
-//    if (position_marker != NULL) {
-//      move_marker(c_marker_layer, position_marker->data, pd->lng[currIdx],
-//                  pd->lat[currIdx], &my_blue);
-//    }
-
-//    g_signal_emit_by_name(c_view, "layer-relocated");
-
-    char yval[15];
-    char xval[15];
-
-    switch (pd->ptype) {
-    case PacePlot:
-      pace_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-      pace_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
-      break;
-    case CadencePlot:
-      cadence_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-      cadence_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
-      break;
-    case AltitudePlot:
-      altitude_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-      altitude_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
-      break;
-    case HeartRatePlot:
-      heart_rate_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-      heart_rate_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
-      break;
-    case LapPlot:
-      break;
-    }
-    char *curr_vals;
-    curr_vals = malloc(strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
-                       strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
-    strcpy(curr_vals, pd->xaxislabel);
-    strcat(curr_vals, "= ");
-    strcat(curr_vals, xval);
-    strcat(curr_vals, ", ");
-    strcat(curr_vals, pd->yaxislabel);
-    strcat(curr_vals, "= ");
-    strcat(curr_vals, yval);
-    gtk_label_set_text(lbl_val, curr_vals);
-    free(curr_vals);
+  switch (pd->ptype) {
+  case PacePlot:
+    pace_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+    pace_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    break;
+  case CadencePlot:
+    cadence_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+    cadence_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    break;
+  case AltitudePlot:
+    altitude_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+    altitude_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    break;
+  case HeartRatePlot:
+    heart_rate_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
+    heart_rate_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    break;
+  case LapPlot:
+    break;
+  }
+  char *curr_vals;
+  curr_vals = malloc(strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
+                     strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
+  strcpy(curr_vals, pd->xaxislabel);
+  strcat(curr_vals, "= ");
+  strcat(curr_vals, xval);
+  strcat(curr_vals, ", ");
+  strcat(curr_vals, pd->yaxislabel);
+  strcat(curr_vals, "= ");
+  strcat(curr_vals, yval);
+  gtk_label_set_text(lbl_val, curr_vals);
+  free(curr_vals);
 }
 
 //
@@ -1645,7 +1556,7 @@ int main(int argc, char *argv[]) {
 
   GtkBuilder *builder;
   GtkWidget *window;
-  
+
   gtk_init(&argc, &argv);
 
   builder = gtk_builder_new_from_file("gtkdraw.glade");
@@ -1676,7 +1587,9 @@ int main(int argc, char *argv[]) {
    */
   // if (gtk_clutter_init(&argc, &argv) != CLUTTER_INIT_SUCCESS)
   //  return 1;
-  if (init_map() != 0) { return 1; }
+  if (init_map() != 0) {
+    return 1;
+  }
   gtk_widget_show_all(window);
 
   /* Signals and events */
@@ -1701,8 +1614,10 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_rb_altitude), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Splits), "toggled",
                    G_CALLBACK(on_rb_splits), NULL);
-  g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in), NULL);
-  g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out), NULL);
+  g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
+                   NULL);
+  g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
+                   NULL);
   g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
                    G_CALLBACK(on_cb_units_changed), NULL);
   g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
