@@ -41,8 +41,10 @@
 #include <float.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+#include <glib.h>
 #include <math.h>
 #include <string.h>
+
 
 /*
  * PLPlot
@@ -57,6 +59,10 @@
 #include <champlain-gtk/champlain-gtk.h>
 #include <champlain/champlain.h>
 #include <clutter-gtk/clutter-gtk.h>
+/*
+ *  Map
+ */
+#include "osm-gps-map.h"
 
 /*
  * Fit file decoding
@@ -340,6 +346,7 @@ GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
+GtkWidget *map;
 
 /* Declaration for the fit filename. */
 char *fname = "";
@@ -1314,14 +1321,54 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
  * its associated view.  Add it to a GTKFrame named viewport.
  * The function assumes clutter has already been initialized.
  */
-static void init_map() {
-  champlain_widget = gtk_champlain_embed_new();
-  c_view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
-  clutter_actor_set_reactive(CLUTTER_ACTOR(c_view), TRUE);
-  g_object_set(G_OBJECT(c_view), "kinetic-mode", TRUE, "zoom-level", 14, NULL);
-  gtk_widget_set_size_request(champlain_widget, 640, 480);
+static int init_map() {
+  float latitude = 39.8355;
+  float longitude = -99.0909;
+  int zoom;
+  /*
+  OSM_GPS_MAP_SOURCE_NULL,
+  OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+  OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER,
+  OSM_GPS_MAP_SOURCE_OPENAERIALMAP,
+  OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE,
+  OSM_GPS_MAP_SOURCE_OPENCYCLEMAP,
+  OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT,
+  OSM_GPS_MAP_SOURCE_GOOGLE_STREET,
+  OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE,
+  OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID,
+  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET,
+  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE,
+  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID,
+  OSM_GPS_MAP_SOURCE_OSMC_TRAILS,
+  OSM_GPS_MAP_SOURCE_LAST
+  */
+
+  //OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+  OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
+ // if ( !osm_gps_map_source_is_valid(source) )
+ //       return 1;
+
+  GtkWidget *wid = g_object_new (OSM_TYPE_GPS_MAP,
+                     "map-source", source,
+                     "tile-cache", "/tmp/",
+                     "user-agent", "runplotter.c", // Always set user-agent, for better tile-usage compliance
+                      NULL);
+  map = OSM_GPS_MAP(wid);
+  //zoom = osm_gps_map_source_get_min_zoom(source);
+  zoom = 4;
+  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP(map), latitude,longitude,zoom);
+//  osm_gps_map_layer_add (OSM_GPS_MAP(map), OSM_GPS_MAP_LAYER(osd));
   /* Add the global widget to the global GTKFrame named viewport */
-  gtk_container_add(GTK_CONTAINER(viewport), champlain_widget);
+  gtk_container_add(GTK_CONTAINER(viewport), wid);
+
+  return 0;
+//  champlain_widget = gtk_champlain_embed_new();
+//  c_view = gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(champlain_widget));
+//  clutter_actor_set_reactive(CLUTTER_ACTOR(c_view), TRUE);
+//  g_object_set(G_OBJECT(c_view), "kinetic-mode", TRUE, "zoom-level", 14, NULL);
+//  gtk_widget_set_size_request(champlain_widget, 640, 480);
+  /* Add the global widget to the global GTKFrame named viewport */
+//  gtk_container_add(GTK_CONTAINER(viewport), champlain_widget);
 }
 
 /* Convenience routine to add a latitude, longitude to a path layer. */
@@ -1391,13 +1438,17 @@ static void create_map() {
 }
 
 /* Zoom in. */
-static void zoom_in(GtkWidget *widget, ChamplainView *c_view) {
-  champlain_view_zoom_in(c_view);
+//static void zoom_in(GtkWidget *widget, ChamplainView *c_view) {
+//  champlain_view_zoom_in(c_view);
+static void zoom_in(GtkWidget *widget) {
+  osm_gps_map_zoom_in(OSM_GPS_MAP(map));
 }
 
 /* Zoom out. */
-static void zoom_out(GtkWidget *widget, ChamplainView *c_view) {
-  champlain_view_zoom_out(c_view);
+//static void zoom_out(GtkWidget *widget, ChamplainView *c_view) {
+//  champlain_view_zoom_out(c_view);
+static void zoom_out(GtkWidget *widget) {
+  osm_gps_map_zoom_out(OSM_GPS_MAP(map));
 }
 
 //
@@ -1460,7 +1511,7 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
     pd = ppace;
   }
   gtk_widget_queue_draw(GTK_WIDGET(da));
-  create_map();
+  //create_map();
 }
 
 //
@@ -1540,7 +1591,7 @@ int main(int argc, char *argv[]) {
 
   GtkBuilder *builder;
   GtkWidget *window;
-
+  
   gtk_init(&argc, &argv);
 
   builder = gtk_builder_new_from_file("gtkdraw.glade");
@@ -1569,9 +1620,9 @@ int main(int argc, char *argv[]) {
 
   /* Initialize champlain map and add it to a frame after initializing clutter.
    */
-  if (gtk_clutter_init(&argc, &argv) != CLUTTER_INIT_SUCCESS)
-    return 1;
-  init_map();
+  // if (gtk_clutter_init(&argc, &argv) != CLUTTER_INIT_SUCCESS)
+  //  return 1;
+  if (init_map() != 0) { return 1; }
   gtk_widget_show_all(window);
 
   /* Signals and events */
