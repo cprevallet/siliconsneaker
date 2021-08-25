@@ -14,11 +14,15 @@ PTHREAD=-pthread
 
 CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD)
 
-GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo champlain-0.12 champlain-gtk-0.12 clutter-gtk-1.0 osmgpsmap-1.0`
+GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo clutter-gtk-1.0 osmgpsmap-1.0  librsvg-2.0`
 
 # linker
 LD=gcc
-LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic -lm
+ifeq ($(OS),Windows_NT)     # is Windows_NT on XP, 2000, 7, Vista, 10...
+    LDFLAGS=$(PTHREAD) $(GTKLIB) -lm 
+else
+    LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic -lm
+endif
 
 OBJS= main.o fitwrapper.a
 
