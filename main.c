@@ -56,8 +56,8 @@
 /*
  * Champlain map
  */
-#include <champlain-gtk/champlain-gtk.h>
-#include <champlain/champlain.h>
+//#include <champlain-gtk/champlain-gtk.h>
+//#include <champlain/champlain.h>
 #include <clutter-gtk/clutter-gtk.h>
 /*
  *  Map
@@ -346,15 +346,22 @@ GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
-GtkWidget *map;
 
 /* Declaration for the fit filename. */
 char *fname = "";
 
 /* Declarations for Champlain maps. */
-ChamplainView *c_view;
-static ChamplainPathLayer *c_path_layer;
-static ChamplainMarkerLayer *c_marker_layer;
+//ChamplainView *c_view;
+//static ChamplainPathLayer *c_path_layer;
+//static ChamplainMarkerLayer *c_marker_layer;
+
+/* Declarations for OsmGps maps. */
+OsmGpsMap *map;
+OsmGpsMapTrack *routeTrack;
+static GdkPixbuf *starImage = NULL;
+static OsmGpsMapImage * startTrackMarker = NULL;
+static OsmGpsMapImage * endTrackMarker = NULL;
+static OsmGpsMapImage * posnTrackMarker = NULL;
 
 /* Current index */
 int currIdx = 0;
@@ -1322,10 +1329,15 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
  * The function assumes clutter has already been initialized.
  */
 static int init_map() {
+
+  // Load start, stop image for map points of interest.
+  starImage = gdk_pixbuf_new_from_file_at_size ("poi.png", 24,24,NULL);
+
+
   // Geographical center of contiguous US
-  float default_latitude = 39.8355;
-  float default_longitude = -99.0909;
-  int default_zoom = 4;
+  float defaultLatitude = 39.8355;
+  float defaultLongitude = -99.0909;
+  int defaultzoom = 4;
   /*
   OSM_GPS_MAP_SOURCE_NULL,
   OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
@@ -1355,7 +1367,7 @@ static int init_map() {
                      "user-agent", "runplotter.c", // Always set user-agent, for better tile-usage compliance
                       NULL);
   map = OSM_GPS_MAP(wid);
-  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP(map), default_latitude, default_longitude, default_zoom);
+  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP(map), defaultLatitude, defaultLongitude, defaultzoom);
   /* Add the global widget to the global GTKFrame named viewport */
   gtk_container_add(GTK_CONTAINER(viewport), wid);
 
@@ -1370,37 +1382,44 @@ static int init_map() {
 }
 
 /* Convenience routine to add a latitude, longitude to a path layer. */
-static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
-  ChamplainCoordinate *coord;
-  coord = champlain_coordinate_new_full(lon, lat);
+//static void append_point(ChamplainPathLayer *layer, gdouble lon, gdouble lat) {
+//  ChamplainCoordinate *coord;
+//  coord = champlain_coordinate_new_full(lon, lat);
   // TODO This line throwing assertion errors.  Borrowed from example so why?
-  champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
-}
+//  champlain_path_layer_add_node(layer, CHAMPLAIN_LOCATION(coord));
+//}
 
 /* Convenience routine to add a marker to the marker layer. */
-static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
-                       gdouble lat, const ClutterColor *color) {
-  ClutterActor *my_marker = champlain_point_new_full(12, color);
-  champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), lat, lng);
-  champlain_marker_layer_add_marker(my_marker_layer,
-                                    CHAMPLAIN_MARKER(my_marker));
-}
+//static void add_marker(ChamplainMarkerLayer *my_marker_layer, gdouble lng,
+//                       gdouble lat, const ClutterColor *color) {
+//  ClutterActor *my_marker = champlain_point_new_full(12, color);
+//  champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), lat, lng);
+//  champlain_marker_layer_add_marker(my_marker_layer,
+//                                    CHAMPLAIN_MARKER(my_marker));
+//}
 
 /* Convenience routine to move marker. */
-static void move_marker(ChamplainMarkerLayer *my_marker_layer,
-                        ChamplainMarker *my_marker, gdouble new_lng,
-                        gdouble new_lat, const ClutterColor *color) {
+//static void move_marker(ChamplainMarkerLayer *my_marker_layer,
+//                        ChamplainMarker *my_marker, gdouble new_lng,
+//                        gdouble new_lat, const ClutterColor *color) {
+static void move_marker(gdouble new_lat, gdouble new_lng) {
+  if (posnTrackMarker != NULL) {
+      osm_gps_map_image_remove(map, posnTrackMarker);
+      posnTrackMarker = osm_gps_map_image_add (map, new_lat, new_lng, starImage);
+  }
+  /*
   if (my_marker != NULL) {
     champlain_location_set_location(CHAMPLAIN_LOCATION(my_marker), new_lat,
                                     new_lng);
   }
+  */
 }
 
 /* Update the map. */
 static void create_map() {
   // Geographical center of contiguous US
-  float default_latitude = 39.8355;
-  float default_longitude = -99.0909;
+  float defaultLatitude = 39.8355;
+  float defaultLongitude = -99.0909;
 
   /* Define colors for start, end markers.*/
 //  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
@@ -1420,15 +1439,39 @@ static void create_map() {
 //      champlain_view_remove_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
 //    }
 //    champlain_view_reload_tiles(c_view);
-    /*Create new layers. */
+    /*Create a "track" for the run. */
+    if (routeTrack != NULL) {
+      osm_gps_map_track_remove(map, routeTrack);
+    }
+    routeTrack = osm_gps_map_track_new();
+    osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
+    for (int i = 0; i < pd->num_pts; i++) {
+      OsmGpsMapPoint * mapPoint = osm_gps_map_point_new_degrees(pd->lat[i], pd->lng[i]);
+      osm_gps_map_track_add_point(routeTrack, mapPoint);
+    }
 //    c_path_layer = champlain_path_layer_new();
 //    champlain_path_layer_set_stroke_color(c_path_layer, &my_blue);
 //    c_marker_layer = champlain_marker_layer_new();
-    /* Add start and stop markers. Green for start. Red for end. */
+    /* Add start and end markers. */
+
+    if (startTrackMarker != NULL) {
+      osm_gps_map_image_remove(map, startTrackMarker);
+    }
+    if (endTrackMarker != NULL) {
+      osm_gps_map_image_remove(map, endTrackMarker);
+    }
+    if (posnTrackMarker != NULL) {
+      osm_gps_map_image_remove(map, posnTrackMarker);
+    }
+    startTrackMarker = osm_gps_map_image_add (map, pd->lat[0], pd->lng[0], starImage);
+    endTrackMarker = osm_gps_map_image_add (map, pd->lat[pd->num_pts - 1], pd->lng[pd->num_pts - 1], starImage);
 //    add_marker(c_marker_layer, pd->lng[pd->num_pts - 1],
 //               pd->lat[pd->num_pts - 1], &my_magenta);
 //    add_marker(c_marker_layer, pd->lng[0], pd->lat[0], &my_green);
     /* Add current position marker */
+
+    posnTrackMarker = osm_gps_map_image_add (map, pd->lat[currIdx], pd->lng[currIdx], starImage);
+
 //    add_marker(c_marker_layer, pd->lng[currIdx], pd->lat[currIdx], &my_blue);
     /* Add a path */
 //    for (int i = 0; i < pd->num_pts; i++) {
@@ -1438,7 +1481,7 @@ static void create_map() {
 //    champlain_view_add_layer(c_view, CHAMPLAIN_LAYER(c_marker_layer));
   } else {
     /* Start-up. */
-      osm_gps_map_set_center(OSM_GPS_MAP(map), default_latitude, default_longitude);
+      osm_gps_map_set_center(OSM_GPS_MAP(map), defaultLatitude, defaultLongitude);
 //    champlain_view_center_on(CHAMPLAIN_VIEW(c_view), 0, 0);
   }
 }
@@ -1526,25 +1569,31 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
 
 void on_update_index(GtkScale *widget, gpointer *data) {
   GtkAdjustment *adj;
-  GList *marker_list, *position_marker;
+//  GList *marker_list, *position_marker;
   adj = gtk_range_get_adjustment((GtkRange *)widget);
   gdouble val = gtk_adjustment_get_value(adj);
   // Slider from zero to 100 - normalized.  Calculate portion of activity.
   currIdx = (int)floor(val / 100.0 * (float)ppace->num_pts);
   gtk_widget_queue_draw(GTK_WIDGET(da));
+
+  if ((map != NULL) && (posnTrackMarker != NULL)) {
+    move_marker( pd->lat[currIdx], pd->lng[currIdx]); 
+  }
   // Redraw the position marker on the map.
-  if ((c_marker_layer != NULL) && (c_view != NULL)) {
-    marker_list = champlain_marker_layer_get_markers(c_marker_layer);
+//  if ((c_marker_layer != NULL) && (c_view != NULL)) {
+
+//    marker_list = champlain_marker_layer_get_markers(c_marker_layer);
     /*Danger! This depends on the order markers are added in create_map!!!
       Last in, first out in linked list. If more are added you might
       need to walk the list (marker_list->next).
      */
-    position_marker = marker_list; // position marker is the zero-eth element
-    if (position_marker != NULL) {
-      move_marker(c_marker_layer, position_marker->data, pd->lng[currIdx],
-                  pd->lat[currIdx], &my_blue);
-    }
-    g_signal_emit_by_name(c_view, "layer-relocated");
+//    position_marker = marker_list; // position marker is the zero-eth element
+//    if (position_marker != NULL) {
+//      move_marker(c_marker_layer, position_marker->data, pd->lng[currIdx],
+//                  pd->lat[currIdx], &my_blue);
+//    }
+
+//    g_signal_emit_by_name(c_view, "layer-relocated");
 
     char yval[15];
     char xval[15];
@@ -1581,7 +1630,6 @@ void on_update_index(GtkScale *widget, gpointer *data) {
     strcat(curr_vals, yval);
     gtk_label_set_text(lbl_val, curr_vals);
     free(curr_vals);
-  }
 }
 
 //
@@ -1653,10 +1701,8 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_rb_altitude), NULL);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Splits), "toggled",
                    G_CALLBACK(on_rb_splits), NULL);
-  g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
-                   c_view);
-  g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
-                   c_view);
+  g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in), NULL);
+  g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out), NULL);
   g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
                    G_CALLBACK(on_cb_units_changed), NULL);
   g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
