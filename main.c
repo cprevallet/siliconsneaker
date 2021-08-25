@@ -343,9 +343,9 @@ char *fname = "";
 OsmGpsMap *map;
 OsmGpsMapTrack *routeTrack;
 static GdkPixbuf *starImage = NULL;
-static OsmGpsMapImage *startTrackMarker = NULL;
-static OsmGpsMapImage *endTrackMarker = NULL;
-static OsmGpsMapImage *posnTrackMarker = NULL;
+OsmGpsMapImage *startTrackMarker = NULL;
+OsmGpsMapImage *endTrackMarker = NULL;
+OsmGpsMapImage *posnTrackMarker = NULL;
 
 /* Current index */
 int currIdx = 0;
@@ -1371,6 +1371,7 @@ static void create_map() {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
+  GdkRGBA routeTrackColor;
 
   /* Define colors for start, end markers.*/
   //  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
@@ -1384,6 +1385,8 @@ static void create_map() {
       osm_gps_map_track_remove(map, routeTrack);
     }
     routeTrack = osm_gps_map_track_new();
+    gdk_rgba_parse (&routeTrackColor, "rgba(156,100,134,0.9)");
+    osm_gps_map_track_set_color (routeTrack, &routeTrackColor);
     osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
     for (int i = 0; i < pd->num_pts; i++) {
       OsmGpsMapPoint *mapPoint =
@@ -1492,23 +1495,26 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
 //
 // Slider/Index routines.
 //
-
+/*
+ *  Update the map, graph, and indicator label based on the
+ *  slider position.
+ */
 void on_update_index(GtkScale *widget, gpointer *data) {
   GtkAdjustment *adj;
-  //  GList *marker_list, *position_marker;
+  // What's the new value in percent of scale?
   adj = gtk_range_get_adjustment((GtkRange *)widget);
   gdouble val = gtk_adjustment_get_value(adj);
   // Slider from zero to 100 - normalized.  Calculate portion of activity.
   currIdx = (int)floor(val / 100.0 * (float)ppace->num_pts);
+  // Redraw graph.
   gtk_widget_queue_draw(GTK_WIDGET(da));
-
   // Redraw the position marker on the map.
   if ((map != NULL) && (posnTrackMarker != NULL)) {
     move_marker(pd->lat[currIdx], pd->lng[currIdx]);
   }
+  // Update the label below the graph.
   char yval[15];
   char xval[15];
-
   switch (pd->ptype) {
   case PacePlot:
     pace_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
