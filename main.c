@@ -1029,7 +1029,6 @@ void draw_xy(int width, int height) {
     /* Plot the data that was loaded. */
     plwidth(2);
     plline(pd->num_pts, pd->x, pd->y);
-    plwidth(0);
     /* Plot symbols for individual data points. */
     // TODO valgrind reports mem lost on below line...
     // plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
