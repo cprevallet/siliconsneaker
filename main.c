@@ -126,8 +126,8 @@ typedef struct PlotData {
 } PlotData;
 
 typedef struct SessionData {
-  char* timestamp;
-  char* start_time;
+  char *timestamp;
+  char *start_time;
   float start_position_lat;
   float start_position_long;
   float total_elapsed_time;
@@ -1147,10 +1147,10 @@ enum PlotType checkRadioButtons() {
  * plotting library API (PLPlot) that supports Cairo to generate the
  * user's plots.
  */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
+gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
 
   PLINT width, height;
   /* Can't plot uninitialized. */
@@ -1165,7 +1165,7 @@ G_MODULE_EXPORT
   /* Say: "I want to start drawing". */
   cairo_t *cr = gdk_drawing_context_get_cairo_context(drawingContext);
   /* Initialize plplot using the external cairo backend. */
-  //plsdev("extcairo");
+  // plsdev("extcairo");
   plsdev("svg");
   /* Device attributes */
   FILE *fp;
@@ -1175,7 +1175,7 @@ G_MODULE_EXPORT
 
   pl_cmd(PLESC_DEVINIT, cr);
 
-  GtkAllocation* alloc = g_new(GtkAllocation, 1);
+  GtkAllocation *alloc = g_new(GtkAllocation, 1);
   gtk_widget_get_allocation(widget, alloc);
   width = alloc->width;
   height = alloc->height;
@@ -1207,10 +1207,10 @@ G_MODULE_EXPORT
   plend();
 
   /* Reload svg to cairo context. */
-  GError ** error = NULL;
-  RsvgHandle * handle = rsvg_handle_new_from_file ("runplotter.svg", error);
+  GError **error = NULL;
+  RsvgHandle *handle = rsvg_handle_new_from_file("runplotter.svg", error);
   RsvgRectangle viewport = {0, 0, 0, 0};
-  rsvg_handle_render_document (handle, cr, &viewport, error);
+  rsvg_handle_render_document(handle, cr, &viewport, error);
 
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame(window, drawingContext);
@@ -1255,10 +1255,10 @@ void change_cursor(GtkWidget *widget, const gchar *name) {
 }
 
 /* Handle mouse button press. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- gboolean on_button_press(GtkWidget *widget, GdkEvent *event) {
+gboolean on_button_press(GtkWidget *widget, GdkEvent *event) {
   guint buttonnum;
   if (pd == NULL) {
     return FALSE;
@@ -1276,10 +1276,10 @@ G_MODULE_EXPORT
 }
 
 /* Handle mouse button release. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- gboolean on_button_release(GtkWidget *widget, GdkEvent *event) {
+gboolean on_button_release(GtkWidget *widget, GdkEvent *event) {
   guint buttonnum;
   if (pd == NULL) {
     return FALSE;
@@ -1320,10 +1320,10 @@ G_MODULE_EXPORT
 /* Handle mouse motion event by drawing a filled
  * polygon.
  */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
+gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
 
   if (pd == NULL) {
     return FALSE;
@@ -1377,12 +1377,13 @@ static int init_map() {
 
   GtkWidget *wid = g_object_new(
       OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache", "/tmp/",
-//      "user-agent",
-//      "runplotter.c", // Always set user-agent, for better tile-usage compliance
+      //      "user-agent",
+      //      "runplotter.c", // Always set user-agent, for better tile-usage
+      //      compliance
       NULL);
-//  GtkRequisition req;
-//  gtk_widget_get_preferred_size(wid, &req, NULL);
-//  printf("%d %d\n", req.width,req.height);
+  //  GtkRequisition req;
+  //  gtk_widget_get_preferred_size(wid, &req, NULL);
+  //  printf("%d %d\n", req.width,req.height);
   map = OSM_GPS_MAP(wid);
   osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), defaultLatitude,
                                   defaultLongitude, defaultzoom);
@@ -1419,8 +1420,8 @@ static void create_map() {
       osm_gps_map_track_remove(map, routeTrack);
     }
     routeTrack = osm_gps_map_track_new();
-    gdk_rgba_parse (&routeTrackColor, "rgba(156,100,134,0.9)");
-    osm_gps_map_track_set_color (routeTrack, &routeTrackColor);
+    gdk_rgba_parse(&routeTrackColor, "rgba(156,100,134,0.9)");
+    osm_gps_map_track_set_color(routeTrack, &routeTrackColor);
     osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
     for (int i = 0; i < pd->num_pts; i++) {
       OsmGpsMapPoint *mapPoint =
@@ -1474,66 +1475,66 @@ gboolean default_chart() {
 }
 
 /* User has changed unit system. */
- void on_cb_units_changed(GtkComboBox *cb_Units) {
+void on_cb_units_changed(GtkComboBox *cb_Units) {
   init_plot_data(); // got to reconvert the raw data
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
 
 /* User has selected Pace Graph. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- void on_rb_pace(GtkToggleButton *togglebutton) {
+void on_rb_pace(GtkToggleButton *togglebutton) {
   pd = ppace;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Cadence Graph. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- void on_rb_cadence(GtkToggleButton *togglebutton) {
+void on_rb_cadence(GtkToggleButton *togglebutton) {
   pd = pcadence;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Heartrate Graph. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- void on_rb_heartrate(GtkToggleButton *togglebutton) {
+void on_rb_heartrate(GtkToggleButton *togglebutton) {
   pd = pheart;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Altitude Graph. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- void on_rb_altitude(GtkToggleButton *togglebutton) {
+void on_rb_altitude(GtkToggleButton *togglebutton) {
   pd = paltitude;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has selected Splits Graph. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- void on_rb_splits(GtkToggleButton *togglebutton) {
+void on_rb_splits(GtkToggleButton *togglebutton) {
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
 /* User has pressed open a new file. */
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
+void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   init_plot_data();
@@ -1745,10 +1746,10 @@ void destroy_plots() {
 }
 
 /* Call when the window is closed.*/
-#ifdef _WIN32 
-G_MODULE_EXPORT 
+#ifdef _WIN32
+G_MODULE_EXPORT
 #endif
- void on_window1_destroy() {
+void on_window1_destroy() {
   destroy_plots();
   gtk_main_quit();
 }
