@@ -162,10 +162,9 @@ typedef struct SessionData {
 /* The pointers for the data plots.  There is one for each
  * type of plot and an additional pointer, pd, that is assigned
  * from one of the other four depending on what the user is currently
- * displaying.
+ * displaying.  Finally, there is another pointer for the overall 
+ * session data displayed by the summary.
  */
-
-
   typedef struct AllData {
   struct PlotData *ppace;
   struct PlotData *pcadence;
@@ -1376,11 +1375,6 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData* pall ) 
     gtk_widget_queue_draw(GTK_WIDGET(da));
     create_map(pall);
   }
-
-  /*
-  if (pd == NULL) {
-    pd = ppace;
-  }*/
 }
 
 //
@@ -1440,12 +1434,65 @@ void on_update_index(GtkScale *widget, AllData *data) {
   free(curr_vals);
 }
 
+/* Release the allocated memory. */
+/*
+void destroy_plots(AllData *pall) {
+  if (pall->ppace->x != NULL) {
+    free(pall->ppace->x);
+  }
+  if (pall->ppace->y != NULL) {
+    free(pall->ppace->y);
+  }
+  if (pall->ppace->lat != NULL) {
+    free(pall->ppace->lat);
+  }
+  if (pall->ppace->lng != NULL) {
+    free(pall->ppace->lng);
+  }
+  if (pall->pcadence->x != NULL) {
+    free(pall->pcadence->x);
+  }
+  if (pall->pcadence->y != NULL) {
+    free(pall->pcadence->y);
+  }
+  if (pall->pcadence->lat != NULL) {
+    free(pall->pcadence->lat);
+  }
+  if (pall->pcadence->lng != NULL) {
+    free(pall->pcadence->lng);
+  }
+  if (pall->pheart->x != NULL) {
+    free(pall->pheart->x);
+  }
+  if (pall->pheart->y != NULL) {
+    free(pall->pheart->y);
+  }
+  if (pall->pheart->lat != NULL) {
+    free(pall->pheart->lat);
+  }
+  if (pall->pheart->lng != NULL) {
+    free(pall->pheart->lng);
+  }
+  if (pall->paltitude->x != NULL) {
+    free(pall->paltitude->x);
+  }
+  if (pall->paltitude->y != NULL) {
+    free(pall->paltitude->y);
+  }
+  if (pall->paltitude->lat != NULL) {
+    free(pall->paltitude->lat);
+  }
+  if (pall->paltitude->lng != NULL) {
+    free(pall->paltitude->lng);
+  }
+}
+*/
+
 /* Call when the main window is closed.*/
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
 void on_window_destroy(AllData* data) {
-  free(data);
   //destroy_plots(data);
   gtk_main_quit();
 }
@@ -1719,59 +1766,6 @@ int main(int argc, char *argv[]) {
   gtk_main();
 
   return 0;
-}
-
-/* Release the allocated memory. */
-void destroy_plots(AllData *pall) {
-  /*
-  if (ppace->x != NULL) {
-    free(ppace->x);
-  }
-  if (ppace->y != NULL) {
-    free(ppace->y);
-  }
-  if (ppace->lat != NULL) {
-    free(ppace->lat);
-  }
-  if (ppace->lng != NULL) {
-    free(ppace->lng);
-  }
-  if (pcadence->x != NULL) {
-    free(pcadence->x);
-  }
-  if (pcadence->y != NULL) {
-    free(pcadence->y);
-  }
-  if (pcadence->lat != NULL) {
-    free(pcadence->lat);
-  }
-  if (pcadence->lng != NULL) {
-    free(pcadence->lng);
-  }
-  if (pheart->x != NULL) {
-    free(pheart->x);
-  }
-  if (pheart->y != NULL) {
-    free(pheart->y);
-  }
-  if (pheart->lat != NULL) {
-    free(pheart->lat);
-  }
-  if (pheart->lng != NULL) {
-    free(pheart->lng);
-  }
-  if (paltitude->x != NULL) {
-    free(paltitude->x);
-  }
-  if (paltitude->y != NULL) {
-    free(paltitude->y);
-  }
-  if (paltitude->lat != NULL) {
-    free(paltitude->lat);
-  }
-  if (paltitude->lng != NULL) {
-    free(paltitude->lng);
-  } */
 }
 
 
