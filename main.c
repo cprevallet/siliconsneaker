@@ -173,6 +173,8 @@ typedef struct AllData {
   struct PlotData *pd;
   struct SessionData *psd;
 } AllData;
+AllData allData;
+AllData *pall = &allData;
 
 /* Declarations for the GUI widgets. */
 GtkTextBuffer *textbuffer1;
@@ -655,6 +657,9 @@ void raw_to_user_plots(PlotData *pdest, int num_recs,
    values. */
 gboolean init_plot_data(AllData *pall) {
   /* Unit system first. */
+  printf("%p pall\n", pall);
+  printf("%p ppace\n", pall->ppace);
+  printf("\n", pall->ppace->units);
   gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
   if (!strcmp(user_units, "Metric")) {
     pall->ppace->units = Metric;
@@ -672,6 +677,7 @@ gboolean init_plot_data(AllData *pall) {
     pall->psd->units = English;
   }
   g_free(user_units);
+  printf("Farther along\n");
   /* Parse the data from the fit file in a cGO routine and return the
    * result as a structure defined by fitwrapper.go.
    */
@@ -1366,16 +1372,22 @@ void on_rb_splits(GtkToggleButton *togglebutton, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData* data ) {
+void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData* pall ) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
-  init_plot_data(data);
+  printf("Enter init\n");
+  if (pall != NULL) {
+    init_plot_data(pall);
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    printf("Enter create map\n");
+    create_map(pall);
+  }
+  printf("Left init\n");
+
   /*
   if (pd == NULL) {
     pd = ppace;
   }*/
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  create_map(data);
 }
 
 //
@@ -1458,159 +1470,179 @@ int main(int argc, char *argv[]) {
   /*
    * Initialize instances of the main data structure.
    */
-  PlotData paceplot = {.ptype = PacePlot,
-                       .symbol = "⏺",
-                       .xmin = 0,
-                       .xmax = 0,
-                       .ymin = 0,
-                       .ymax = 0,
-                       .num_pts = 0,
-                       .x = NULL,
-                       .y = NULL,
-                       .xvmax = 0,
-                       .yvmin = 0,
-                       .yvmax = 0,
-                       .xvmin = 0,
-                       .zmxmin = 0,
-                       .zmxmax = 0,
-                       .zmymin = 0,
-                       .zmymax = 0,
-                       .zm_startx = 0,
-                       .zm_starty = 0,
-                       .zm_endx = 0,
-                       .zm_endy = 0,
-                       .lat = NULL,
-                       .lng = NULL,
-                       .xaxislabel = NULL,
-                       .yaxislabel = NULL,
-                       // light magenta for pace
-                       .linecolor = {156, 100, 134},
-                       .start_time = NULL};
-  PlotData cadenceplot = {.ptype = CadencePlot,
-                          .symbol = "⏺",
-                          .xmin = 0,
-                          .xmax = 0,
-                          .ymin = 0,
-                          .ymax = 0,
-                          .num_pts = 0,
-                          .x = NULL,
-                          .y = NULL,
-                          .xvmax = 0,
-                          .yvmin = 0,
-                          .yvmax = 0,
-                          .xvmin = 0,
-                          .zmxmin = 0,
-                          .zmxmax = 0,
-                          .zmymin = 0,
-                          .zmymax = 0,
-                          .zm_startx = 0,
-                          .zm_starty = 0,
-                          .zm_endx = 0,
-                          .zm_endy = 0,
-                          .lat = NULL,
-                          .lng = NULL,
-                          .xaxislabel = NULL,
-                          .yaxislabel = NULL,
-                          // light blue for heartrate
-                          .linecolor = {31, 119, 180},
-                          .start_time = NULL};
-  PlotData heartrateplot = {.ptype = HeartRatePlot,
-                            .symbol = "⏺",
-                            .xmin = 0,
-                            .xmax = 0,
-                            .ymin = 0,
-                            .ymax = 0,
-                            .num_pts = 0,
-                            .x = NULL,
-                            .y = NULL,
-                            .xvmax = 0,
-                            .yvmin = 0,
-                            .yvmax = 0,
-                            .xvmin = 0,
-                            .zmxmin = 0,
-                            .zmxmax = 0,
-                            .zmymin = 0,
-                            .zmymax = 0,
-                            .zm_startx = 0,
-                            .zm_starty = 0,
-                            .zm_endx = 0,
-                            .zm_endy = 0,
-                            .lat = NULL,
-                            .lng = NULL,
-                            .xaxislabel = NULL,
-                            .yaxislabel = NULL,
-                            // light yellow for heartrate
-                            .linecolor = {247, 250, 191},
-                            .start_time = NULL};
-  PlotData altitudeplot = {.ptype = AltitudePlot,
-                           .symbol = "⏺",
-                           .xmin = 0,
-                           .xmax = 0,
-                           .ymin = 0,
-                           .ymax = 0,
-                           .num_pts = 0,
-                           .x = NULL,
-                           .y = NULL,
-                           .xvmax = 0,
-                           .yvmin = 0,
-                           .yvmax = 0,
-                           .xvmin = 0,
-                           .zmxmin = 0,
-                           .zmxmax = 0,
-                           .zmymin = 0,
-                           .zmymax = 0,
-                           .zm_startx = 0,
-                           .zm_starty = 0,
-                           .zm_endx = 0,
-                           .zm_endy = 0,
-                           .lat = NULL,
-                           .lng = NULL,
-                           .xaxislabel = NULL,
-                           .yaxislabel = NULL,
-                           // light green for heartrate
-                           .linecolor = {77, 175, 74},
-                           .start_time = NULL};
-  PlotData lapplot = {.ptype = LapPlot,
-                      .symbol = "⏺",
-                      .xmin = 0,
-                      .xmax = 0,
-                      .ymin = 0,
-                      .ymax = 0,
-                      .num_pts = 0,
-                      .x = NULL,
-                      .y = NULL,
-                      .xvmax = 0,
-                      .yvmin = 0,
-                      .yvmax = 0,
-                      .xvmin = 0,
-                      .zmxmin = 0,
-                      .zmxmax = 0,
-                      .zmymin = 0,
-                      .zmymax = 0,
-                      .zm_startx = 0,
-                      .zm_starty = 0,
-                      .zm_endx = 0,
-                      .zm_endy = 0,
-                      .lat = NULL,
-                      .lng = NULL,
-                      .xaxislabel = NULL,
-                      .yaxislabel = NULL,
-                      // light orange for laps
-                      .linecolor = {255, 127, 14},
-                      .start_time = NULL};
-  /* Rely on the default values for C structures = 0, 0.0 for ints, floats */
-  SessionData sess;
-  /* Bundle the data structures in an instance of PgmData and 
+  PlotData *paceplot = malloc(sizeof(PlotData));
+  PlotData *cadenceplot = malloc(sizeof(PlotData));
+  PlotData *heartrateplot = malloc(sizeof(PlotData));
+  PlotData *altitudeplot = malloc(sizeof(PlotData));
+  PlotData *lapplot = malloc(sizeof(PlotData));
+  SessionData *sess = malloc(sizeof(SessionData));
+  
+  paceplot->ptype = PacePlot;
+  paceplot->symbol = "⏺";
+  paceplot->xmin = 0;
+  paceplot->xmax = 0;
+  paceplot->ymin = 0;
+  paceplot->ymax = 0;
+  paceplot->num_pts = 0;
+  paceplot->x = NULL;
+  paceplot->y = NULL;
+  paceplot->xvmax = 0;
+  paceplot->yvmin = 0;
+  paceplot->yvmax = 0;
+  paceplot->xvmin = 0;
+  paceplot->zmxmin = 0;
+  paceplot->zmxmax = 0;
+  paceplot->zmymin = 0;
+  paceplot->zmymax = 0;
+  paceplot->zm_startx = 0;
+  paceplot->zm_starty = 0;
+  paceplot->zm_endx = 0;
+  paceplot->zm_endy = 0;
+  paceplot->lat = NULL;
+  paceplot->lng = NULL;
+  paceplot->xaxislabel = NULL;
+  paceplot->yaxislabel = NULL;
+  paceplot->linecolor[0] = 156;
+  paceplot->linecolor[1] = 100;
+  paceplot->linecolor[2] = 134;
+  paceplot->units = English;
+  paceplot->start_time = NULL;
+
+  cadenceplot->ptype = CadencePlot;
+  cadenceplot->symbol = "⏺";
+  cadenceplot->xmin = 0;
+  cadenceplot->xmax = 0;
+  cadenceplot->ymin = 0;
+  cadenceplot->ymax = 0;
+  cadenceplot->num_pts = 0;
+  cadenceplot->x = NULL;
+  cadenceplot->y = NULL;
+  cadenceplot->xvmax = 0;
+  cadenceplot->yvmin = 0;
+  cadenceplot->yvmax = 0;
+  cadenceplot->xvmin = 0;
+  cadenceplot->zmxmin = 0;
+  cadenceplot->zmxmax = 0;
+  cadenceplot->zmymin = 0;
+  cadenceplot->zmymax = 0;
+  cadenceplot->zm_startx = 0;
+  cadenceplot->zm_starty = 0;
+  cadenceplot->zm_endx = 0;
+  cadenceplot->zm_endy = 0;
+  cadenceplot->lat = NULL;
+  cadenceplot->lng = NULL;
+  cadenceplot->xaxislabel = NULL;
+  cadenceplot->yaxislabel = NULL;
+  cadenceplot->linecolor[0] = 31;
+  cadenceplot->linecolor[1] = 119;
+  cadenceplot->linecolor[2] = 180;
+  cadenceplot->units = English;
+  cadenceplot->start_time = NULL;
+
+  heartrateplot->ptype = HeartRatePlot;
+  heartrateplot->symbol = "⏺";
+  heartrateplot->xmin = 0;
+  heartrateplot->xmax = 0;
+  heartrateplot->ymin = 0;
+  heartrateplot->ymax = 0;
+  heartrateplot->num_pts = 0;
+  heartrateplot->x = NULL;
+  heartrateplot->y = NULL;
+  heartrateplot->xvmax = 0;
+  heartrateplot->yvmin = 0;
+  heartrateplot->yvmax = 0;
+  heartrateplot->xvmin = 0;
+  heartrateplot->zmxmin = 0;
+  heartrateplot->zmxmax = 0;
+  heartrateplot->zmymin = 0;
+  heartrateplot->zmymax = 0;
+  heartrateplot->zm_startx = 0;
+  heartrateplot->zm_starty = 0;
+  heartrateplot->zm_endx = 0;
+  heartrateplot->zm_endy = 0;
+  heartrateplot->lat = NULL;
+  heartrateplot->lng = NULL;
+  heartrateplot->xaxislabel = NULL;
+  heartrateplot->yaxislabel = NULL;
+  heartrateplot->linecolor[0] = 247;
+  heartrateplot->linecolor[1] = 250;
+  heartrateplot->linecolor[2] = 191;
+  heartrateplot->units = English;
+  heartrateplot->start_time = NULL;
+
+  altitudeplot->ptype = AltitudePlot;
+  altitudeplot->symbol = "⏺";
+  altitudeplot->xmin = 0;
+  altitudeplot->xmax = 0;
+  altitudeplot->ymin = 0;
+  altitudeplot->ymax = 0;
+  altitudeplot->num_pts = 0;
+  altitudeplot->x = NULL;
+  altitudeplot->y = NULL;
+  altitudeplot->xvmax = 0;
+  altitudeplot->yvmin = 0;
+  altitudeplot->yvmax = 0;
+  altitudeplot->xvmin = 0;
+  altitudeplot->zmxmin = 0;
+  altitudeplot->zmxmax = 0;
+  altitudeplot->zmymin = 0;
+  altitudeplot->zmymax = 0;
+  altitudeplot->zm_startx = 0;
+  altitudeplot->zm_starty = 0;
+  altitudeplot->zm_endx = 0;
+  altitudeplot->zm_endy = 0;
+  altitudeplot->lat = NULL;
+  altitudeplot->lng = NULL;
+  altitudeplot->xaxislabel = NULL;
+  altitudeplot->yaxislabel = NULL;
+  altitudeplot->linecolor[0] = 77;
+  altitudeplot->linecolor[1] = 175;
+  altitudeplot->linecolor[2] = 74;
+  altitudeplot->units = English;
+  altitudeplot->start_time = NULL;
+
+  lapplot->ptype = LapPlot;
+  lapplot->symbol = "⏺";
+  lapplot->xmin = 0;
+  lapplot->xmax = 0;
+  lapplot->ymin = 0;
+  lapplot->ymax = 0;
+  lapplot->num_pts = 0;
+  lapplot->x = NULL;
+  lapplot->y = NULL;
+  lapplot->xvmax = 0;
+  lapplot->yvmin = 0;
+  lapplot->yvmax = 0;
+  lapplot->xvmin = 0;
+  lapplot->zmxmin = 0;
+  lapplot->zmxmax = 0;
+  lapplot->zmymin = 0;
+  lapplot->zmymax = 0;
+  lapplot->zm_startx = 0;
+  lapplot->zm_starty = 0;
+  lapplot->zm_endx = 0;
+  lapplot->zm_endy = 0;
+  lapplot->lat = NULL;
+  lapplot->lng = NULL;
+  lapplot->xaxislabel = NULL;
+  lapplot->yaxislabel = NULL;
+  lapplot->linecolor[0] = 255;
+  lapplot->linecolor[1] = 127;
+  lapplot->linecolor[2] = 14;
+  lapplot->units = English;
+  lapplot->start_time = NULL;
+
+  /* Bundle the data structures in an instance of AllData and 
    * establish a pointer to it. */
-  AllData alldata = {
-     .ppace = &paceplot,
-     .pcadence = &cadenceplot,
-     .pheart = &heartrateplot,
-     .paltitude = &altitudeplot,
-     .plap = &lapplot,
-     .pd = &paceplot,
-     .psd = &sess };
-  AllData *pall = &alldata; 
+  //static AllData allData;
+  //static AllData *pall;
+  pall->ppace = paceplot;
+  pall->pcadence = cadenceplot;
+  pall->pheart = heartrateplot;
+  pall->paltitude = altitudeplot;
+  pall->plap = lapplot;
+  pall->pd = paceplot;
+  pall->psd = sess;
 
   GtkBuilder *builder;
   GtkWidget *window;
@@ -1679,7 +1711,7 @@ int main(int argc, char *argv[]) {
   g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
                    G_CALLBACK(on_cb_units_changed), pall);
   g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
-                   G_CALLBACK(on_btnFileOpen_file_set), pall);
+                   G_CALLBACK(on_btnFileOpen_file_set), &pall);
   g_signal_connect(GTK_SCALE(sc_IdxPct), "value-changed",
                    G_CALLBACK(on_update_index), pall);
   g_signal_connect(GTK_WIDGET(window), "destroy",
