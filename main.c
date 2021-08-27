@@ -185,7 +185,6 @@ GtkRadioButton *rb_Altitude;
 GtkRadioButton *rb_Splits;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
-GtkWidget *champlain_widget;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
