@@ -657,9 +657,6 @@ void raw_to_user_plots(PlotData *pdest, int num_recs,
    values. */
 gboolean init_plot_data(AllData *pall) {
   /* Unit system first. */
-  printf("%p pall\n", pall);
-  printf("%p ppace\n", pall->ppace);
-  //printf("\n", pall->ppace->units);
   gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
   if (!strcmp(user_units, "Metric")) {
     pall->ppace->units = Metric;
@@ -676,14 +673,11 @@ gboolean init_plot_data(AllData *pall) {
     pall->plap->units = English;
     pall->psd->units = English;
   }
-  printf("Farther along2\n");
   g_free(user_units);
-  printf("Farther along3\n");
   /* Parse the data from the fit file in a cGO routine and return the
    * result as a structure defined by fitwrapper.go.
    */
   result = parse_fit_file(fname, NSIZE, LSIZE);
-  printf("Farther along4\n");
   //  long  *pRecTimestamp = result.r1;
   float *pRecDistance = result.r3;
   float *pRecSpeed = result.r5;
@@ -1377,14 +1371,11 @@ G_MODULE_EXPORT
 void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData* pall ) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
-  printf("Enter init\n");
   if (pall != NULL) {
     init_plot_data(pall);
     gtk_widget_queue_draw(GTK_WIDGET(da));
-    printf("Enter create map\n");
     create_map(pall);
   }
-  printf("Left init\n");
 
   /*
   if (pd == NULL) {
