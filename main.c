@@ -122,6 +122,9 @@ typedef struct PlotData {
   enum UnitSystem units;
 } PlotData;
 
+/* Similar to above but for an entire workout
+ * session to be displayed as a summary.
+ */
 typedef struct SessionData {
   char *timestamp;
   char *start_time;
@@ -159,10 +162,10 @@ typedef struct SessionData {
 /* The data structures for the data plots.  There is one for each
  * type of plot and an additional pointer, pd, that is assigned
  * from one of the other four depending on what the user is currently
- * displaying.  Finally, there is another pointer for the overall 
+ * displaying.  Finally, there is another pointer for the overall
  * session data displayed by the summary.
  */
-  typedef struct AllData {
+typedef struct AllData {
   struct PlotData *ppace;
   struct PlotData *pcadence;
   struct PlotData *pheart;
@@ -190,9 +193,9 @@ GtkLabel *lbl_val;
 /* Declaration for the fit filename. */
 char *fname = "";
 
-/* Declarations for OsmGps maps. 
+/* Declarations for OsmGps maps.
  * Since these are updated by the slider, we'll make them
- * globals.  Otherwise we'd have to pass them around with 
+ * globals.  Otherwise we'd have to pass them around with
  * AllData, and that doesn't seem appropriate since that
  * structure is intended primarily for data models not UI.
  */
@@ -240,7 +243,7 @@ void print_timer_val(float timer, char *plabel, FILE *fp) {
 }
 
 /* Generate the summary report */
-void create_summary(FILE *fp, SessionData* psd) {
+void create_summary(FILE *fp, SessionData *psd) {
   if ((fp != NULL) && (psd != NULL)) {
     fprintf(fp, "%-30s", "Start time");
     fprintf(fp, "%3s", " = ");
@@ -304,7 +307,7 @@ void create_summary(FILE *fp, SessionData* psd) {
 }
 
 /* Create a summary report to disk and display. */
-void update_summary(SessionData* psd) {
+void update_summary(SessionData *psd) {
   GtkTextMark *mark;
   GtkTextIter iter;
   GtkTextIter start;
@@ -337,7 +340,7 @@ void update_summary(SessionData* psd) {
 //
 
 /* Set the view limits to the data extents. */
-void reset_view_limits(PlotData* pd) {
+void reset_view_limits(PlotData *pd) {
   if (pd == NULL) {
     return;
   }
@@ -348,7 +351,7 @@ void reset_view_limits(PlotData* pd) {
 }
 
 /* Set zoom back to zero. */
-void reset_zoom(PlotData* pd) {
+void reset_zoom(PlotData *pd) {
   if (pd == NULL) {
     return;
   }
@@ -479,10 +482,9 @@ void raw_to_user_session(
  *  as well as setting labels and range limits to initial values.
  *
  */
-void raw_to_user_plots(PlotData *pdest, int num_recs, 
-                       float x_raw[NSIZE], float y_raw[NSIZE], 
-                       float lat_raw[NSIZE], float lng_raw[NSIZE], 
-                       time_t sess_start_time,
+void raw_to_user_plots(PlotData *pdest, int num_recs, float x_raw[NSIZE],
+                       float y_raw[NSIZE], float lat_raw[NSIZE],
+                       float lng_raw[NSIZE], time_t sess_start_time,
                        time_t tz_offset) {
   float x_cnv, y_cnv;
   /* Housekeeping. Release any memory previously allocated before
@@ -730,8 +732,8 @@ gboolean init_plot_data(AllData *pall) {
   long tzOffset = result.r66;
 
   /* Convert the raw values to user-facing values. */
-  raw_to_user_plots(pall->ppace, nRecs, pRecDistance, pRecSpeed, pRecLat, pRecLong,
-                    sessStartTime, tzOffset);
+  raw_to_user_plots(pall->ppace, nRecs, pRecDistance, pRecSpeed, pRecLat,
+                    pRecLong, sessStartTime, tzOffset);
   raw_to_user_plots(pall->pcadence, nRecs, pRecDistance, pRecCadence, pRecLat,
                     pRecLong, sessStartTime, tzOffset);
   raw_to_user_plots(pall->pheart, nRecs, pRecDistance, pRecHeartRate, pRecLat,
@@ -984,7 +986,7 @@ enum PlotType checkRadioButtons() {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData* data) {
+gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
 
   PLINT width, height;
   /* Can't plot uninitialized. */
@@ -1092,7 +1094,7 @@ void change_cursor(GtkWidget *widget, const gchar *name) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_button_press(GtkWidget *widget, GdkEvent *event, AllData* data) {
+gboolean on_button_press(GtkWidget *widget, GdkEvent *event, AllData *data) {
   guint buttonnum;
   if (data->pd == NULL) {
     return FALSE;
@@ -1113,7 +1115,7 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData* data) {
+gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData *data) {
   guint buttonnum;
   if (data->pd == NULL) {
     return FALSE;
@@ -1130,7 +1132,8 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData* data) {
   /* Zoom in if left mouse button release. */
   /* Set user selected ending x, y in world coordinates. */
   gui_to_world(data->pd, (GdkEventButton *)event, Release);
-  if ((data->pd->zm_startx != data->pd->zm_endx) && (data->pd->zm_starty != data->pd->zm_endy)) {
+  if ((data->pd->zm_startx != data->pd->zm_endx) &&
+      (data->pd->zm_starty != data->pd->zm_endy)) {
     /* Zoom */
     if (buttonnum == 3) {
       data->pd->xvmin = fmin(data->pd->zm_startx, data->pd->zm_endx);
@@ -1140,10 +1143,14 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData* data) {
     }
     /* Pan */
     if (buttonnum == 1) {
-      data->pd->xvmin = data->pd->xvmin + (data->pd->zm_startx - data->pd->zm_endx);
-      data->pd->xvmax = data->pd->xvmax + (data->pd->zm_startx - data->pd->zm_endx);
-      data->pd->yvmin = data->pd->yvmin + (data->pd->zm_starty - data->pd->zm_endy);
-      data->pd->yvmax = data->pd->yvmax + (data->pd->zm_starty - data->pd->zm_endy);
+      data->pd->xvmin =
+          data->pd->xvmin + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->xvmax =
+          data->pd->xvmax + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->yvmin =
+          data->pd->yvmin + (data->pd->zm_starty - data->pd->zm_endy);
+      data->pd->yvmax =
+          data->pd->yvmax + (data->pd->zm_starty - data->pd->zm_endy);
     }
     gtk_widget_queue_draw(GTK_WIDGET(da));
     reset_zoom(data->pd);
@@ -1157,7 +1164,8 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event, AllData* data) {
+gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
+                          AllData *data) {
 
   if (data->pd == NULL) {
     return FALSE;
@@ -1235,7 +1243,7 @@ static void move_marker(gdouble new_lat, gdouble new_lng) {
 }
 
 /* Update the map. */
-static void create_map(AllData* data) {
+static void create_map(AllData *data) {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
@@ -1245,9 +1253,11 @@ static void create_map(AllData* data) {
   //  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
   //  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
   //  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
-  if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) && (data->pd->lng != NULL)) {
+  if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) &&
+      (data->pd->lng != NULL)) {
     /* Center at the start. */
-    osm_gps_map_set_center(OSM_GPS_MAP(map), data->pd->lat[0], data->pd->lng[0]);
+    osm_gps_map_set_center(OSM_GPS_MAP(map), data->pd->lat[0],
+                           data->pd->lng[0]);
     /*Create a "track" for the run. */
     if (routeTrack != NULL) {
       osm_gps_map_track_remove(map, routeTrack);
@@ -1272,10 +1282,11 @@ static void create_map(AllData* data) {
     if (posnTrackMarker != NULL) {
       osm_gps_map_image_remove(map, posnTrackMarker);
     }
-    startTrackMarker =
-        osm_gps_map_image_add(map, data->pd->lat[0], data->pd->lng[0], starImage);
-    endTrackMarker = osm_gps_map_image_add(map, data->pd->lat[data->pd->num_pts - 1],
-                                           data->pd->lng[data->pd->num_pts - 1], starImage);
+    startTrackMarker = osm_gps_map_image_add(map, data->pd->lat[0],
+                                             data->pd->lng[0], starImage);
+    endTrackMarker =
+        osm_gps_map_image_add(map, data->pd->lat[data->pd->num_pts - 1],
+                              data->pd->lng[data->pd->num_pts - 1], starImage);
     /* Add current position marker */
 
     posnTrackMarker = osm_gps_map_image_add(map, data->pd->lat[currIdx],
@@ -1308,7 +1319,7 @@ gboolean default_chart() {
 }
 
 /* User has changed unit system. */
-void on_cb_units_changed(GtkComboBox *cb_Units, AllData* data) {
+void on_cb_units_changed(GtkComboBox *cb_Units, AllData *data) {
   init_plot_data(data); // got to reconvert the raw data
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(da));
@@ -1318,7 +1329,7 @@ void on_cb_units_changed(GtkComboBox *cb_Units, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_pace(GtkToggleButton *togglebutton, AllData* data) {
+void on_rb_pace(GtkToggleButton *togglebutton, AllData *data) {
   data->pd = data->ppace;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
@@ -1328,7 +1339,7 @@ void on_rb_pace(GtkToggleButton *togglebutton, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_cadence(GtkToggleButton *togglebutton, AllData* data) {
+void on_rb_cadence(GtkToggleButton *togglebutton, AllData *data) {
   data->pd = data->pcadence;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
@@ -1338,7 +1349,7 @@ void on_rb_cadence(GtkToggleButton *togglebutton, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_heartrate(GtkToggleButton *togglebutton, AllData* data) {
+void on_rb_heartrate(GtkToggleButton *togglebutton, AllData *data) {
   data->pd = data->pheart;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
@@ -1348,7 +1359,7 @@ void on_rb_heartrate(GtkToggleButton *togglebutton, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_altitude(GtkToggleButton *togglebutton, AllData* data) {
+void on_rb_altitude(GtkToggleButton *togglebutton, AllData *data) {
   data->pd = data->paltitude;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
@@ -1358,7 +1369,7 @@ void on_rb_altitude(GtkToggleButton *togglebutton, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_splits(GtkToggleButton *togglebutton, AllData* data) {
+void on_rb_splits(GtkToggleButton *togglebutton, AllData *data) {
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
@@ -1367,7 +1378,7 @@ void on_rb_splits(GtkToggleButton *togglebutton, AllData* data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData* pall ) {
+void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData *pall) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   if (pall != NULL) {
@@ -1438,9 +1449,7 @@ void on_update_index(GtkScale *widget, AllData *data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_window_destroy(AllData* data) {
-  gtk_main_quit();
-}
+void on_window_destroy(AllData *data) { gtk_main_quit(); }
 
 //
 // Main
@@ -1455,7 +1464,7 @@ int main(int argc, char *argv[]) {
   /*
    * Initialize instances of the main data structure.
    */
- 
+
   static PlotData paceplot;
   static PlotData cadenceplot;
   static PlotData heartrateplot;
@@ -1618,7 +1627,7 @@ int main(int argc, char *argv[]) {
   lapplot.units = English;
   lapplot.start_time = NULL;
 
-  /* Bundle the data structures in an instance of AllData and 
+  /* Bundle the data structures in an instance of AllData and
    * establish a pointer to it. */
   static AllData allData;
   allData.ppace = &paceplot;
@@ -1698,8 +1707,8 @@ int main(int argc, char *argv[]) {
                    G_CALLBACK(on_btnFileOpen_file_set), pall);
   g_signal_connect(GTK_SCALE(sc_IdxPct), "value-changed",
                    G_CALLBACK(on_update_index), pall);
-  g_signal_connect(GTK_WIDGET(window), "destroy",
-                   G_CALLBACK(on_window_destroy), pall);
+  g_signal_connect(GTK_WIDGET(window), "destroy", G_CALLBACK(on_window_destroy),
+                   pall);
 
   /* Release the builder memory. */
   g_object_unref(builder);
@@ -1709,5 +1718,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
-
