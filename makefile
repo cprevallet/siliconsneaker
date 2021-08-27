@@ -14,7 +14,7 @@ PTHREAD=-pthread
 
 CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD)
 
-GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo clutter-gtk-1.0 osmgpsmap-1.0  librsvg-2.0`
+GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot cairo osmgpsmap-1.0  librsvg-2.0`
 
 # linker
 LD=gcc

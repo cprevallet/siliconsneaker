@@ -25,10 +25,7 @@
 
 /* Required external top level-dependencies.
  *  libplplot.so.17
- *	libchamplain-gtk-0.12.so.0
- *	libchamplain-0.12.so.0
- *	libclutter-gtk-1.0.so.0
- *	libclutter-1.0.so.0
+ *  libosmgpsmap-1.0
  *	libgtk-3.so.0
  *	libgdk-3.so.0
  *	libcairo.so.2
@@ -38,7 +35,7 @@
  *	libc.so.6
  */
 
-#include <clutter-gtk/clutter-gtk.h>
+//#include <clutter-gtk/clutter-gtk.h>
 #include <float.h>
 #include <gdk/gdk.h>
 #include <glib.h>
@@ -193,7 +190,12 @@ GtkLabel *lbl_val;
 /* Declaration for the fit filename. */
 char *fname = "";
 
-/* Declarations for OsmGps maps. */
+/* Declarations for OsmGps maps. 
+ * Since these are updated by the slider, we'll make them
+ * globals.  Otherwise we'd have to pass them around with 
+ * AllData, and that doesn't seem appropriate since that
+ * structure is intended primarily for data models not UI.
+ */
 OsmGpsMap *map;
 OsmGpsMapTrack *routeTrack;
 static GdkPixbuf *starImage = NULL;
@@ -1171,9 +1173,8 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event, AllData* dat
 // Map Stuff
 //
 
-/* Instantiate a (global) instance of a champlain map widget and
- * its associated view.  Add it to a GTKFrame named viewport.
- * The function assumes clutter has already been initialized.
+/* Instantiate a global instance of a map widget.
+ * Add it to a GTKFrame named viewport.
  */
 static int init_map() {
 
@@ -1433,66 +1434,11 @@ void on_update_index(GtkScale *widget, AllData *data) {
   free(curr_vals);
 }
 
-/* Release the allocated memory. */
-/*
-void destroy_plots(AllData *pall) {
-  if (pall->ppace->x != NULL) {
-    free(pall->ppace->x);
-  }
-  if (pall->ppace->y != NULL) {
-    free(pall->ppace->y);
-  }
-  if (pall->ppace->lat != NULL) {
-    free(pall->ppace->lat);
-  }
-  if (pall->ppace->lng != NULL) {
-    free(pall->ppace->lng);
-  }
-  if (pall->pcadence->x != NULL) {
-    free(pall->pcadence->x);
-  }
-  if (pall->pcadence->y != NULL) {
-    free(pall->pcadence->y);
-  }
-  if (pall->pcadence->lat != NULL) {
-    free(pall->pcadence->lat);
-  }
-  if (pall->pcadence->lng != NULL) {
-    free(pall->pcadence->lng);
-  }
-  if (pall->pheart->x != NULL) {
-    free(pall->pheart->x);
-  }
-  if (pall->pheart->y != NULL) {
-    free(pall->pheart->y);
-  }
-  if (pall->pheart->lat != NULL) {
-    free(pall->pheart->lat);
-  }
-  if (pall->pheart->lng != NULL) {
-    free(pall->pheart->lng);
-  }
-  if (pall->paltitude->x != NULL) {
-    free(pall->paltitude->x);
-  }
-  if (pall->paltitude->y != NULL) {
-    free(pall->paltitude->y);
-  }
-  if (pall->paltitude->lat != NULL) {
-    free(pall->paltitude->lat);
-  }
-  if (pall->paltitude->lng != NULL) {
-    free(pall->paltitude->lng);
-  }
-}
-*/
-
 /* Call when the main window is closed.*/
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
 void on_window_destroy(AllData* data) {
-  //destroy_plots(data);
   gtk_main_quit();
 }
 
