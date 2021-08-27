@@ -159,7 +159,7 @@ typedef struct SessionData {
   enum UnitSystem units;
 } SessionData;
 
-/* The pointers for the data plots.  There is one for each
+/* The data structures for the data plots.  There is one for each
  * type of plot and an additional pointer, pd, that is assigned
  * from one of the other four depending on what the user is currently
  * displaying.  Finally, there is another pointer for the overall 
@@ -1675,8 +1675,6 @@ int main(int argc, char *argv[]) {
   /* Bundle the data structures in an instance of AllData and 
    * establish a pointer to it. */
   static AllData allData;
-  AllData *pall = &allData;
-  
   allData.ppace = &paceplot;
   allData.pcadence = &cadenceplot;
   allData.pheart = &heartrateplot;
@@ -1684,6 +1682,7 @@ int main(int argc, char *argv[]) {
   allData.plap = &lapplot;
   allData.pd = &paceplot;
   allData.psd = &sess;
+  AllData *pall = &allData;
 
   GtkBuilder *builder;
   GtkWidget *window;
@@ -1714,10 +1713,8 @@ int main(int argc, char *argv[]) {
   /* Select a default chart to start. */
   default_chart();
 
-  /* Initialize champlain map and add it to a frame after initializing clutter.
+  /* Initialize a map and add it to a frame.
    */
-  // if (gtk_clutter_init(&argc, &argv) != CLUTTER_INIT_SUCCESS)
-  //  return 1;
   if (init_map() != 0) {
     return 1;
   }
