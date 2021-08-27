@@ -159,170 +159,20 @@ typedef struct SessionData {
   enum UnitSystem units;
 } SessionData;
 
-/*
- * Declare global instances of the main data structure (one for
- * each type of plot).
- *
- * There must be a better way make all this available to the
- * relevant routines but I haven't discovered anything cleaner.
- */
-PlotData paceplot = {.ptype = PacePlot,
-                     .symbol = "⏺",
-                     .xmin = 0,
-                     .xmax = 0,
-                     .ymin = 0,
-                     .ymax = 0,
-                     .num_pts = 0,
-                     .x = NULL,
-                     .y = NULL,
-                     .xvmax = 0,
-                     .yvmin = 0,
-                     .yvmax = 0,
-                     .xvmin = 0,
-                     .zmxmin = 0,
-                     .zmxmax = 0,
-                     .zmymin = 0,
-                     .zmymax = 0,
-                     .zm_startx = 0,
-                     .zm_starty = 0,
-                     .zm_endx = 0,
-                     .zm_endy = 0,
-                     .lat = NULL,
-                     .lng = NULL,
-                     .xaxislabel = NULL,
-                     .yaxislabel = NULL,
-                     // light magenta for pace
-                     .linecolor = {156, 100, 134},
-                     .start_time = NULL};
-PlotData cadenceplot = {.ptype = CadencePlot,
-                        .symbol = "⏺",
-                        .xmin = 0,
-                        .xmax = 0,
-                        .ymin = 0,
-                        .ymax = 0,
-                        .num_pts = 0,
-                        .x = NULL,
-                        .y = NULL,
-                        .xvmax = 0,
-                        .yvmin = 0,
-                        .yvmax = 0,
-                        .xvmin = 0,
-                        .zmxmin = 0,
-                        .zmxmax = 0,
-                        .zmymin = 0,
-                        .zmymax = 0,
-                        .zm_startx = 0,
-                        .zm_starty = 0,
-                        .zm_endx = 0,
-                        .zm_endy = 0,
-                        .lat = NULL,
-                        .lng = NULL,
-                        .xaxislabel = NULL,
-                        .yaxislabel = NULL,
-                        // light blue for heartrate
-                        .linecolor = {31, 119, 180},
-                        .start_time = NULL};
-PlotData heartrateplot = {.ptype = HeartRatePlot,
-                          .symbol = "⏺",
-                          .xmin = 0,
-                          .xmax = 0,
-                          .ymin = 0,
-                          .ymax = 0,
-                          .num_pts = 0,
-                          .x = NULL,
-                          .y = NULL,
-                          .xvmax = 0,
-                          .yvmin = 0,
-                          .yvmax = 0,
-                          .xvmin = 0,
-                          .zmxmin = 0,
-                          .zmxmax = 0,
-                          .zmymin = 0,
-                          .zmymax = 0,
-                          .zm_startx = 0,
-                          .zm_starty = 0,
-                          .zm_endx = 0,
-                          .zm_endy = 0,
-                          .lat = NULL,
-                          .lng = NULL,
-                          .xaxislabel = NULL,
-                          .yaxislabel = NULL,
-                          // light yellow for heartrate
-                          .linecolor = {247, 250, 191},
-                          .start_time = NULL};
-PlotData altitudeplot = {.ptype = AltitudePlot,
-                         .symbol = "⏺",
-                         .xmin = 0,
-                         .xmax = 0,
-                         .ymin = 0,
-                         .ymax = 0,
-                         .num_pts = 0,
-                         .x = NULL,
-                         .y = NULL,
-                         .xvmax = 0,
-                         .yvmin = 0,
-                         .yvmax = 0,
-                         .xvmin = 0,
-                         .zmxmin = 0,
-                         .zmxmax = 0,
-                         .zmymin = 0,
-                         .zmymax = 0,
-                         .zm_startx = 0,
-                         .zm_starty = 0,
-                         .zm_endx = 0,
-                         .zm_endy = 0,
-                         .lat = NULL,
-                         .lng = NULL,
-                         .xaxislabel = NULL,
-                         .yaxislabel = NULL,
-                         // light green for heartrate
-                         .linecolor = {77, 175, 74},
-                         .start_time = NULL};
-PlotData lapplot = {.ptype = LapPlot,
-                    .symbol = "⏺",
-                    .xmin = 0,
-                    .xmax = 0,
-                    .ymin = 0,
-                    .ymax = 0,
-                    .num_pts = 0,
-                    .x = NULL,
-                    .y = NULL,
-                    .xvmax = 0,
-                    .yvmin = 0,
-                    .yvmax = 0,
-                    .xvmin = 0,
-                    .zmxmin = 0,
-                    .zmxmax = 0,
-                    .zmymin = 0,
-                    .zmymax = 0,
-                    .zm_startx = 0,
-                    .zm_starty = 0,
-                    .zm_endx = 0,
-                    .zm_endy = 0,
-                    .lat = NULL,
-                    .lng = NULL,
-                    .xaxislabel = NULL,
-                    .yaxislabel = NULL,
-                    // light orange for laps
-                    .linecolor = {255, 127, 14},
-                    .start_time = NULL};
-
-/* Rely on the default values for C structures = 0, 0.0 for ints, floats */
-struct SessionData sess;
-
 /* The pointers for the data plots.  There is one for each
  * type of plot and an additional pointer, pd, that is assigned
  * from one of the other four depending on what the user is currently
  * displaying.
  */
-struct PlotData *ppace = &paceplot;
-struct PlotData *pcadence = &cadenceplot;
-struct PlotData *pheart = &heartrateplot;
-struct PlotData *paltitude = &altitudeplot;
-struct PlotData *plap = &lapplot;
-struct PlotData *pd; // for xy-plots
-/* The pointer for the session summary. */
-struct SessionData *psd = &sess;
+typedef struct AllData {
+  struct PlotData *ppace;
+  struct PlotData *pcadence;
+  struct PlotData *pheart;
+  struct PlotData *paltitude;
+  struct PlotData *plap;
+  struct PlotData *pd;
+  struct SessionData *psd;
+} AllData;
 
 /* Declarations for the GUI widgets. */
 GtkTextBuffer *textbuffer1;
@@ -388,7 +238,7 @@ void print_timer_val(float timer, char *plabel, FILE *fp) {
 }
 
 /* Generate the summary report */
-void create_summary(FILE *fp) {
+void create_summary(FILE *fp, SessionData* psd) {
   if ((fp != NULL) && (psd != NULL)) {
     fprintf(fp, "%-30s", "Start time");
     fprintf(fp, "%3s", " = ");
@@ -452,7 +302,7 @@ void create_summary(FILE *fp) {
 }
 
 /* Create a summary report to disk and display. */
-void update_summary() {
+void update_summary(SessionData* psd) {
   GtkTextMark *mark;
   GtkTextIter iter;
   GtkTextIter start;
@@ -463,7 +313,7 @@ void update_summary() {
   /*Create a new summary file.*/
   FILE *fp;
   fp = fopen("runplotter.txt", "w");
-  create_summary(fp);
+  create_summary(fp, psd);
   fclose(fp);
   /* Display the summary file in the textbuffer, textbuffer1*/
   fp = fopen("runplotter.txt", "r");
@@ -485,7 +335,7 @@ void update_summary() {
 //
 
 /* Set the view limits to the data extents. */
-void reset_view_limits() {
+void reset_view_limits(PlotData* pd) {
   if (pd == NULL) {
     return;
   }
@@ -496,7 +346,7 @@ void reset_view_limits() {
 }
 
 /* Set zoom back to zero. */
-void reset_zoom() {
+void reset_zoom(PlotData* pd) {
   if (pd == NULL) {
     return;
   }
@@ -627,30 +477,12 @@ void raw_to_user_session(
  *  as well as setting labels and range limits to initial values.
  *
  */
-void raw_to_user_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
-                       float y_raw[NSIZE], float lat_raw[NSIZE],
-                       float lng_raw[NSIZE], time_t sess_start_time,
+void raw_to_user_plots(PlotData *pdest, int num_recs, 
+                       float x_raw[NSIZE], float y_raw[NSIZE], 
+                       float lat_raw[NSIZE], float lng_raw[NSIZE], 
+                       time_t sess_start_time,
                        time_t tz_offset) {
-  PlotData *pdest;
   float x_cnv, y_cnv;
-  /* Store to the correct global variable. */
-  switch (ptype) {
-  case PacePlot:
-    pdest = ppace;
-    break;
-  case CadencePlot:
-    pdest = pcadence;
-    break;
-  case HeartRatePlot:
-    pdest = pheart;
-    break;
-  case AltitudePlot:
-    pdest = paltitude;
-    break;
-  case LapPlot:
-    pdest = plap;
-    break;
-  }
   /* Housekeeping. Release any memory previously allocated before
    * reinitializing.
    */
@@ -821,23 +653,23 @@ void raw_to_user_plots(enum PlotType ptype, int num_recs, float x_raw[NSIZE],
 
 /* Read the raw file data, call helper routines to convert to user-facing
    values. */
-gboolean init_plot_data() {
+gboolean init_plot_data(AllData *pall) {
   /* Unit system first. */
   gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
   if (!strcmp(user_units, "Metric")) {
-    ppace->units = Metric;
-    pcadence->units = Metric;
-    pheart->units = Metric;
-    paltitude->units = Metric;
-    plap->units = Metric;
-    psd->units = Metric;
+    pall->ppace->units = Metric;
+    pall->pcadence->units = Metric;
+    pall->pheart->units = Metric;
+    pall->paltitude->units = Metric;
+    pall->plap->units = Metric;
+    pall->psd->units = Metric;
   } else {
-    ppace->units = English;
-    pcadence->units = English;
-    pheart->units = English;
-    paltitude->units = English;
-    plap->units = English;
-    psd->units = English;
+    pall->ppace->units = English;
+    pall->pcadence->units = English;
+    pall->pheart->units = English;
+    pall->paltitude->units = English;
+    pall->plap->units = English;
+    pall->psd->units = English;
   }
   g_free(user_units);
   /* Parse the data from the fit file in a cGO routine and return the
@@ -896,21 +728,21 @@ gboolean init_plot_data() {
   long tzOffset = result.r66;
 
   /* Convert the raw values to user-facing values. */
-  raw_to_user_plots(PacePlot, nRecs, pRecDistance, pRecSpeed, pRecLat, pRecLong,
+  raw_to_user_plots(pall->ppace, nRecs, pRecDistance, pRecSpeed, pRecLat, pRecLong,
                     sessStartTime, tzOffset);
-  raw_to_user_plots(CadencePlot, nRecs, pRecDistance, pRecCadence, pRecLat,
+  raw_to_user_plots(pall->pcadence, nRecs, pRecDistance, pRecCadence, pRecLat,
                     pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots(HeartRatePlot, nRecs, pRecDistance, pRecHeartRate, pRecLat,
+  raw_to_user_plots(pall->pheart, nRecs, pRecDistance, pRecHeartRate, pRecLat,
                     pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots(AltitudePlot, nRecs, pRecDistance, pRecAltitude, pRecLat,
+  raw_to_user_plots(pall->paltitude, nRecs, pRecDistance, pRecAltitude, pRecLat,
                     pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots(LapPlot, nLaps, pLapTotalDistance, pLapTotalElapsedTime,
+  raw_to_user_plots(pall->plap, nLaps, pLapTotalDistance, pLapTotalElapsedTime,
                     pLapStartPositionLat, pLapStartPositionLong, sessStartTime,
                     tzOffset);
 
   /* Convert the raw values to user-facing values. */
   raw_to_user_session(
-      psd, sessTimestamp, sessStartTime, sessStartPositionLat,
+      pall->psd, sessTimestamp, sessStartTime, sessStartPositionLat,
       sessStartPositionLong, sessTotalElapsedTime, sessTotalTimerTime,
       sessTotalDistance, sessNecLat, sessNecLong, sessSwcLat, sessSwcLong,
       sessTotalWork, sessTotalMovingTime, sessAvgLapTime, sessTotalCalories,
@@ -920,7 +752,7 @@ gboolean init_plot_data() {
       sessMaxTemperature, sessMinHeartRate, sessTotalAnaerobicTrainingEffect,
       tzOffset);
   /* Update the summary page. */
-  update_summary();
+  update_summary(pall->psd);
   return TRUE;
 }
 
@@ -983,7 +815,7 @@ void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
 
 /* Draw an xy plot. */
 
-void draw_xy(int width, int height) {
+void draw_xy(PlotData *pd, int width, int height) {
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
@@ -1091,7 +923,7 @@ void plfbox(PLFLT x0, PLFLT y0, PLINT color) {
 }
 
 /* Draw a bar chart */
-void draw_bar(int width, int height) {
+void draw_bar(PlotData *plap, PlotData *ppace, int width, int height) {
   char string[8];
   plwind(0.0, (float)plap->num_pts - 1.0, plap->ymin, plap->ymax);
   plscol0a(15, 128, 128, 128, 0.9); // light gray for background
@@ -1150,11 +982,11 @@ enum PlotType checkRadioButtons() {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
+gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData* data) {
 
   PLINT width, height;
   /* Can't plot uninitialized. */
-  if ((pd == NULL) || (plap == NULL)) {
+  if ((data->pd == NULL) || (data->plap == NULL)) {
     return TRUE;
   }
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
@@ -1187,19 +1019,19 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, gpointer *data) {
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons()) {
   case PacePlot:
-    draw_xy(width, height);
+    draw_xy(data->pd, width, height);
     break;
   case CadencePlot:
-    draw_xy(width, height);
+    draw_xy(data->pd, width, height);
     break;
   case HeartRatePlot:
-    draw_xy(width, height);
+    draw_xy(data->pd, width, height);
     break;
   case AltitudePlot:
-    draw_xy(width, height);
+    draw_xy(data->pd, width, height);
     break;
   case LapPlot:
-    draw_bar(width, height);
+    draw_bar(data->plap, data->ppace, width, height);
     break;
   }
 
@@ -1258,9 +1090,9 @@ void change_cursor(GtkWidget *widget, const gchar *name) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_button_press(GtkWidget *widget, GdkEvent *event) {
+gboolean on_button_press(GtkWidget *widget, GdkEvent *event, AllData* data) {
   guint buttonnum;
-  if (pd == NULL) {
+  if (data->pd == NULL) {
     return FALSE;
   }
   gdk_event_get_button(event, &buttonnum);
@@ -1271,7 +1103,7 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event) {
     change_cursor(widget, "hand1");
   }
   /* Set user selected starting x, y in world coordinates. */
-  gui_to_world(pd, (GdkEventButton *)event, Press);
+  gui_to_world(data->pd, (GdkEventButton *)event, Press);
   return TRUE;
 }
 
@@ -1279,40 +1111,40 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_button_release(GtkWidget *widget, GdkEvent *event) {
+gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData* data) {
   guint buttonnum;
-  if (pd == NULL) {
+  if (data->pd == NULL) {
     return FALSE;
   }
   change_cursor(widget, "default");
   gdk_event_get_button(event, &buttonnum);
   /* Zoom out if right mouse button release. */
   if (buttonnum == 2) {
-    reset_view_limits();
+    reset_view_limits(data->pd);
     gtk_widget_queue_draw(GTK_WIDGET(da));
-    reset_zoom();
+    reset_zoom(data->pd);
     return TRUE;
   }
   /* Zoom in if left mouse button release. */
   /* Set user selected ending x, y in world coordinates. */
-  gui_to_world(pd, (GdkEventButton *)event, Release);
-  if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
+  gui_to_world(data->pd, (GdkEventButton *)event, Release);
+  if ((data->pd->zm_startx != data->pd->zm_endx) && (data->pd->zm_starty != data->pd->zm_endy)) {
     /* Zoom */
     if (buttonnum == 3) {
-      pd->xvmin = fmin(pd->zm_startx, pd->zm_endx);
-      pd->yvmin = fmin(pd->zm_starty, pd->zm_endy);
-      pd->xvmax = fmax(pd->zm_startx, pd->zm_endx);
-      pd->yvmax = fmax(pd->zm_starty, pd->zm_endy);
+      data->pd->xvmin = fmin(data->pd->zm_startx, data->pd->zm_endx);
+      data->pd->yvmin = fmin(data->pd->zm_starty, data->pd->zm_endy);
+      data->pd->xvmax = fmax(data->pd->zm_startx, data->pd->zm_endx);
+      data->pd->yvmax = fmax(data->pd->zm_starty, data->pd->zm_endy);
     }
     /* Pan */
     if (buttonnum == 1) {
-      pd->xvmin = pd->xvmin + (pd->zm_startx - pd->zm_endx);
-      pd->xvmax = pd->xvmax + (pd->zm_startx - pd->zm_endx);
-      pd->yvmin = pd->yvmin + (pd->zm_starty - pd->zm_endy);
-      pd->yvmax = pd->yvmax + (pd->zm_starty - pd->zm_endy);
+      data->pd->xvmin = data->pd->xvmin + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->xvmax = data->pd->xvmax + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->yvmin = data->pd->yvmin + (data->pd->zm_starty - data->pd->zm_endy);
+      data->pd->yvmax = data->pd->yvmax + (data->pd->zm_starty - data->pd->zm_endy);
     }
     gtk_widget_queue_draw(GTK_WIDGET(da));
-    reset_zoom();
+    reset_zoom(data->pd);
   }
   return TRUE;
 }
@@ -1323,13 +1155,13 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event) {
+gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event, AllData* data) {
 
-  if (pd == NULL) {
+  if (data->pd == NULL) {
     return FALSE;
   }
   if (event->state & GDK_BUTTON3_MASK) {
-    gui_to_world(pd, event, Move);
+    gui_to_world(data->pd, event, Move);
     gtk_widget_queue_draw(GTK_WIDGET(da));
   }
   return TRUE;
@@ -1402,7 +1234,7 @@ static void move_marker(gdouble new_lat, gdouble new_lng) {
 }
 
 /* Update the map. */
-static void create_map() {
+static void create_map(AllData* data) {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
@@ -1412,9 +1244,9 @@ static void create_map() {
   //  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
   //  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
   //  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
-  if ((map != NULL) && (pd != NULL) && (pd->lat != NULL) && (pd->lng != NULL)) {
+  if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) && (data->pd->lng != NULL)) {
     /* Center at the start. */
-    osm_gps_map_set_center(OSM_GPS_MAP(map), pd->lat[0], pd->lng[0]);
+    osm_gps_map_set_center(OSM_GPS_MAP(map), data->pd->lat[0], data->pd->lng[0]);
     /*Create a "track" for the run. */
     if (routeTrack != NULL) {
       osm_gps_map_track_remove(map, routeTrack);
@@ -1423,9 +1255,9 @@ static void create_map() {
     gdk_rgba_parse(&routeTrackColor, "rgba(156,100,134,0.9)");
     osm_gps_map_track_set_color(routeTrack, &routeTrackColor);
     osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
-    for (int i = 0; i < pd->num_pts; i++) {
+    for (int i = 0; i < data->pd->num_pts; i++) {
       OsmGpsMapPoint *mapPoint =
-          osm_gps_map_point_new_degrees(pd->lat[i], pd->lng[i]);
+          osm_gps_map_point_new_degrees(data->pd->lat[i], data->pd->lng[i]);
       osm_gps_map_track_add_point(routeTrack, mapPoint);
     }
     /* Add start and end markers. */
@@ -1440,13 +1272,13 @@ static void create_map() {
       osm_gps_map_image_remove(map, posnTrackMarker);
     }
     startTrackMarker =
-        osm_gps_map_image_add(map, pd->lat[0], pd->lng[0], starImage);
-    endTrackMarker = osm_gps_map_image_add(map, pd->lat[pd->num_pts - 1],
-                                           pd->lng[pd->num_pts - 1], starImage);
+        osm_gps_map_image_add(map, data->pd->lat[0], data->pd->lng[0], starImage);
+    endTrackMarker = osm_gps_map_image_add(map, data->pd->lat[data->pd->num_pts - 1],
+                                           data->pd->lng[data->pd->num_pts - 1], starImage);
     /* Add current position marker */
 
-    posnTrackMarker = osm_gps_map_image_add(map, pd->lat[currIdx],
-                                            pd->lng[currIdx], starImage);
+    posnTrackMarker = osm_gps_map_image_add(map, data->pd->lat[currIdx],
+                                            data->pd->lng[currIdx], starImage);
 
   } else {
     /* Start-up. */
@@ -1475,8 +1307,8 @@ gboolean default_chart() {
 }
 
 /* User has changed unit system. */
-void on_cb_units_changed(GtkComboBox *cb_Units) {
-  init_plot_data(); // got to reconvert the raw data
+void on_cb_units_changed(GtkComboBox *cb_Units, AllData* data) {
+  init_plot_data(data); // got to reconvert the raw data
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(da));
 }
@@ -1485,8 +1317,8 @@ void on_cb_units_changed(GtkComboBox *cb_Units) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_pace(GtkToggleButton *togglebutton) {
-  pd = ppace;
+void on_rb_pace(GtkToggleButton *togglebutton, AllData* data) {
+  data->pd = data->ppace;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
@@ -1495,8 +1327,8 @@ void on_rb_pace(GtkToggleButton *togglebutton) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_cadence(GtkToggleButton *togglebutton) {
-  pd = pcadence;
+void on_rb_cadence(GtkToggleButton *togglebutton, AllData* data) {
+  data->pd = data->pcadence;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
@@ -1505,8 +1337,8 @@ void on_rb_cadence(GtkToggleButton *togglebutton) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_heartrate(GtkToggleButton *togglebutton) {
-  pd = pheart;
+void on_rb_heartrate(GtkToggleButton *togglebutton, AllData* data) {
+  data->pd = data->pheart;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
@@ -1515,8 +1347,8 @@ void on_rb_heartrate(GtkToggleButton *togglebutton) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_altitude(GtkToggleButton *togglebutton) {
-  pd = paltitude;
+void on_rb_altitude(GtkToggleButton *togglebutton, AllData* data) {
+  data->pd = data->paltitude;
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
@@ -1525,7 +1357,7 @@ void on_rb_altitude(GtkToggleButton *togglebutton) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_splits(GtkToggleButton *togglebutton) {
+void on_rb_splits(GtkToggleButton *togglebutton, AllData* data) {
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
@@ -1534,15 +1366,16 @@ void on_rb_splits(GtkToggleButton *togglebutton) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
+void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData* data ) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
-  init_plot_data();
+  init_plot_data(data);
+  /*
   if (pd == NULL) {
     pd = ppace;
-  }
+  }*/
   gtk_widget_queue_draw(GTK_WIDGET(da));
-  create_map();
+  create_map(data);
 }
 
 //
@@ -1552,54 +1385,64 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen) {
  *  Update the map, graph, and indicator label based on the
  *  slider position.
  */
-void on_update_index(GtkScale *widget, gpointer *data) {
+void on_update_index(GtkScale *widget, AllData *data) {
   GtkAdjustment *adj;
   // What's the new value in percent of scale?
   adj = gtk_range_get_adjustment((GtkRange *)widget);
   gdouble val = gtk_adjustment_get_value(adj);
   // Slider from zero to 100 - normalized.  Calculate portion of activity.
-  currIdx = (int)floor(val / 100.0 * (float)ppace->num_pts);
+  currIdx = (int)floor(val / 100.0 * (float)data->ppace->num_pts);
   // Redraw graph.
   gtk_widget_queue_draw(GTK_WIDGET(da));
   // Redraw the position marker on the map.
   if ((map != NULL) && (posnTrackMarker != NULL)) {
-    move_marker(pd->lat[currIdx], pd->lng[currIdx]);
+    move_marker(data->pd->lat[currIdx], data->pd->lng[currIdx]);
   }
   // Update the label below the graph.
   char yval[15];
   char xval[15];
-  switch (pd->ptype) {
+  switch (data->pd->ptype) {
   case PacePlot:
-    pace_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-    pace_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    pace_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+    pace_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
     break;
   case CadencePlot:
-    cadence_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-    cadence_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    cadence_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+    cadence_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
     break;
   case AltitudePlot:
-    altitude_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-    altitude_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    altitude_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+    altitude_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
     break;
   case HeartRatePlot:
-    heart_rate_plot_labeler(PL_Y_AXIS, pd->y[currIdx], yval, 15, NULL);
-    heart_rate_plot_labeler(PL_X_AXIS, pd->x[currIdx], xval, 15, NULL);
+    heart_rate_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+    heart_rate_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
     break;
   case LapPlot:
     break;
   }
   char *curr_vals;
-  curr_vals = malloc(strlen(pd->xaxislabel) + 2 + strlen(xval) + 2 +
-                     strlen(pd->yaxislabel) + 2 + strlen(yval) + 1);
-  strcpy(curr_vals, pd->xaxislabel);
+  curr_vals = malloc(strlen(data->pd->xaxislabel) + 2 + strlen(xval) + 2 +
+                     strlen(data->pd->yaxislabel) + 2 + strlen(yval) + 1);
+  strcpy(curr_vals, data->pd->xaxislabel);
   strcat(curr_vals, "= ");
   strcat(curr_vals, xval);
   strcat(curr_vals, ", ");
-  strcat(curr_vals, pd->yaxislabel);
+  strcat(curr_vals, data->pd->yaxislabel);
   strcat(curr_vals, "= ");
   strcat(curr_vals, yval);
   gtk_label_set_text(lbl_val, curr_vals);
   free(curr_vals);
+}
+
+/* Call when the main window is closed.*/
+#ifdef _WIN32
+G_MODULE_EXPORT
+#endif
+void on_window_destroy(AllData* data) {
+  free(data);
+  //destroy_plots(data);
+  gtk_main_quit();
 }
 
 //
@@ -1612,6 +1455,162 @@ void on_update_index(GtkScale *widget, gpointer *data) {
  *
  */
 int main(int argc, char *argv[]) {
+  /*
+   * Initialize instances of the main data structure.
+   */
+  PlotData paceplot = {.ptype = PacePlot,
+                       .symbol = "⏺",
+                       .xmin = 0,
+                       .xmax = 0,
+                       .ymin = 0,
+                       .ymax = 0,
+                       .num_pts = 0,
+                       .x = NULL,
+                       .y = NULL,
+                       .xvmax = 0,
+                       .yvmin = 0,
+                       .yvmax = 0,
+                       .xvmin = 0,
+                       .zmxmin = 0,
+                       .zmxmax = 0,
+                       .zmymin = 0,
+                       .zmymax = 0,
+                       .zm_startx = 0,
+                       .zm_starty = 0,
+                       .zm_endx = 0,
+                       .zm_endy = 0,
+                       .lat = NULL,
+                       .lng = NULL,
+                       .xaxislabel = NULL,
+                       .yaxislabel = NULL,
+                       // light magenta for pace
+                       .linecolor = {156, 100, 134},
+                       .start_time = NULL};
+  PlotData cadenceplot = {.ptype = CadencePlot,
+                          .symbol = "⏺",
+                          .xmin = 0,
+                          .xmax = 0,
+                          .ymin = 0,
+                          .ymax = 0,
+                          .num_pts = 0,
+                          .x = NULL,
+                          .y = NULL,
+                          .xvmax = 0,
+                          .yvmin = 0,
+                          .yvmax = 0,
+                          .xvmin = 0,
+                          .zmxmin = 0,
+                          .zmxmax = 0,
+                          .zmymin = 0,
+                          .zmymax = 0,
+                          .zm_startx = 0,
+                          .zm_starty = 0,
+                          .zm_endx = 0,
+                          .zm_endy = 0,
+                          .lat = NULL,
+                          .lng = NULL,
+                          .xaxislabel = NULL,
+                          .yaxislabel = NULL,
+                          // light blue for heartrate
+                          .linecolor = {31, 119, 180},
+                          .start_time = NULL};
+  PlotData heartrateplot = {.ptype = HeartRatePlot,
+                            .symbol = "⏺",
+                            .xmin = 0,
+                            .xmax = 0,
+                            .ymin = 0,
+                            .ymax = 0,
+                            .num_pts = 0,
+                            .x = NULL,
+                            .y = NULL,
+                            .xvmax = 0,
+                            .yvmin = 0,
+                            .yvmax = 0,
+                            .xvmin = 0,
+                            .zmxmin = 0,
+                            .zmxmax = 0,
+                            .zmymin = 0,
+                            .zmymax = 0,
+                            .zm_startx = 0,
+                            .zm_starty = 0,
+                            .zm_endx = 0,
+                            .zm_endy = 0,
+                            .lat = NULL,
+                            .lng = NULL,
+                            .xaxislabel = NULL,
+                            .yaxislabel = NULL,
+                            // light yellow for heartrate
+                            .linecolor = {247, 250, 191},
+                            .start_time = NULL};
+  PlotData altitudeplot = {.ptype = AltitudePlot,
+                           .symbol = "⏺",
+                           .xmin = 0,
+                           .xmax = 0,
+                           .ymin = 0,
+                           .ymax = 0,
+                           .num_pts = 0,
+                           .x = NULL,
+                           .y = NULL,
+                           .xvmax = 0,
+                           .yvmin = 0,
+                           .yvmax = 0,
+                           .xvmin = 0,
+                           .zmxmin = 0,
+                           .zmxmax = 0,
+                           .zmymin = 0,
+                           .zmymax = 0,
+                           .zm_startx = 0,
+                           .zm_starty = 0,
+                           .zm_endx = 0,
+                           .zm_endy = 0,
+                           .lat = NULL,
+                           .lng = NULL,
+                           .xaxislabel = NULL,
+                           .yaxislabel = NULL,
+                           // light green for heartrate
+                           .linecolor = {77, 175, 74},
+                           .start_time = NULL};
+  PlotData lapplot = {.ptype = LapPlot,
+                      .symbol = "⏺",
+                      .xmin = 0,
+                      .xmax = 0,
+                      .ymin = 0,
+                      .ymax = 0,
+                      .num_pts = 0,
+                      .x = NULL,
+                      .y = NULL,
+                      .xvmax = 0,
+                      .yvmin = 0,
+                      .yvmax = 0,
+                      .xvmin = 0,
+                      .zmxmin = 0,
+                      .zmxmax = 0,
+                      .zmymin = 0,
+                      .zmymax = 0,
+                      .zm_startx = 0,
+                      .zm_starty = 0,
+                      .zm_endx = 0,
+                      .zm_endy = 0,
+                      .lat = NULL,
+                      .lng = NULL,
+                      .xaxislabel = NULL,
+                      .yaxislabel = NULL,
+                      // light orange for laps
+                      .linecolor = {255, 127, 14},
+                      .start_time = NULL};
+  /* Rely on the default values for C structures = 0, 0.0 for ints, floats */
+  SessionData sess;
+  /* Bundle the data structures in an instance of PgmData and 
+   * establish a pointer to it. */
+  AllData alldata = {
+     .ppace = &paceplot,
+     .pcadence = &cadenceplot,
+     .pheart = &heartrateplot,
+     .paltitude = &altitudeplot,
+     .plap = &lapplot,
+     .pd = &paceplot,
+     .psd = &sess };
+  AllData *pall = &alldata; 
 
   GtkBuilder *builder;
   GtkWidget *window;
@@ -1620,7 +1619,7 @@ int main(int argc, char *argv[]) {
 
   builder = gtk_builder_new_from_file("gtkdraw.glade");
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
+  window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
   textbuffer1 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textbuffer1"));
   viewport = GTK_FRAME(gtk_builder_get_object(builder, "viewport"));
   da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
@@ -1657,32 +1656,34 @@ int main(int argc, char *argv[]) {
   gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
   gtk_widget_add_events(GTK_WIDGET(da), GDK_POINTER_MOTION_MASK);
   g_signal_connect(GTK_DRAWING_AREA(da), "button-press-event",
-                   G_CALLBACK(on_button_press), NULL);
+                   G_CALLBACK(on_button_press), pall);
   g_signal_connect(GTK_DRAWING_AREA(da), "button-release-event",
-                   G_CALLBACK(on_button_release), NULL);
+                   G_CALLBACK(on_button_release), pall);
   g_signal_connect(GTK_DRAWING_AREA(da), "motion-notify-event",
-                   G_CALLBACK(on_motion_notify), NULL);
-  g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), NULL);
+                   G_CALLBACK(on_motion_notify), pall);
+  g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pall);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Pace), "toggled", G_CALLBACK(on_rb_pace),
-                   NULL);
+                   pall);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Cadence), "toggled",
-                   G_CALLBACK(on_rb_cadence), NULL);
+                   G_CALLBACK(on_rb_cadence), pall);
   g_signal_connect(GTK_RADIO_BUTTON(rb_HeartRate), "toggled",
-                   G_CALLBACK(on_rb_heartrate), NULL);
+                   G_CALLBACK(on_rb_heartrate), pall);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
-                   G_CALLBACK(on_rb_altitude), NULL);
+                   G_CALLBACK(on_rb_altitude), pall);
   g_signal_connect(GTK_RADIO_BUTTON(rb_Splits), "toggled",
-                   G_CALLBACK(on_rb_splits), NULL);
+                   G_CALLBACK(on_rb_splits), pall);
   g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
                    NULL);
   g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
                    NULL);
   g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
-                   G_CALLBACK(on_cb_units_changed), NULL);
+                   G_CALLBACK(on_cb_units_changed), pall);
   g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
-                   G_CALLBACK(on_btnFileOpen_file_set), NULL);
+                   G_CALLBACK(on_btnFileOpen_file_set), pall);
   g_signal_connect(GTK_SCALE(sc_IdxPct), "value-changed",
-                   G_CALLBACK(on_update_index), NULL);
+                   G_CALLBACK(on_update_index), pall);
+  g_signal_connect(GTK_WIDGET(window), "destroy",
+                   G_CALLBACK(on_window_destroy), pall);
 
   /* Release the builder memory. */
   g_object_unref(builder);
@@ -1694,7 +1695,8 @@ int main(int argc, char *argv[]) {
 }
 
 /* Release the allocated memory. */
-void destroy_plots() {
+void destroy_plots(AllData *pall) {
+  /*
   if (ppace->x != NULL) {
     free(ppace->x);
   }
@@ -1742,14 +1744,7 @@ void destroy_plots() {
   }
   if (paltitude->lng != NULL) {
     free(paltitude->lng);
-  }
+  } */
 }
 
-/* Call when the window is closed.*/
-#ifdef _WIN32
-G_MODULE_EXPORT
-#endif
-void on_window1_destroy() {
-  destroy_plots();
-  gtk_main_quit();
-}
+
