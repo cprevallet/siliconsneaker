@@ -205,6 +205,28 @@ static GdkPixbuf *starImage = NULL;
 OsmGpsMapImage *startTrackMarker = NULL;
 OsmGpsMapImage *endTrackMarker = NULL;
 OsmGpsMapImage *posnTrackMarker = NULL;
+  /*
+  OSM_GPS_MAP_SOURCE_NULL,
+  OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+  OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER,
+  OSM_GPS_MAP_SOURCE_OPENAERIALMAP,
+  OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE,
+  OSM_GPS_MAP_SOURCE_OPENCYCLEMAP,
+  OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT,
+  OSM_GPS_MAP_SOURCE_GOOGLE_STREET,
+  OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE,
+  OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID,
+  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET,
+  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE,
+  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID,
+  OSM_GPS_MAP_SOURCE_OSMC_TRAILS,
+  OSM_GPS_MAP_SOURCE_LAST
+  */
+  // OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+  OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
+  // if ( !osm_gps_map_source_is_valid(source) )
+  //       return 1;
+
 
 /* Current index */
 int currIdx = 0;
@@ -1193,29 +1215,6 @@ static int init_map() {
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
   int defaultzoom = 4;
-  /*
-  OSM_GPS_MAP_SOURCE_NULL,
-  OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
-  OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER,
-  OSM_GPS_MAP_SOURCE_OPENAERIALMAP,
-  OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE,
-  OSM_GPS_MAP_SOURCE_OPENCYCLEMAP,
-  OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT,
-  OSM_GPS_MAP_SOURCE_GOOGLE_STREET,
-  OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE,
-  OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID,
-  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET,
-  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE,
-  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID,
-  OSM_GPS_MAP_SOURCE_OSMC_TRAILS,
-  OSM_GPS_MAP_SOURCE_LAST
-  */
-
-  // OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
-  OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
-  // if ( !osm_gps_map_source_is_valid(source) )
-  //       return 1;
-
   GtkWidget *wid = g_object_new(
       OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache", "/tmp/",
       //      "user-agent",
@@ -1242,11 +1241,30 @@ static void move_marker(gdouble new_lat, gdouble new_lng) {
   }
 }
 
+/* Calculate center of latitude and longitude readings.*/
+void findCenter(int numPts, double lat[], double lng[], double center[])
+{
+  float smallLat = lat[0]; 
+  float bigLat = lat[0];
+  float smallLng = lng[0]; 
+  float bigLng = lng[0];
+  for ( int i = 1; i < numPts; i++ ) {
+      if (lat[i] < smallLat) smallLat = lat[i];
+      if (lng[i] < smallLng) smallLng = lng[i];
+      if (lat[i] > bigLat) bigLat = lat[i];
+      if (lng[i] > bigLng) bigLng = lng[i];
+      }
+  center[0] = (bigLat + smallLat) / 2.0;
+  center[1] = (bigLng + smallLng) / 2.0;
+}
+
 /* Update the map. */
 static void create_map(AllData *data) {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
+  double center[2] = {0.0, 0.0};
+  double defaultzoom;
   GdkRGBA routeTrackColor;
 
   /* Define colors for start, end markers.*/
@@ -1255,9 +1273,12 @@ static void create_map(AllData *data) {
   //  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
   if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) &&
       (data->pd->lng != NULL)) {
-    /* Center at the start. */
-    osm_gps_map_set_center(OSM_GPS_MAP(map), data->pd->lat[0],
-                           data->pd->lng[0]);
+    /* Find center and zoom. */
+    //TODO Consider using osm_gps_map_get_bbox () to define a zoom based on
+    // min, max latitudes and longitudes.
+    defaultzoom = (osm_gps_map_source_get_min_zoom (source) + osm_gps_map_source_get_max_zoom (source)) * 0.65;
+    findCenter(data->pd->num_pts, data->pd->lat, data->pd->lng, center);
+    osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], defaultzoom);
     /*Create a "track" for the run. */
     if (routeTrack != NULL) {
       osm_gps_map_track_remove(map, routeTrack);
