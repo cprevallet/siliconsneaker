@@ -200,7 +200,6 @@ char *fname = "";
  * structure is intended primarily for data models not UI.
  */
 OsmGpsMap *map;
-OsmGpsMapTrack *routeTrack;
 static GdkPixbuf *starImage = NULL;
 OsmGpsMapImage *startTrackMarker = NULL;
 OsmGpsMapImage *endTrackMarker = NULL;
@@ -1302,36 +1301,103 @@ void setCenterAndZoom(AllData *data)
     }
 }
 
+float avg(PLFLT *data, int array_size) {
+    float sum = 0.0;
+    for (int i = 0; i < array_size; ++i) {
+        sum += *data;
+        data++;
+    }
+    return sum / (float)array_size;
+}
+
+GdkRGBA pick_color(float average, float speed, enum UnitSystem units ) {
+  GdkRGBA slowest, slower, slow, fast, faster, fastest;
+  gdk_rgba_parse(&slowest,"rgba(255,255,212, 1.0)");
+  gdk_rgba_parse(&slower, "rgba(254,227,145, 1.0)");
+  gdk_rgba_parse(&slow,   "rgba(254,196,79, 1.0)");
+  gdk_rgba_parse(&fast,   "rgba(254,153,41, 1.0)");
+  gdk_rgba_parse(&faster, "rgba(217,95,14, 1.0)");
+  gdk_rgba_parse(&fastest,"rgba(153,52,4, 1.0)");
+  /* Blue color gradients */
+  /*
+  gdk_rgba_parse(&fastest,  "rgba( 8,  81,156, 1.0)");
+  gdk_rgba_parse(&faster,   "rgba( 49,130,189, 1.0)");
+  gdk_rgba_parse(&fast,     "rgba(107,174,214, 1.0)");
+  gdk_rgba_parse(&slow,     "rgba(158,202,225, 1.0)");
+  gdk_rgba_parse(&slower,   "rgba(198,219,239, 1.0)");
+  gdk_rgba_parse(&slowest,  "rgba(239,243,255, 1.0)");
+*/
+  float pace, fastest_limit, faster_limit, fast_limit, slow_limit, slower_limit;
+
+
+  if (speed > 0.0) 
+    pace = 1.0 / speed;
+  else
+    return slowest;
+
+  if (units == Metric) {
+    //km per mile above average
+    fastest_limit = 1.24274;
+    faster_limit = 0.621371;
+    fast_limit = 0.0;
+    slow_limit = -0.621371;
+    slower_limit = -1.24274;
+  } else {
+    //min per mile above average
+    fastest_limit = 2.0;
+    faster_limit = 1.0;
+    fast_limit = 0.0;
+    slow_limit = -1.0;
+    slower_limit = -2.0;
+  }
+  //printf("pace-avg=%f\n", pace-average);
+  //return fastest;
+  if ((pace - average) > fastest_limit ) return fastest;
+  if ((pace - average) > faster_limit) return faster;
+  if ((pace - average) > fast_limit) return fast;
+  if ((pace - average) > slow_limit) return slow;
+  if ((pace - average) > slower_limit) return slower;
+  return slowest;
+}
+
 /* Update the map. */
 static void create_map(AllData *data) {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
-  GdkRGBA routeTrackColor;
+  GdkRGBA trackColor, prevTrackColor;
+  OsmGpsMapTrack *routeTrack;
 
-  /* Define colors for start, end markers.*/
-  //  clutter_color_from_string(&my_green, "rgba(77, 175, 74, 0.9)");
-  //  clutter_color_from_string(&my_magenta, "rgba(156, 100, 134, 0.9)");
-  //  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
+  float avg_speed, avg_pace;
+  avg_speed = avg(data->ppace->y, data->ppace->num_pts);
+  //printf("%f\n", avg_speed);
+  if (avg_speed > 0.0) {
+    avg_pace = 1.0 / avg_speed;
+  } else {
+    return;
+  }
+  //printf("%f\n", avg_pace);
+
   if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) &&
       (data->pd->lng != NULL)) {
+    /* Remove any previously displayed tracks. */
+    osm_gps_map_track_remove_all (map);
     /* Zoom and center the map. */
     setCenterAndZoom(data);
-    /*Create a "track" for the run. */
-    if (routeTrack != NULL) {
-      osm_gps_map_track_remove(map, routeTrack);
-    }
-    routeTrack = osm_gps_map_track_new();
-    gdk_rgba_parse(&routeTrackColor, "rgba(156,100,134,0.9)");
-    osm_gps_map_track_set_color(routeTrack, &routeTrackColor);
-    osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
+    /* Display tracks based on speeds (aka heatmap). */
     for (int i = 0; i < data->pd->num_pts; i++) {
+      trackColor = pick_color(avg_pace, data->ppace->y[i], data->ppace->units);
+      if (&trackColor != &prevTrackColor) {
+        routeTrack = osm_gps_map_track_new();
+        osm_gps_map_track_set_color(routeTrack, &trackColor);
+        osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
+      }
+      prevTrackColor = trackColor;
       OsmGpsMapPoint *mapPoint =
           osm_gps_map_point_new_degrees(data->pd->lat[i], data->pd->lng[i]);
       osm_gps_map_track_add_point(routeTrack, mapPoint);
     }
     /* Add start and end markers. */
-
     if (startTrackMarker != NULL) {
       osm_gps_map_image_remove(map, startTrackMarker);
     }
@@ -1347,10 +1413,8 @@ static void create_map(AllData *data) {
         osm_gps_map_image_add(map, data->pd->lat[data->pd->num_pts - 1],
                               data->pd->lng[data->pd->num_pts - 1], starImage);
     /* Add current position marker */
-
     posnTrackMarker = osm_gps_map_image_add(map, data->pd->lat[currIdx],
                                             data->pd->lng[currIdx], starImage);
-
   } else {
     /* Start-up. */
     osm_gps_map_set_center(OSM_GPS_MAP(map), defaultLatitude, defaultLongitude);
