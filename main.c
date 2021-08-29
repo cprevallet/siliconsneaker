@@ -1242,20 +1242,64 @@ static void move_marker(gdouble new_lat, gdouble new_lng) {
 }
 
 /* Calculate center of latitude and longitude readings.*/
-void findCenter(int numPts, double lat[], double lng[], double center[])
+void findCenter(int numPts, double lat[], double lng[], double center[], 
+    float* minLat, float* minLng, float* maxLat, float* maxLng)
 {
-  float smallLat = lat[0]; 
-  float bigLat = lat[0];
-  float smallLng = lng[0]; 
-  float bigLng = lng[0];
+  *minLat = lat[0]; 
+  *maxLat = lat[0];
+  *minLng = lng[0]; 
+  *maxLng = lng[0];
   for ( int i = 1; i < numPts; i++ ) {
-      if (lat[i] < smallLat) smallLat = lat[i];
-      if (lng[i] < smallLng) smallLng = lng[i];
-      if (lat[i] > bigLat) bigLat = lat[i];
-      if (lng[i] > bigLng) bigLng = lng[i];
+      if (lat[i] < *minLat) *minLat = lat[i];
+      if (lng[i] < *minLng) *minLng = lng[i];
+      if (lat[i] > *maxLat) *maxLat = lat[i];
+      if (lng[i] > *maxLng) *maxLng = lng[i];
       }
-  center[0] = (bigLat + smallLat) / 2.0;
-  center[1] = (bigLng + smallLng) / 2.0;
+  center[0] = (*maxLat + *minLat) / 2.0;
+  center[1] = (*maxLng + *minLng) / 2.0;
+}
+
+/* Return the latitude, longitude limits for a map at a particular
+ * zoom level.
+ */
+void mapLimits(float* minMapLat, float* minMapLng, float* maxMapLat, float* maxMapLng) {
+    OsmGpsMapPoint topLeft;
+    OsmGpsMapPoint botRight;
+    float tlLat, tlLng, brLat, brLng;
+    osm_gps_map_get_bbox (map, &topLeft, &botRight);
+    osm_gps_map_point_get_degrees (&topLeft, &tlLat, &tlLng);
+    osm_gps_map_point_get_degrees (&botRight, &brLat, &brLng);
+    *maxMapLat = fmaxf( tlLat, brLat );
+    *minMapLat = fminf( tlLat, brLat );
+    *maxMapLng = fmaxf( tlLng, brLng );
+    *minMapLng = fminf( tlLng, brLng );
+}
+
+/* Calculate the center and zoom level based on the latitude 
+ * and longitude readings. 
+ */
+void setCenterAndZoom(AllData *data) 
+{
+    double center[2] = {0.0, 0.0};
+    float maxLat, minLat, maxLng, minLng;
+    float maxMapLat, minMapLat, maxMapLng, minMapLng;
+    int minZoom, maxZoom, zoom;
+    maxZoom = osm_gps_map_source_get_max_zoom (source);
+    minZoom = osm_gps_map_source_get_min_zoom (source);
+    zoom = maxZoom;
+    findCenter(data->pd->num_pts, data->pd->lat, data->pd->lng, center, 
+        &minLat, &minLng, &maxLat, &maxLng);
+    osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], zoom);
+    mapLimits(&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
+    /* Repeatedly zoom out until we cover the range of the run. */
+    while(((maxMapLat < maxLat || 
+            maxMapLng < maxLng || 
+            minMapLat > minLat || 
+            minMapLng > minLng) && zoom > minZoom)) {
+      zoom--;
+      osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], zoom);
+      mapLimits(&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
+    }
 }
 
 /* Update the map. */
@@ -1263,8 +1307,6 @@ static void create_map(AllData *data) {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
-  double center[2] = {0.0, 0.0};
-  double defaultzoom;
   GdkRGBA routeTrackColor;
 
   /* Define colors for start, end markers.*/
@@ -1273,12 +1315,8 @@ static void create_map(AllData *data) {
   //  clutter_color_from_string(&my_blue, "rgba(31, 119, 180, 0.9)");
   if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) &&
       (data->pd->lng != NULL)) {
-    /* Find center and zoom. */
-    //TODO Consider using osm_gps_map_get_bbox () to define a zoom based on
-    // min, max latitudes and longitudes.
-    defaultzoom = (osm_gps_map_source_get_min_zoom (source) + osm_gps_map_source_get_max_zoom (source)) * 0.65;
-    findCenter(data->pd->num_pts, data->pd->lat, data->pd->lng, center);
-    osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], defaultzoom);
+    /* Zoom and center the map. */
+    setCenterAndZoom(data);
     /*Create a "track" for the run. */
     if (routeTrack != NULL) {
       osm_gps_map_track_remove(map, routeTrack);
