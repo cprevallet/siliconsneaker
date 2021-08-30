@@ -204,28 +204,27 @@ static GdkPixbuf *starImage = NULL;
 OsmGpsMapImage *startTrackMarker = NULL;
 OsmGpsMapImage *endTrackMarker = NULL;
 OsmGpsMapImage *posnTrackMarker = NULL;
-  /*
-  OSM_GPS_MAP_SOURCE_NULL,
-  OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
-  OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER,
-  OSM_GPS_MAP_SOURCE_OPENAERIALMAP,
-  OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE,
-  OSM_GPS_MAP_SOURCE_OPENCYCLEMAP,
-  OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT,
-  OSM_GPS_MAP_SOURCE_GOOGLE_STREET,
-  OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE,
-  OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID,
-  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET,
-  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE,
-  OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID,
-  OSM_GPS_MAP_SOURCE_OSMC_TRAILS,
-  OSM_GPS_MAP_SOURCE_LAST
-  */
-  // OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
-  OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
-  // if ( !osm_gps_map_source_is_valid(source) )
-  //       return 1;
-
+/*
+OSM_GPS_MAP_SOURCE_NULL,
+OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
+OSM_GPS_MAP_SOURCE_OPENSTREETMAP_RENDERER,
+OSM_GPS_MAP_SOURCE_OPENAERIALMAP,
+OSM_GPS_MAP_SOURCE_MAPS_FOR_FREE,
+OSM_GPS_MAP_SOURCE_OPENCYCLEMAP,
+OSM_GPS_MAP_SOURCE_OSM_PUBLIC_TRANSPORT,
+OSM_GPS_MAP_SOURCE_GOOGLE_STREET,
+OSM_GPS_MAP_SOURCE_GOOGLE_SATELLITE,
+OSM_GPS_MAP_SOURCE_GOOGLE_HYBRID,
+OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_STREET,
+OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_SATELLITE,
+OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID,
+OSM_GPS_MAP_SOURCE_OSMC_TRAILS,
+OSM_GPS_MAP_SOURCE_LAST
+*/
+// OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
+// if ( !osm_gps_map_source_is_valid(source) )
+//       return 1;
 
 /* Current index */
 int currIdx = 0;
@@ -1241,19 +1240,22 @@ static void move_marker(gdouble new_lat, gdouble new_lng) {
 }
 
 /* Calculate center of latitude and longitude readings.*/
-void findCenter(int numPts, double lat[], double lng[], double center[], 
-    float* minLat, float* minLng, float* maxLat, float* maxLng)
-{
-  *minLat = lat[0]; 
+void findCenter(int numPts, double lat[], double lng[], double center[],
+                float *minLat, float *minLng, float *maxLat, float *maxLng) {
+  *minLat = lat[0];
   *maxLat = lat[0];
-  *minLng = lng[0]; 
+  *minLng = lng[0];
   *maxLng = lng[0];
-  for ( int i = 1; i < numPts; i++ ) {
-      if (lat[i] < *minLat) *minLat = lat[i];
-      if (lng[i] < *minLng) *minLng = lng[i];
-      if (lat[i] > *maxLat) *maxLat = lat[i];
-      if (lng[i] > *maxLng) *maxLng = lng[i];
-      }
+  for (int i = 1; i < numPts; i++) {
+    if (lat[i] < *minLat)
+      *minLat = lat[i];
+    if (lng[i] < *minLng)
+      *minLng = lng[i];
+    if (lat[i] > *maxLat)
+      *maxLat = lat[i];
+    if (lng[i] > *maxLng)
+      *maxLng = lng[i];
+  }
   center[0] = (*maxLat + *minLat) / 2.0;
   center[1] = (*maxLng + *minLng) / 2.0;
 }
@@ -1261,69 +1263,74 @@ void findCenter(int numPts, double lat[], double lng[], double center[],
 /* Return the latitude, longitude limits for a map at a particular
  * zoom level.
  */
-void mapLimits(float* minMapLat, float* minMapLng, float* maxMapLat, float* maxMapLng) {
-    OsmGpsMapPoint topLeft;
-    OsmGpsMapPoint botRight;
-    float tlLat, tlLng, brLat, brLng;
-    osm_gps_map_get_bbox (map, &topLeft, &botRight);
-    osm_gps_map_point_get_degrees (&topLeft, &tlLat, &tlLng);
-    osm_gps_map_point_get_degrees (&botRight, &brLat, &brLng);
-    *maxMapLat = fmaxf( tlLat, brLat );
-    *minMapLat = fminf( tlLat, brLat );
-    *maxMapLng = fmaxf( tlLng, brLng );
-    *minMapLng = fminf( tlLng, brLng );
+void mapLimits(float *minMapLat, float *minMapLng, float *maxMapLat,
+               float *maxMapLng) {
+  OsmGpsMapPoint topLeft;
+  OsmGpsMapPoint botRight;
+  float tlLat, tlLng, brLat, brLng;
+  osm_gps_map_get_bbox(map, &topLeft, &botRight);
+  osm_gps_map_point_get_degrees(&topLeft, &tlLat, &tlLng);
+  osm_gps_map_point_get_degrees(&botRight, &brLat, &brLng);
+  *maxMapLat = fmaxf(tlLat, brLat);
+  *minMapLat = fminf(tlLat, brLat);
+  *maxMapLng = fmaxf(tlLng, brLng);
+  *minMapLng = fminf(tlLng, brLng);
 }
 
-/* Calculate the center and zoom level based on the latitude 
- * and longitude readings. 
+/* Calculate the center and zoom level based on the latitude
+ * and longitude readings.
  */
-void setCenterAndZoom(AllData *data) 
-{
-    double center[2] = {0.0, 0.0};
-    float maxLat, minLat, maxLng, minLng;
-    float maxMapLat, minMapLat, maxMapLng, minMapLng;
-    int minZoom, maxZoom, zoom;
-    maxZoom = osm_gps_map_source_get_max_zoom (source);
-    minZoom = osm_gps_map_source_get_min_zoom (source);
-    zoom = maxZoom;
-    findCenter(data->pd->num_pts, data->pd->lat, data->pd->lng, center, 
-        &minLat, &minLng, &maxLat, &maxLng);
-    osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], zoom);
+void setCenterAndZoom(AllData *data) {
+  double center[2] = {0.0, 0.0};
+  float maxLat, minLat, maxLng, minLng;
+  float maxMapLat, minMapLat, maxMapLng, minMapLng;
+  int minZoom, maxZoom, zoom;
+  maxZoom = osm_gps_map_source_get_max_zoom(source);
+  minZoom = osm_gps_map_source_get_min_zoom(source);
+  zoom = maxZoom;
+  findCenter(data->pd->num_pts, data->pd->lat, data->pd->lng, center, &minLat,
+             &minLng, &maxLat, &maxLng);
+  osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], zoom);
+  mapLimits(&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
+  /* Repeatedly zoom out until we cover the range of the run. */
+  while (((maxMapLat < maxLat || maxMapLng < maxLng || minMapLat > minLat ||
+           minMapLng > minLng) &&
+          zoom > minZoom)) {
+    zoom--;
+    osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1],
+                                    zoom);
     mapLimits(&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
-    /* Repeatedly zoom out until we cover the range of the run. */
-    while(((maxMapLat < maxLat || 
-            maxMapLng < maxLng || 
-            minMapLat > minLat || 
-            minMapLng > minLng) && zoom > minZoom)) {
-      zoom--;
-      osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], zoom);
-      mapLimits(&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
-    }
+  }
 }
 
-void stats(double* arr , int arr_size, float* mean, float* stdev) {
-    float sum = 0.0;
-    for (int i = 0; i < arr_size ; i++ ) {
-        sum += arr[i];
-    }
-    *mean = sum / ((float)arr_size);
-    //printf("%.2f ", *mean);
-    sum = 0.0;
-    for (int i = 0; i < arr_size ; i++ ) {
-        sum += pow((arr[i]-*mean), 2);
-    }
-    *stdev = sqrt((sum/(float)(arr_size)));
-    //printf("%.2f", *stdev);
+/* Calculate the mean and standard deviation. */
+void stats(double *arr, int arr_size, float *mean, float *stdev) {
+  float sum = 0.0;
+  for (int i = 0; i < arr_size; i++) {
+    sum += arr[i];
+  }
+  *mean = sum / ((float)arr_size);
+  // printf("%.2f ", *mean);
+  sum = 0.0;
+  for (int i = 0; i < arr_size; i++) {
+    sum += pow((arr[i] - *mean), 2);
+  }
+  *stdev = sqrt((sum / (float)(arr_size)));
+  // printf("%.2f", *stdev);
 }
 
-GdkRGBA pick_color(float average, float stdev, float speed, enum UnitSystem units ) {
+/* Return a color based on how far an individual pace is
+ * from the average.  This is used to construct a heat-map.
+ */
+GdkRGBA pick_color(float average, float stdev, float speed,
+                   enum UnitSystem units) {
   GdkRGBA slowest, slower, slow, fast, faster, fastest;
-  gdk_rgba_parse(&slowest,"rgba(255,255,212, 1.0)");
+  gdk_rgba_parse(&slowest, "rgba(255,255,212, 1.0)");
   gdk_rgba_parse(&slower, "rgba(254,227,145, 1.0)");
-  gdk_rgba_parse(&slow,   "rgba(254,196,79, 1.0)");
-  gdk_rgba_parse(&fast,   "rgba(254,153,41, 1.0)");
+  gdk_rgba_parse(&slow, "rgba(254,196,79, 1.0)");
+  gdk_rgba_parse(&fast, "rgba(254,153,41, 1.0)");
   gdk_rgba_parse(&faster, "rgba(217,95,14, 1.0)");
-  gdk_rgba_parse(&fastest,"rgba(153,52,4, 1.0)");
+  gdk_rgba_parse(&fastest, "rgba(153,52,4, 1.0)");
   /* Blue color gradients */
   /*
   gdk_rgba_parse(&fastest,  "rgba( 8,  81,156, 1.0)");
@@ -1334,20 +1341,26 @@ GdkRGBA pick_color(float average, float stdev, float speed, enum UnitSystem unit
   gdk_rgba_parse(&slowest,  "rgba(239,243,255, 1.0)");
 */
   float fastest_limit, faster_limit, fast_limit, slow_limit, slower_limit;
-  if (speed <= 0.0) return slowest;
+  if (speed <= 0.0)
+    return slowest;
   /* Assume a normal curve.  38.2% between +/0.5 stddev
-   * 30% between +/-0.5 and +/-1 stddev. 
+   * 30% between +/-0.5 and +/-1 stddev.
    */
   fastest_limit = average + (1.0 * stdev);
   faster_limit = average + (0.5 * stdev);
   fast_limit = average;
   slow_limit = average - (0.5 * stdev);
   slower_limit = average - (1.0 * stdev);
-  if (speed > fastest_limit) return fastest;
-  if (speed > faster_limit) return faster;
-  if (speed > fast_limit) return fast;
-  if (speed < slow_limit) return slow;
-  if (speed < slower_limit) return slower;
+  if (speed > fastest_limit)
+    return fastest;
+  if (speed > faster_limit)
+    return faster;
+  if (speed > fast_limit)
+    return fast;
+  if (speed < slow_limit)
+    return slow;
+  if (speed < slower_limit)
+    return slower;
   return slowest;
 }
 
@@ -1364,12 +1377,13 @@ static void create_map(AllData *data) {
   if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) &&
       (data->pd->lng != NULL)) {
     /* Remove any previously displayed tracks. */
-    osm_gps_map_track_remove_all (map);
+    osm_gps_map_track_remove_all(map);
     /* Zoom and center the map. */
     setCenterAndZoom(data);
     /* Display tracks based on speeds (aka heatmap). */
     for (int i = 0; i < data->pd->num_pts; i++) {
-      trackColor = pick_color(avg_pace, stdev_pace, data->ppace->y[i], data->ppace->units);
+      trackColor = pick_color(avg_pace, stdev_pace, data->ppace->y[i],
+                              data->ppace->units);
       if (&trackColor != &prevTrackColor) {
         routeTrack = osm_gps_map_track_new();
         osm_gps_map_track_set_color(routeTrack, &trackColor);
