@@ -1310,7 +1310,23 @@ float avg(PLFLT *data, int array_size) {
     return sum / (float)array_size;
 }
 
-GdkRGBA pick_color(float average, float speed, enum UnitSystem units ) {
+void stats(double* arr , int arr_size, float* mean, float* stdev) {
+    float sum = 0.0;
+    for (int i = 0; i < arr_size ; i++ ) {
+        printf("%d, %.2f\n", i, arr[i]);
+        sum += arr[i];
+    }
+    *mean = sum / ((float)arr_size);
+    //printf("%.2f ", *mean);
+    sum = 0.0;
+    for (int i = 0; i < arr_size ; i++ ) {
+        sum += pow((arr[i]-*mean), 2);
+    }
+    *stdev = sqrt((sum/(float)(arr_size)));
+    //printf("%.2f", *stdev);
+}
+
+GdkRGBA pick_color(float average, float stdev, float speed, enum UnitSystem units ) {
   GdkRGBA slowest, slower, slow, fast, faster, fastest;
   gdk_rgba_parse(&slowest,"rgba(255,255,212, 1.0)");
   gdk_rgba_parse(&slower, "rgba(254,227,145, 1.0)");
@@ -1327,36 +1343,21 @@ GdkRGBA pick_color(float average, float speed, enum UnitSystem units ) {
   gdk_rgba_parse(&slower,   "rgba(198,219,239, 1.0)");
   gdk_rgba_parse(&slowest,  "rgba(239,243,255, 1.0)");
 */
-  float pace, fastest_limit, faster_limit, fast_limit, slow_limit, slower_limit;
-
-
-  if (speed > 0.0) 
-    pace = 1.0 / speed;
-  else
-    return slowest;
-
-  if (units == Metric) {
-    //km per mile above average
-    fastest_limit = 1.24274;
-    faster_limit = 0.621371;
-    fast_limit = 0.0;
-    slow_limit = -0.621371;
-    slower_limit = -1.24274;
-  } else {
-    //min per mile above average
-    fastest_limit = 2.0;
-    faster_limit = 1.0;
-    fast_limit = 0.0;
-    slow_limit = -1.0;
-    slower_limit = -2.0;
-  }
-  //printf("pace-avg=%f\n", pace-average);
-  //return fastest;
-  if ((pace - average) > fastest_limit ) return fastest;
-  if ((pace - average) > faster_limit) return faster;
-  if ((pace - average) > fast_limit) return fast;
-  if ((pace - average) > slow_limit) return slow;
-  if ((pace - average) > slower_limit) return slower;
+  float fastest_limit, faster_limit, fast_limit, slow_limit, slower_limit;
+  if (speed <= 0.0) return slowest;
+  /* Assume a normal curve.  38.2% between +/0.5 stddev
+   * 30% between +/-0.5 and +/-1 stddev. 
+   */
+  fastest_limit = average + (1.0 * stdev);
+  faster_limit = average + (0.5 * stdev);
+  fast_limit = average;
+  slow_limit = average - (0.5 * stdev);
+  slower_limit = average - (1.0 * stdev);
+  if (speed > fastest_limit) return fastest;
+  if (speed > faster_limit) return faster;
+  if (speed > fast_limit) return fast;
+  if (speed < slow_limit) return slow;
+  if (speed < slower_limit) return slower;
   return slowest;
 }
 
@@ -1367,17 +1368,9 @@ static void create_map(AllData *data) {
   float defaultLongitude = -99.0909;
   GdkRGBA trackColor, prevTrackColor;
   OsmGpsMapTrack *routeTrack;
-
-  float avg_speed, avg_pace;
-  avg_speed = avg(data->ppace->y, data->ppace->num_pts);
-  //printf("%f\n", avg_speed);
-  if (avg_speed > 0.0) {
-    avg_pace = 1.0 / avg_speed;
-  } else {
-    return;
-  }
-  //printf("%f\n", avg_pace);
-
+  float avg_pace, stdev_pace;
+  /* Get some statistics for use in generating a heatmap. */
+  stats(data->ppace->y, data->ppace->num_pts, &avg_pace, &stdev_pace);
   if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) &&
       (data->pd->lng != NULL)) {
     /* Remove any previously displayed tracks. */
@@ -1386,7 +1379,7 @@ static void create_map(AllData *data) {
     setCenterAndZoom(data);
     /* Display tracks based on speeds (aka heatmap). */
     for (int i = 0; i < data->pd->num_pts; i++) {
-      trackColor = pick_color(avg_pace, data->ppace->y[i], data->ppace->units);
+      trackColor = pick_color(avg_pace, stdev_pace, data->ppace->y[i], data->ppace->units);
       if (&trackColor != &prevTrackColor) {
         routeTrack = osm_gps_map_track_new();
         osm_gps_map_track_set_color(routeTrack, &trackColor);
