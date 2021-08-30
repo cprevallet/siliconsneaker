@@ -1301,19 +1301,9 @@ void setCenterAndZoom(AllData *data)
     }
 }
 
-float avg(PLFLT *data, int array_size) {
-    float sum = 0.0;
-    for (int i = 0; i < array_size; ++i) {
-        sum += *data;
-        data++;
-    }
-    return sum / (float)array_size;
-}
-
 void stats(double* arr , int arr_size, float* mean, float* stdev) {
     float sum = 0.0;
     for (int i = 0; i < arr_size ; i++ ) {
-        printf("%d, %.2f\n", i, arr[i]);
         sum += arr[i];
     }
     *mean = sum / ((float)arr_size);
