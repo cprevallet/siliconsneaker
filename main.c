@@ -1242,10 +1242,10 @@ static void move_marker(gdouble new_lat, gdouble new_lng) {
 /* Calculate center of latitude and longitude readings.*/
 void findCenter(int numPts, double lat[], double lng[], double center[],
                 float *minLat, float *minLng, float *maxLat, float *maxLng) {
-  *minLat = lat[0];
-  *maxLat = lat[0];
-  *minLng = lng[0];
-  *maxLng = lng[0];
+  *minLat = DBL_MAX;
+  *maxLat = -DBL_MAX;
+  *minLng = DBL_MAX;
+  *maxLng = -DBL_MAX;
   for (int i = 1; i < numPts; i++) {
     if (lat[i] < *minLat)
       *minLat = lat[i];
