@@ -35,13 +35,16 @@
  *	libc.so.6
  */
 
-//#include <clutter-gtk/clutter-gtk.h>
+/* Utilities */
+#include <ctype.h>
+#include <math.h>
+#include <string.h>
 #include <float.h>
+#include <unistd.h>
+
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <math.h>
-#include <string.h>
 /*
  * Rsvglib
  */
@@ -1758,6 +1761,64 @@ int main(int argc, char *argv[]) {
   allData.pd = &paceplot;
   allData.psd = &sess;
   AllData *pall = &allData;
+
+
+  int aflag = 0;
+  int bflag = 0;
+  char *cvalue = NULL;
+  int index;
+  int c;
+
+  opterr = 0;
+
+
+  while ((c = getopt (argc, argv, "abc:")) != -1)
+    switch (c)
+      {
+      case 'a':
+        aflag = 1;
+        break;
+      case 'b':
+        bflag = 1;
+        break;
+      case 'c':
+        cvalue = optarg;
+        break;
+      case '?':
+        if (optopt == 'c')
+          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+        else if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr,
+                   "Unknown option character `\\x%x'.\n",
+                   optopt);
+        return 1;
+      default:
+        abort ();
+      }
+
+
+  printf ("aflag = %d, bflag = %d, cvalue = %s\n",
+          aflag, bflag, cvalue);
+
+  for (index = optind; index < argc; index++)
+    printf ("Non-option argument %s\n", argv[index]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   GtkBuilder *builder;
   GtkWidget *window;
