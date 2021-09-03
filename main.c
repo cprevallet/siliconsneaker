@@ -1433,8 +1433,10 @@ static void zoom_out(GtkWidget *widget) {
 // GTK GUI Stuff
 //
 
-/* Convenience function to update and redraw all the widgets.*/
-void update_widgets(AllData *pall) {
+/* Convenience function to reload data, update the internal data structures
+ * and redraw all the widgets.
+ */
+void reload_all(AllData *pall) {
   if (pall != NULL) {
     /* Update the plots */
     init_plot_data(pall);
@@ -1457,10 +1459,7 @@ gboolean default_chart() {
 
 /* User has changed unit system. */
 void on_cb_units_changed(GtkComboBox *cb_Units, AllData *data) {
-  //init_plot_data(data); // got to reconvert the raw data
-  //g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  //gtk_widget_queue_draw(GTK_WIDGET(da));
-  update_widgets(data);
+  reload_all(data);
 }
 
 /* User has selected Pace Graph. */
@@ -1521,7 +1520,7 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData *pall) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   if (pall != NULL) {
-    update_widgets(pall);
+    reload_all(pall);
   }
 }
 
