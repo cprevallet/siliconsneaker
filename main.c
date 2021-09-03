@@ -778,8 +778,6 @@ gboolean init_plot_data(AllData *pall) {
       sessAvgHeartRate, sessMaxCadence, sessAvgCadence, sessAvgTemperature,
       sessMaxTemperature, sessMinHeartRate, sessTotalAnaerobicTrainingEffect,
       tzOffset);
-  /* Update the summary page. */
-  update_summary(pall->psd);
   return TRUE;
 }
 
@@ -1368,7 +1366,7 @@ GdkRGBA pick_color(float average, float stdev, float speed,
 }
 
 /* Update the map. */
-static void create_map(AllData *data) {
+static void update_map(AllData *data) {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
@@ -1435,6 +1433,22 @@ static void zoom_out(GtkWidget *widget) {
 // GTK GUI Stuff
 //
 
+/* Convenience function to update and redraw all the widgets.*/
+void update_widgets(AllData *pall) {
+  if (pall != NULL) {
+    /* Update the plots */
+    init_plot_data(pall);
+    /* Force a redraw on the drawing area. */
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    /* Update the summary table. */
+    update_summary(pall->psd);
+    /* Update the map. */
+    update_map(pall);
+    /* Update the slider and redraw. */
+    g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  }
+}
+ 
 /* Default to the pace chart. */
 gboolean default_chart() {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
@@ -1443,9 +1457,10 @@ gboolean default_chart() {
 
 /* User has changed unit system. */
 void on_cb_units_changed(GtkComboBox *cb_Units, AllData *data) {
-  init_plot_data(data); // got to reconvert the raw data
-  g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  gtk_widget_queue_draw(GTK_WIDGET(da));
+  //init_plot_data(data); // got to reconvert the raw data
+  //g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  //gtk_widget_queue_draw(GTK_WIDGET(da));
+  update_widgets(data);
 }
 
 /* User has selected Pace Graph. */
@@ -1497,6 +1512,7 @@ void on_rb_splits(GtkToggleButton *togglebutton, AllData *data) {
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
+ 
 /* User has pressed open a new file. */
 #ifdef _WIN32
 G_MODULE_EXPORT
@@ -1505,9 +1521,7 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData *pall) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   if (pall != NULL) {
-    init_plot_data(pall);
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    create_map(pall);
+    update_widgets(pall);
   }
 }
 
