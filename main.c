@@ -70,7 +70,7 @@
 //
 // Declarations section
 //
-
+#define VERSION 1.0
 // Maximum readable records from a fit file.
 // 2880 is large enough for 4 hour marathon at 5 sec intervals
 #define NSIZE 2880
@@ -194,7 +194,7 @@ GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
 
 /* Declaration for the fit filename. */
-char *fname = "";
+char *fname = NULL;
 
 /* Declarations for OsmGps maps.
  * Since these are updated by the slider, we'll make them
@@ -1437,7 +1437,7 @@ static void zoom_out(GtkWidget *widget) {
  * and redraw all the widgets.
  */
 void reload_all(AllData *pall) {
-  if (pall != NULL) {
+  if ((pall != NULL) && (fname != NULL)) {
     /* Update the plots */
     init_plot_data(pall);
     /* Force a redraw on the drawing area. */
@@ -1775,64 +1775,6 @@ int main(int argc, char *argv[]) {
   allData.psd = &sess;
   AllData *pall = &allData;
 
-
-  int aflag = 0;
-  int bflag = 0;
-  char *cvalue = NULL;
-  int index;
-  int c;
-
-  opterr = 0;
-
-
-  while ((c = getopt (argc, argv, "abc:")) != -1)
-    switch (c)
-      {
-      case 'a':
-        aflag = 1;
-        break;
-      case 'b':
-        bflag = 1;
-        break;
-      case 'c':
-        cvalue = optarg;
-        break;
-      case '?':
-        if (optopt == 'c')
-          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-        else if (isprint (optopt))
-          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-        else
-          fprintf (stderr,
-                   "Unknown option character `\\x%x'.\n",
-                   optopt);
-        return 1;
-      default:
-        abort ();
-      }
-
-
-  printf ("aflag = %d, bflag = %d, cvalue = %s\n",
-          aflag, bflag, cvalue);
-
-  for (index = optind; index < argc; index++)
-    printf ("Non-option argument %s\n", argv[index]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   GtkBuilder *builder;
   GtkWidget *window;
 
@@ -1907,7 +1849,56 @@ int main(int argc, char *argv[]) {
   /* Release the builder memory. */
   g_object_unref(builder);
 
-  gtk_widget_show(window); // Required to display champlain widget.
+  /* Process command line options. */
+  // TODO This may not be available for Windows.
+#ifdef __linux__ 
+  int c;
+  opterr = 0;
+  while ((c = getopt (argc, argv, "mf:hv")) != -1)
+    switch (c)
+      {
+      case 'm':
+        /* Set combo box to metric */
+        gtk_combo_box_set_active(GTK_COMBO_BOX(cb_Units), Metric);
+        break;
+      case 'f':
+        fname = optarg;
+        /* This seems sketchy to run before the input event loop 
+         * but seems to work.
+         */
+        reload_all(pall);
+        break;
+      case '?':
+        if (optopt == 'f')
+          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+        else if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr,
+                   "Unknown option character `\\x%x'.\n",
+                   optopt);
+        return 1;
+      case 'h':
+        fprintf(stdout, "Usage: %s [OPTION]...[FILENAME]\n", argv[0]);
+        fprintf(stdout, " -f  open filename\n");
+        fprintf(stdout, " -m  use metric units\n");
+        fprintf(stdout, " -h  print program help\n");
+        fprintf(stdout, " -v  print program version\n");
+        return 0;
+        break;
+      case 'v':
+        fprintf(stdout, "%s v%4.2f\n", argv[0], VERSION);
+        return 0;
+        break;
+      default:
+        abort ();
+      }
+
+  for (int index = optind; index < argc; index++)
+    printf ("Non-option argument %s\n", argv[index]);
+#endif
+
+  gtk_widget_show(window);
   gtk_main();
 
   return 0;
