@@ -994,6 +994,46 @@ enum PlotType checkRadioButtons() {
   return LapPlot;
 }
 
+/* Return a fully qualified path to a temporary directory for either 
+ * Windows or Linux.
+ */
+char* path_to_temp_dir() 
+{
+  #ifdef __linux__
+  char * tmpdir = malloc(sizeof(char) * 4096); //4096 is the longest ext4 path
+  if (getenv("TMPDIR"))  { 
+    strcpy(tmpdir, getenv("TMPDIR")); 
+  }
+  else if (getenv("TMP"))  {
+    strcpy(tmpdir, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpdir, getenv("TEMP"));
+  }
+  else if (getenv("TEMPDIR"))  {
+    strcpy(tmpdir, getenv("TEMPDIR"));
+  } else {
+    strcpy(tmpdir, "/tmp/");
+  }
+  #endif
+  #ifdef _WIN32
+  char * tmpdir = malloc(sizeof(char) * 260); //260 is the longest NTFS path
+  if (getenv("TMP"))  { 
+    strcpy(tmpdir, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpdir, getenv("TEMP"));
+  }
+  else if (getenv("USERPROFILE") )  {
+    strcpy(tmpdir, getenv("USERPROFILE"));
+  }
+  else {
+    strcpy(tmpdir, "C:\\Temp\\");
+  }
+  #endif
+  return tmpdir;
+}
+
 /* Drawing area callback.
  *
  * The GUI definition wraps a GTKDrawing area inside a GTK widget.
@@ -1023,39 +1063,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
   // plsdev("extcairo");
   plsdev("svg");
   /* Device attributes */
-  #ifdef __linux__
-  char * tmpfile = malloc(sizeof(char) * 4096); //4096 is the longest ext4 path
-  if (getenv("TMPDIR"))  { 
-    strcpy(tmpfile, getenv("TMPDIR")); 
-  }
-  else if (getenv("TMP"))  {
-    strcpy(tmpfile, getenv("TMP"));
-  }
-  else if (getenv("TEMP"))  {
-    strcpy(tmpfile, getenv("TEMP"));
-  }
-  else if (getenv("TEMPDIR"))  {
-    strcpy(tmpfile, getenv("TEMPDIR"));
-  } else {
-    strcpy(tmpfile, "/tmp/");
-  }
-  #endif
-  #ifdef _WIN32
-  char * tmpfile = malloc(sizeof(char) * 260); //260 is the longest NTFS path
-  if (getenv("TMP"))  { 
-    strcpy(tmpfile, getenv("TMP"));
-  }
-  else if (getenv("TEMP"))  {
-    strcpy(tmpfile, getenv("TEMP"));
-  }
-  else if (getenv("USERPROFILE") )  {
-    strcpy(tmpfile, getenv("USERPROFILE"));
-  }
-  else {
-    strcpy(tmpfile, "C:\\Temp\\");
-  }
-  #endif
-  if (tmpfile == NULL) return FALSE;
+  char * tmpfile = path_to_temp_dir();
   strcat(tmpfile, "runplotter.svg");
  
   //FILE* fp = fopen("runplotter.svg", "w");
