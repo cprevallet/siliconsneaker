@@ -277,7 +277,6 @@ char* path_to_temp_dir()
   else {
     strcpy(tmpdir, "C:\\Temp\\");
   }
-  printf("%s\n", tmpdir);
   return tmpdir;
 }
 #endif
