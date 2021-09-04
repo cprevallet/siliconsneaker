@@ -35,13 +35,17 @@
  *	libc.so.6
  */
 
-//#include <clutter-gtk/clutter-gtk.h>
+/* Utilities */
+#include <ctype.h>
+#include <math.h>
+#include <string.h>
 #include <float.h>
+#include <unistd.h>
+#include <stdio.h>
+
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <math.h>
-#include <string.h>
 /*
  * Rsvglib
  */
@@ -67,7 +71,7 @@
 //
 // Declarations section
 //
-
+#define VERSION 1.0
 // Maximum readable records from a fit file.
 // 2880 is large enough for 4 hour marathon at 5 sec intervals
 #define NSIZE 2880
@@ -191,7 +195,7 @@ GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
 
 /* Declaration for the fit filename. */
-char *fname = "";
+char *fname = NULL;
 
 /* Declarations for OsmGps maps.
  * Since these are updated by the slider, we'll make them
@@ -232,6 +236,53 @@ int currIdx = 0;
 // Convenience functions.
 //
 void printfloat(float x, char *name) { printf("%s = %f \n", name, x); }
+
+/* Return a fully qualified path to a temporary directory for either 
+ * Windows or Linux.
+ */
+#ifdef __linux__
+char* path_to_temp_dir() 
+{
+  char * tmpdir = malloc(sizeof(char) * 4096); //4096 is the longest ext4 path
+  if (getenv("TMPDIR"))  { 
+    strcpy(tmpdir, getenv("TMPDIR")); 
+  }
+  else if (getenv("TMP"))  {
+    strcpy(tmpdir, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpdir, getenv("TEMP"));
+  }
+  else if (getenv("TEMPDIR"))  {
+    strcpy(tmpdir, getenv("TEMPDIR"));
+  } else {
+    strcpy(tmpdir, "/tmp/");
+  }
+  return tmpdir;
+}
+#endif
+#ifdef _WIN32
+char* path_to_temp_dir() 
+{
+  char * tmpdir = malloc(sizeof(char) * 260); //260 is the longest NTFS path
+  if (getenv("TMP"))  { 
+    strcpy(tmpdir, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpdir, getenv("TEMP"));
+  }
+  else if (getenv("USERPROFILE") )  {
+    strcpy(tmpdir, getenv("USERPROFILE"));
+  }
+  else {
+    strcpy(tmpdir, "C:\\Temp\\");
+  }
+  return tmpdir;
+}
+#endif
+
+
+
 //
 // Summary routines.
 //
@@ -334,14 +385,14 @@ void update_summary(SessionData *psd) {
   GtkTextIter end;
 
   char line[80];
-  /* TODO writing this out and reading it back in is not that elegant. */
   /*Create a new summary file.*/
-  FILE *fp;
-  fp = fopen("runplotter.txt", "w");
+  char * tmpfile = path_to_temp_dir();
+  strcat(tmpfile, "runplotter.txt");
+  FILE* fp = fopen(tmpfile, "w");
   create_summary(fp, psd);
   fclose(fp);
+  fp = fopen(tmpfile, "r");
   /* Display the summary file in the textbuffer, textbuffer1*/
-  fp = fopen("runplotter.txt", "r");
   /* Clear out anything already in the text buffer. */
   gtk_text_buffer_get_bounds(textbuffer1, &start, &end);
   gtk_text_buffer_delete(textbuffer1, &start, &end);
@@ -775,8 +826,6 @@ gboolean init_plot_data(AllData *pall) {
       sessAvgHeartRate, sessMaxCadence, sessAvgCadence, sessAvgTemperature,
       sessMaxTemperature, sessMinHeartRate, sessTotalAnaerobicTrainingEffect,
       tzOffset);
-  /* Update the summary page. */
-  update_summary(pall->psd);
   return TRUE;
 }
 
@@ -1024,8 +1073,11 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
   // plsdev("extcairo");
   plsdev("svg");
   /* Device attributes */
-  FILE *fp;
-  fp = fopen("runplotter.svg", "w");
+  char * tmpfile = path_to_temp_dir();
+  strcat(tmpfile, "runplotter.svg");
+ 
+  //FILE* fp = fopen("runplotter.svg", "w");
+  FILE* fp = fopen(tmpfile, "w");
   plsfile(fp);
   plinit();
 
@@ -1064,7 +1116,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
 
   /* Reload svg to cairo context. */
   GError **error = NULL;
-  RsvgHandle *handle = rsvg_handle_new_from_file("runplotter.svg", error);
+  RsvgHandle *handle = rsvg_handle_new_from_file(tmpfile, error);
   RsvgRectangle viewport = {0, 0, 0, 0};
   rsvg_handle_render_document(handle, cr, &viewport, error);
 
@@ -1360,7 +1412,7 @@ GdkRGBA pick_color(float average, float stdev, float speed,
 }
 
 /* Update the map. */
-static void create_map(AllData *data) {
+static void update_map(AllData *data) {
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
@@ -1427,6 +1479,24 @@ static void zoom_out(GtkWidget *widget) {
 // GTK GUI Stuff
 //
 
+/* Convenience function to reload data, update the internal data structures
+ * and redraw all the widgets.
+ */
+void reload_all(AllData *pall) {
+  if ((pall != NULL) && (fname != NULL)) {
+    /* Update the plots */
+    init_plot_data(pall);
+    /* Force a redraw on the drawing area. */
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    /* Update the summary table. */
+    update_summary(pall->psd);
+    /* Update the map. */
+    update_map(pall);
+    /* Update the slider and redraw. */
+    g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  }
+}
+ 
 /* Default to the pace chart. */
 gboolean default_chart() {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
@@ -1435,9 +1505,7 @@ gboolean default_chart() {
 
 /* User has changed unit system. */
 void on_cb_units_changed(GtkComboBox *cb_Units, AllData *data) {
-  init_plot_data(data); // got to reconvert the raw data
-  g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  gtk_widget_queue_draw(GTK_WIDGET(da));
+  reload_all(data);
 }
 
 /* User has selected Pace Graph. */
@@ -1489,6 +1557,7 @@ void on_rb_splits(GtkToggleButton *togglebutton, AllData *data) {
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
 }
 
+ 
 /* User has pressed open a new file. */
 #ifdef _WIN32
 G_MODULE_EXPORT
@@ -1497,9 +1566,7 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData *pall) {
   /* fname is a global */
   fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
   if (pall != NULL) {
-    init_plot_data(pall);
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    create_map(pall);
+    reload_all(pall);
   }
 }
 
@@ -1828,7 +1895,54 @@ int main(int argc, char *argv[]) {
   /* Release the builder memory. */
   g_object_unref(builder);
 
-  gtk_widget_show(window); // Required to display champlain widget.
+  /* Process command line options. */
+  // TODO This may not be available for Windows.
+  int c;
+  opterr = 0;
+  while ((c = getopt (argc, argv, "mf:hv")) != -1)
+    switch (c)
+      {
+      case 'm':
+        /* Set combo box to metric */
+        gtk_combo_box_set_active(GTK_COMBO_BOX(cb_Units), Metric);
+        break;
+      case 'f':
+        fname = optarg;
+        /* This seems sketchy to run before the input event loop 
+         * but seems to work.
+         */
+        reload_all(pall);
+        break;
+      case '?':
+        if (optopt == 'f')
+          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+        else if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr,
+                   "Unknown option character `\\x%x'.\n",
+                   optopt);
+        return 1;
+      case 'h':
+        fprintf(stdout, "Usage: %s [OPTION]...[FILENAME]\n", argv[0]);
+        fprintf(stdout, " -f  open filename\n");
+        fprintf(stdout, " -m  use metric units\n");
+        fprintf(stdout, " -h  print program help\n");
+        fprintf(stdout, " -v  print program version\n");
+        return 0;
+        break;
+      case 'v':
+        fprintf(stdout, "%s v%4.2f\n", argv[0], VERSION);
+        return 0;
+        break;
+      default:
+        abort ();
+      }
+
+  for (int index = optind; index < argc; index++)
+    printf ("Non-option argument %s\n", argv[index]);
+
+  gtk_widget_show(window);
   gtk_main();
 
   return 0;
