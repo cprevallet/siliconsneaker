@@ -1214,15 +1214,10 @@ static int init_map() {
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
   int defaultzoom = 4;
-  GtkWidget *wid = g_object_new(
-      OSM_TYPE_GPS_MAP, "map-source", source, "tile-cache", "/tmp/",
-      //      "user-agent",
-      //      "runplotter.c", // Always set user-agent, for better tile-usage
-      //      compliance
-      NULL);
-  //  GtkRequisition req;
-  //  gtk_widget_get_preferred_size(wid, &req, NULL);
-  //  printf("%d %d\n", req.width,req.height);
+
+  GtkWidget *wid = g_object_new(OSM_TYPE_GPS_MAP, NULL);
+  g_object_set(wid, "map-source", source, NULL);
+  g_object_set(wid, "tile-cache", "/tmp/", NULL);
   map = OSM_GPS_MAP(wid);
   osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), defaultLatitude,
                                   defaultLongitude, defaultzoom);
