@@ -236,6 +236,54 @@ int currIdx = 0;
 // Convenience functions.
 //
 void printfloat(float x, char *name) { printf("%s = %f \n", name, x); }
+
+/* Return a fully qualified path to a temporary directory for either 
+ * Windows or Linux.
+ */
+#ifdef __linux__
+char* path_to_temp_dir() 
+{
+  char * tmpdir = malloc(sizeof(char) * 4096); //4096 is the longest ext4 path
+  if (getenv("TMPDIR"))  { 
+    strcpy(tmpdir, getenv("TMPDIR")); 
+  }
+  else if (getenv("TMP"))  {
+    strcpy(tmpdir, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpdir, getenv("TEMP"));
+  }
+  else if (getenv("TEMPDIR"))  {
+    strcpy(tmpdir, getenv("TEMPDIR"));
+  } else {
+    strcpy(tmpdir, "/tmp/");
+  }
+  return tmpdir;
+}
+#endif
+#ifdef _WIN32
+char* path_to_temp_dir() 
+{
+  char * tmpdir = malloc(sizeof(char) * 260); //260 is the longest NTFS path
+  if (getenv("TMP"))  { 
+    strcpy(tmpdir, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpdir, getenv("TEMP"));
+  }
+  else if (getenv("USERPROFILE") )  {
+    strcpy(tmpdir, getenv("USERPROFILE"));
+  }
+  else {
+    strcpy(tmpdir, "C:\\Temp\\");
+  }
+  printf("%s\n", tmpdir);
+  return tmpdir;
+}
+#endif
+
+
+
 //
 // Summary routines.
 //
@@ -339,9 +387,12 @@ void update_summary(SessionData *psd) {
 
   char line[80];
   /*Create a new summary file.*/
-  FILE* fp = tmpfile();
+  char * tmpfile = path_to_temp_dir();
+  strcat(tmpfile, "runplotter.txt");
+  FILE* fp = fopen(tmpfile, "w");
   create_summary(fp, psd);
-  rewind(fp);
+  fclose(fp);
+  fp = fopen(tmpfile, "r");
   /* Display the summary file in the textbuffer, textbuffer1*/
   /* Clear out anything already in the text buffer. */
   gtk_text_buffer_get_bounds(textbuffer1, &start, &end);
@@ -992,46 +1043,6 @@ enum PlotType checkRadioButtons() {
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Altitude)) == TRUE)
     return AltitudePlot;
   return LapPlot;
-}
-
-/* Return a fully qualified path to a temporary directory for either 
- * Windows or Linux.
- */
-char* path_to_temp_dir() 
-{
-  #ifdef __linux__
-  char * tmpdir = malloc(sizeof(char) * 4096); //4096 is the longest ext4 path
-  if (getenv("TMPDIR"))  { 
-    strcpy(tmpdir, getenv("TMPDIR")); 
-  }
-  else if (getenv("TMP"))  {
-    strcpy(tmpdir, getenv("TMP"));
-  }
-  else if (getenv("TEMP"))  {
-    strcpy(tmpdir, getenv("TEMP"));
-  }
-  else if (getenv("TEMPDIR"))  {
-    strcpy(tmpdir, getenv("TEMPDIR"));
-  } else {
-    strcpy(tmpdir, "/tmp/");
-  }
-  #endif
-  #ifdef _WIN32
-  char * tmpdir = malloc(sizeof(char) * 260); //260 is the longest NTFS path
-  if (getenv("TMP"))  { 
-    strcpy(tmpdir, getenv("TMP"));
-  }
-  else if (getenv("TEMP"))  {
-    strcpy(tmpdir, getenv("TEMP"));
-  }
-  else if (getenv("USERPROFILE") )  {
-    strcpy(tmpdir, getenv("USERPROFILE"));
-  }
-  else {
-    strcpy(tmpdir, "C:\\Temp\\");
-  }
-  #endif
-  return tmpdir;
 }
 
 /* Drawing area callback.
@@ -1887,7 +1898,6 @@ int main(int argc, char *argv[]) {
 
   /* Process command line options. */
   // TODO This may not be available for Windows.
-#ifdef __linux__ 
   int c;
   opterr = 0;
   while ((c = getopt (argc, argv, "mf:hv")) != -1)
@@ -1932,7 +1942,6 @@ int main(int argc, char *argv[]) {
 
   for (int index = optind; index < argc; index++)
     printf ("Non-option argument %s\n", argv[index]);
-#endif
 
   gtk_widget_show(window);
   gtk_main();
