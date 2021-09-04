@@ -1023,7 +1023,43 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
   // plsdev("extcairo");
   plsdev("svg");
   /* Device attributes */
-  FILE* fp = fopen("runplotter.svg", "w");
+  #ifdef __linux__
+  char * tmpfile = malloc(sizeof(char) * 4096); //4096 is the longest ext4 path
+  if (getenv("TMPDIR"))  { 
+    strcpy(tmpfile, getenv("TMPDIR")); 
+  }
+  else if (getenv("TMP"))  {
+    strcpy(tmpfile, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpfile, getenv("TEMP"));
+  }
+  else if (getenv("TEMPDIR"))  {
+    strcpy(tmpfile, getenv("TEMPDIR"));
+  } else {
+    strcpy(tmpfile, "/tmp/");
+  }
+  #endif
+  #ifdef _WIN32
+  char * tmpfile = malloc(sizeof(char) * 260); //260 is the longest NTFS path
+  if (getenv("TMP"))  { 
+    strcpy(tmpfile, getenv("TMP"));
+  }
+  else if (getenv("TEMP"))  {
+    strcpy(tmpfile, getenv("TEMP"));
+  }
+  else if (getenv("USERPROFILE") )  {
+    strcpy(tmpfile, getenv("USERPROFILE"));
+  }
+  else {
+    strcpy(tmpfile, "C:\\Temp\\");
+  }
+  #endif
+  if (tmpfile == NULL) return FALSE;
+  strcat(tmpfile, "runplotter.svg");
+ 
+  //FILE* fp = fopen("runplotter.svg", "w");
+  FILE* fp = fopen(tmpfile, "w");
   plsfile(fp);
   plinit();
 
@@ -1062,7 +1098,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
 
   /* Reload svg to cairo context. */
   GError **error = NULL;
-  RsvgHandle *handle = rsvg_handle_new_from_file("runplotter.svg", error);
+  RsvgHandle *handle = rsvg_handle_new_from_file(tmpfile, error);
   RsvgRectangle viewport = {0, 0, 0, 0};
   rsvg_handle_render_document(handle, cr, &viewport, error);
 
