@@ -41,6 +41,7 @@
 #include <string.h>
 #include <float.h>
 #include <unistd.h>
+#include <stdio.h>
 
 #include <gdk/gdk.h>
 #include <glib.h>
@@ -337,14 +338,11 @@ void update_summary(SessionData *psd) {
   GtkTextIter end;
 
   char line[80];
-  /* TODO writing this out and reading it back in is not that elegant. */
   /*Create a new summary file.*/
-  FILE *fp;
-  fp = fopen("runplotter.txt", "w");
+  FILE* fp = tmpfile();
   create_summary(fp, psd);
-  fclose(fp);
+  rewind(fp);
   /* Display the summary file in the textbuffer, textbuffer1*/
-  fp = fopen("runplotter.txt", "r");
   /* Clear out anything already in the text buffer. */
   gtk_text_buffer_get_bounds(textbuffer1, &start, &end);
   gtk_text_buffer_delete(textbuffer1, &start, &end);
@@ -1025,8 +1023,7 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
   // plsdev("extcairo");
   plsdev("svg");
   /* Device attributes */
-  FILE *fp;
-  fp = fopen("runplotter.svg", "w");
+  FILE* fp = fopen("runplotter.svg", "w");
   plsfile(fp);
   plinit();
 
