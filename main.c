@@ -81,9 +81,19 @@
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
 
-enum ZoomState { Press = 0, Move = 1, Release = 2 };
-enum UnitSystem { Metric = 1, English = 0 };
-enum PlotType {
+enum ZoomState
+{
+  Press = 0,
+  Move = 1,
+  Release = 2
+};
+enum UnitSystem
+{
+  Metric = 1,
+  English = 0
+};
+enum PlotType
+{
   PacePlot = 1,
   CadencePlot = 2,
   HeartRatePlot = 3,
@@ -95,7 +105,8 @@ enum PlotType {
  * values for various aspects of displaying a plot
  * including the actual x,y pairs, axis labels,
  * line colors, etc. */
-typedef struct PlotData {
+typedef struct PlotData
+{
   enum PlotType ptype;
   int num_pts;
   PLFLT *x; // xy data pairs, world coordinates
@@ -129,7 +140,8 @@ typedef struct PlotData {
 /* Similar to above but for an entire workout
  * session to be displayed as a summary.
  */
-typedef struct SessionData {
+typedef struct SessionData
+{
   char *timestamp;
   char *start_time;
   float start_position_lat;
@@ -169,7 +181,8 @@ typedef struct SessionData {
  * displaying.  Finally, there is another pointer for the overall
  * session data displayed by the summary.
  */
-typedef struct AllData {
+typedef struct AllData
+{
   struct PlotData *ppace;
   struct PlotData *pcadence;
   struct PlotData *pheart;
@@ -235,40 +248,46 @@ int currIdx = 0;
 //
 // Convenience functions.
 //
-void printfloat(float x, char *name) { printf("%s = %f \n", name, x); }
+void
+printfloat (float x, char *name)
+{
+  printf ("%s = %f \n", name, x);
+}
 
 /* Return a fully qualified path to a temporary directory for either
  * Windows or Linux.
  */
 #ifdef __linux__
-char *path_to_temp_dir() {
-  char *tmpdir = malloc(sizeof(char) * 4096); // 4096 is the longest ext4 path
-  if (getenv("TMPDIR")) {
-    strcpy(tmpdir, getenv("TMPDIR"));
-  } else if (getenv("TMP")) {
-    strcpy(tmpdir, getenv("TMP"));
-  } else if (getenv("TEMP")) {
-    strcpy(tmpdir, getenv("TEMP"));
-  } else if (getenv("TEMPDIR")) {
-    strcpy(tmpdir, getenv("TEMPDIR"));
-  } else {
-    strcpy(tmpdir, "/tmp/");
-  }
+char *
+path_to_temp_dir ()
+{
+  char *tmpdir = malloc (sizeof (char) * 4096); // 4096 is the longest ext4 path
+  if (getenv ("TMPDIR"))
+    strcpy (tmpdir, getenv ("TMPDIR"));
+  else if (getenv ("TMP"))
+    strcpy (tmpdir, getenv ("TMP"));
+  else if (getenv ("TEMP"))
+    strcpy (tmpdir, getenv ("TEMP"));
+  else if (getenv ("TEMPDIR"))
+    strcpy (tmpdir, getenv ("TEMPDIR"));
+  else
+    strcpy (tmpdir, "/tmp/");
   return tmpdir;
 }
 #endif
 #ifdef _WIN32
-char *path_to_temp_dir() {
-  char *tmpdir = malloc(sizeof(char) * 260); // 260 is the longest NTFS path
-  if (getenv("TMP")) {
-    strcpy(tmpdir, getenv("TMP"));
-  } else if (getenv("TEMP")) {
-    strcpy(tmpdir, getenv("TEMP"));
-  } else if (getenv("USERPROFILE")) {
-    strcpy(tmpdir, getenv("USERPROFILE"));
-  } else {
-    strcpy(tmpdir, "C:\\Temp\\");
-  }
+char *
+path_to_temp_dir ()
+{
+  char *tmpdir = malloc (sizeof (char) * 260); // 260 is the longest NTFS path
+  if (getenv ("TMP"))
+    strcpy (tmpdir, getenv ("TMP"));
+  else if (getenv ("TEMP"))
+    strcpy (tmpdir, getenv ("TEMP"));
+  else if (getenv ("USERPROFILE"))
+    strcpy (tmpdir, getenv ("USERPROFILE"));
+  else
+    strcpy (tmpdir, "C:\\Temp\\");
   return tmpdir;
 }
 #endif
@@ -278,97 +297,125 @@ char *path_to_temp_dir() {
 //
 
 /* Convenience routine to print a floating point line. */
-void print_float_val(float val, char *plabel, char *punit, FILE *fp) {
-  if ((plabel != NULL) && (punit != NULL) && (val < FLT_MAX - 1.0)) {
-    fprintf(fp, "%-30s", plabel);
-    fprintf(fp, "%3s", " = ");
-    fprintf(fp, "%10.2f", val);
-    fprintf(fp, "%3s", " ");
-    fprintf(fp, "%-20s", punit);
-    fprintf(fp, "\n");
-  }
+void
+print_float_val (float val, char *plabel, char *punit, FILE *fp)
+{
+  if ((plabel != NULL) && (punit != NULL) && (val < FLT_MAX - 1.0))
+    {
+      fprintf (fp, "%-30s", plabel);
+      fprintf (fp, "%3s", " = ");
+      fprintf (fp, "%10.2f", val);
+      fprintf (fp, "%3s", " ");
+      fprintf (fp, "%-20s", punit);
+      fprintf (fp, "\n");
+    }
 }
 
 /* Convenience routine to print a formatted timer value. */
-void print_timer_val(float timer, char *plabel, FILE *fp) {
-  if (timer < FLT_MAX - 1.0) {
-    double hours, secs, mins, extra;
-    extra = modf(timer / 3600.0, &hours);
-    secs = modf(extra * 60.0, &mins);
-    secs *= 60.0;
-    fprintf(fp, "%-30s", plabel);
-    fprintf(fp, "%3s", " = ");
-    fprintf(fp, "%4.0f:%02.0f:%02.0f", hours, mins, secs);
-    fprintf(fp, "\n");
-  }
+void
+print_timer_val (float timer, char *plabel, FILE *fp)
+{
+  if (timer < FLT_MAX - 1.0)
+    {
+      double hours, secs, mins, extra;
+      extra = modf (timer / 3600.0, &hours);
+      secs = modf (extra * 60.0, &mins);
+      secs *= 60.0;
+      fprintf (fp, "%-30s", plabel);
+      fprintf (fp, "%3s", " = ");
+      fprintf (fp, "%4.0f:%02.0f:%02.0f", hours, mins, secs);
+      fprintf (fp, "\n");
+    }
 }
 
 /* Generate the summary report */
-void create_summary(FILE *fp, SessionData *psd) {
-  if ((fp != NULL) && (psd != NULL)) {
-    fprintf(fp, "%-30s", "Start time");
-    fprintf(fp, "%3s", " = ");
-    fprintf(fp, "%s", psd->start_time);
-    print_float_val(psd->start_position_lat, "Starting latitude", "deg", fp);
-    print_float_val(psd->start_position_long, "Starting longitude", "deg", fp);
-    print_timer_val(psd->total_elapsed_time, "Total elapsed time", fp);
-    print_timer_val(psd->total_timer_time, "Total timer time", fp);
-    if (psd->units == English)
-      print_float_val(psd->total_distance, "Total distance", "miles", fp);
-    else
-      print_float_val(psd->total_distance, "Total distance", "kilometers", fp);
+void
+create_summary (FILE *fp, SessionData *psd)
+{
+  if ((fp != NULL) && (psd != NULL))
+    {
+      fprintf (fp, "%-30s", "Start time");
+      fprintf (fp, "%3s", " = ");
+      fprintf (fp, "%s", psd->start_time);
+      print_float_val (psd->start_position_lat, "Starting latitude", "deg", fp);
+      print_float_val (psd->start_position_long, "Starting longitude", "deg",
+                       fp);
+      print_timer_val (psd->total_elapsed_time, "Total elapsed time", fp);
+      print_timer_val (psd->total_timer_time, "Total timer time", fp);
+      if (psd->units == English)
+        print_float_val (psd->total_distance, "Total distance", "miles", fp);
+      else
+        print_float_val (psd->total_distance, "Total distance", "kilometers",
+                         fp);
 
-    // print_float_val(psd->nec_lat , "nec_lat","" ,fp);
-    // print_float_val(psd->nec_long , "nec_long","" ,fp);
-    // print_float_val(psd->swc_lat , "swc_lat","" ,fp);
-    // print_float_val(psd->swc_long , "swc_long","" ,fp);
-    // TODO Why is this coming out bogus???
-    // print_float_val(psd->total_work , "total_work","" ,fp);
-    print_timer_val(psd->total_moving_time, "Total moving time", fp);
-    print_timer_val(psd->avg_lap_time, "Average lap time", fp);
-    print_float_val(psd->total_calories, "Total calories", "kcal", fp);
-    if (psd->units == English) {
-      print_float_val(psd->avg_speed, "Average speed", "miles/hour", fp);
-      print_float_val(psd->max_speed, "Maximum speed", "miles/hour", fp);
-    } else {
-      print_float_val(psd->avg_speed, "Average speed", "kilometers/hour", fp);
-      print_float_val(psd->max_speed, "Maxium speed", "kilometers/hour", fp);
+      // print_float_val(psd->nec_lat , "nec_lat","" ,fp);
+      // print_float_val(psd->nec_long , "nec_long","" ,fp);
+      // print_float_val(psd->swc_lat , "swc_lat","" ,fp);
+      // print_float_val(psd->swc_long , "swc_long","" ,fp);
+      // TODO Why is this coming out bogus???
+      // print_float_val(psd->total_work , "total_work","" ,fp);
+      print_timer_val (psd->total_moving_time, "Total moving time", fp);
+      print_timer_val (psd->avg_lap_time, "Average lap time", fp);
+      print_float_val (psd->total_calories, "Total calories", "kcal", fp);
+      if (psd->units == English)
+        {
+          print_float_val (psd->avg_speed, "Average speed", "miles/hour", fp);
+          print_float_val (psd->max_speed, "Maximum speed", "miles/hour", fp);
+        }
+      else
+        {
+          print_float_val (psd->avg_speed, "Average speed", "kilometers/hour",
+                           fp);
+          print_float_val (psd->max_speed, "Maxium speed", "kilometers/hour",
+                           fp);
+        }
+      if (psd->units == English)
+        {
+          print_float_val (psd->total_ascent, "Total ascent", "feet", fp);
+          print_float_val (psd->total_descent, "Total descent", "feet", fp);
+          print_float_val (psd->avg_altitude, "Average altitude", "feet", fp);
+          print_float_val (psd->max_altitude, "Maximum altitude", "feet", fp);
+          print_float_val (psd->min_altitude, "Minimum altitude", "feet", fp);
+        }
+      else
+        {
+          print_float_val (psd->total_ascent, "Total ascent", "meters", fp);
+          print_float_val (psd->total_descent, "Total descent", "meters", fp);
+          print_float_val (psd->avg_altitude, "Average altitude", "meters", fp);
+          print_float_val (psd->max_altitude, "Maximum altitude", "meters", fp);
+          print_float_val (psd->min_altitude, "Minimum altitude", "meters", fp);
+        }
+      print_float_val (psd->max_heart_rate, "Maximum heart rate", "", fp);
+      print_float_val (psd->avg_heart_rate, "Average heart rate", "", fp);
+      print_float_val (psd->max_cadence, "Maximum cadence", "", fp);
+      print_float_val (psd->avg_cadence, "Average cadence", "", fp);
+      if (psd->units == English)
+        {
+          print_float_val (psd->avg_temperature, "Average temperature", "deg F",
+                           fp);
+          print_float_val (psd->max_temperature, "Maximum temperature", "deg F",
+                           fp);
+        }
+      else
+        {
+          print_float_val (psd->avg_temperature, "Average temperature", "deg C",
+                           fp);
+          print_float_val (psd->max_temperature, "Maximum temperature", "deg C",
+                           fp);
+        }
+      print_float_val (psd->min_heart_rate, "Minimum heart_rate", "", fp);
+      print_float_val (psd->total_anaerobic_training_effect,
+                       "Total anaerobic training effect", "", fp);
+      fprintf (fp, "%-30s", "End time");
+      fprintf (fp, "%3s", " = ");
+      fprintf (fp, "%s", psd->timestamp);
     }
-    if (psd->units == English) {
-      print_float_val(psd->total_ascent, "Total ascent", "feet", fp);
-      print_float_val(psd->total_descent, "Total descent", "feet", fp);
-      print_float_val(psd->avg_altitude, "Average altitude", "feet", fp);
-      print_float_val(psd->max_altitude, "Maximum altitude", "feet", fp);
-      print_float_val(psd->min_altitude, "Minimum altitude", "feet", fp);
-    } else {
-      print_float_val(psd->total_ascent, "Total ascent", "meters", fp);
-      print_float_val(psd->total_descent, "Total descent", "meters", fp);
-      print_float_val(psd->avg_altitude, "Average altitude", "meters", fp);
-      print_float_val(psd->max_altitude, "Maximum altitude", "meters", fp);
-      print_float_val(psd->min_altitude, "Minimum altitude", "meters", fp);
-    }
-    print_float_val(psd->max_heart_rate, "Maximum heart rate", "", fp);
-    print_float_val(psd->avg_heart_rate, "Average heart rate", "", fp);
-    print_float_val(psd->max_cadence, "Maximum cadence", "", fp);
-    print_float_val(psd->avg_cadence, "Average cadence", "", fp);
-    if (psd->units == English) {
-      print_float_val(psd->avg_temperature, "Average temperature", "deg F", fp);
-      print_float_val(psd->max_temperature, "Maximum temperature", "deg F", fp);
-    } else {
-      print_float_val(psd->avg_temperature, "Average temperature", "deg C", fp);
-      print_float_val(psd->max_temperature, "Maximum temperature", "deg C", fp);
-    }
-    print_float_val(psd->min_heart_rate, "Minimum heart_rate", "", fp);
-    print_float_val(psd->total_anaerobic_training_effect,
-                    "Total anaerobic training effect", "", fp);
-    fprintf(fp, "%-30s", "End time");
-    fprintf(fp, "%3s", " = ");
-    fprintf(fp, "%s", psd->timestamp);
-  }
 }
 
 /* Create a summary report to disk and display. */
-void update_summary(SessionData *psd) {
+void
+update_summary (SessionData *psd)
+{
   GtkTextMark *mark;
   GtkTextIter iter;
   GtkTextIter start;
@@ -376,24 +423,25 @@ void update_summary(SessionData *psd) {
 
   char line[80];
   /*Create a new summary file.*/
-  char *tmpfile = path_to_temp_dir();
-  strcat(tmpfile, "runplotter.txt");
-  FILE *fp = fopen(tmpfile, "w");
-  create_summary(fp, psd);
-  fclose(fp);
-  fp = fopen(tmpfile, "r");
+  char *tmpfile = path_to_temp_dir ();
+  strcat (tmpfile, "runplotter.txt");
+  FILE *fp = fopen (tmpfile, "w");
+  create_summary (fp, psd);
+  fclose (fp);
+  fp = fopen (tmpfile, "r");
   /* Display the summary file in the textbuffer, textbuffer1*/
   /* Clear out anything already in the text buffer. */
-  gtk_text_buffer_get_bounds(textbuffer1, &start, &end);
-  gtk_text_buffer_delete(textbuffer1, &start, &end);
+  gtk_text_buffer_get_bounds (textbuffer1, &start, &end);
+  gtk_text_buffer_delete (textbuffer1, &start, &end);
   /* Read the output from the file a line at a time and display it.
    */
-  while (fgets(line, sizeof(line), fp) != NULL) {
-    mark = gtk_text_buffer_get_insert(textbuffer1);
-    gtk_text_buffer_get_iter_at_mark(textbuffer1, &iter, mark);
-    gtk_text_buffer_insert(textbuffer1, &iter, line, -1);
-  }
-  fclose(fp);
+  while (fgets (line, sizeof (line), fp) != NULL)
+    {
+      mark = gtk_text_buffer_get_insert (textbuffer1);
+      gtk_text_buffer_get_iter_at_mark (textbuffer1, &iter, mark);
+      gtk_text_buffer_insert (textbuffer1, &iter, line, -1);
+    }
+  fclose (fp);
 }
 
 //
@@ -401,10 +449,13 @@ void update_summary(SessionData *psd) {
 //
 
 /* Set the view limits to the data extents. */
-void reset_view_limits(PlotData *pd) {
-  if (pd == NULL) {
-    return;
-  }
+void
+reset_view_limits (PlotData *pd)
+{
+  if (pd == NULL)
+    {
+      return;
+    }
   pd->xvmax = pd->xmax;
   pd->yvmin = pd->ymin;
   pd->yvmax = pd->ymax;
@@ -412,10 +463,13 @@ void reset_view_limits(PlotData *pd) {
 }
 
 /* Set zoom back to zero. */
-void reset_zoom(PlotData *pd) {
-  if (pd == NULL) {
-    return;
-  }
+void
+reset_zoom (PlotData *pd)
+{
+  if (pd == NULL)
+    {
+      return;
+    }
   pd->zm_startx = 0;
   pd->zm_starty = 0;
   pd->zm_endx = 0;
@@ -424,26 +478,30 @@ void reset_zoom(PlotData *pd) {
 
 /* Smooth the data via a 5 element Savitzky-Golay filter (destructively).
  * Ref: https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter */
-void sg_smooth(PlotData *pdest) {
+void
+sg_smooth (PlotData *pdest)
+{
   /* Set up an array with 4 extra elements to handle the start and
    * end of the series. */
   PLFLT *smooth_arr = NULL;
   int np = pdest->num_pts;
-  smooth_arr = (PLFLT *)malloc((np + 4) * sizeof(PLFLT));
+  smooth_arr = (PLFLT *) malloc ((np + 4) * sizeof (PLFLT));
   smooth_arr[0] = pdest->y[2];
   smooth_arr[1] = pdest->y[1];
   smooth_arr[np + 1] = pdest->y[np - 1];
   smooth_arr[np + 2] = pdest->y[np - 2];
-  for (int i = 0; i < np; i++) {
-    smooth_arr[i + 2] = pdest->y[i];
-  }
-  for (int i = 0; i < pdest->num_pts; i++) {
-    pdest->y[i] = 1.0 / 35.0 *
-                  ((-3.0 * smooth_arr[i]) + (12.0 * smooth_arr[i + 1]) +
-                   (17.0 * smooth_arr[i + 2]) + (12.0 * smooth_arr[i + 3]) +
-                   (-3.0 * smooth_arr[i + 4]));
-  }
-  free(smooth_arr);
+  for (int i = 0; i < np; i++)
+    {
+      smooth_arr[i + 2] = pdest->y[i];
+    }
+  for (int i = 0; i < pdest->num_pts; i++)
+    {
+      pdest->y[i] = 1.0 / 35.0 *
+                    ((-3.0 * smooth_arr[i]) + (12.0 * smooth_arr[i + 1]) +
+                     (17.0 * smooth_arr[i + 2]) + (12.0 * smooth_arr[i + 3]) +
+                     (-3.0 * smooth_arr[i + 4]));
+    }
+  free (smooth_arr);
 }
 
 /*  This routine is where the bulk of the session report
@@ -453,35 +511,58 @@ void sg_smooth(PlotData *pdest) {
  *  routines and convert them to display-appropriate values based
  *  on the selected unit system and local time zone.
  */
-void raw_to_user_session(
-    SessionData *psd, time_t sess_timestamp, time_t sess_start_time,
-    float sess_start_position_lat, float sess_start_position_long,
-    float sess_total_elapsed_time, float sess_total_timer_time,
-    float sess_total_distance, float sess_nec_lat, float sess_nec_long,
-    float sess_swc_lat, float sess_swc_long, float sess_total_work,
-    float sess_total_moving_time, float sess_avg_lap_time,
-    float sess_total_calories, float sess_avg_speed, float sess_max_speed,
-    float sess_total_ascent, float sess_total_descent, float sess_avg_altitude,
-    float sess_max_altitude, float sess_min_altitude, float sess_max_heart_rate,
-    float sess_avg_heart_rate, float sess_max_cadence, float sess_avg_cadence,
-    float sess_avg_temperature, float sess_max_temperature,
-    float sess_min_heart_rate, float sess_total_anaerobic_training_effect,
-    time_t tz_offset) {
+void
+raw_to_user_session (SessionData *psd,
+                     time_t sess_timestamp,
+                     time_t sess_start_time,
+                     float sess_start_position_lat,
+                     float sess_start_position_long,
+                     float sess_total_elapsed_time,
+                     float sess_total_timer_time,
+                     float sess_total_distance,
+                     float sess_nec_lat,
+                     float sess_nec_long,
+                     float sess_swc_lat,
+                     float sess_swc_long,
+                     float sess_total_work,
+                     float sess_total_moving_time,
+                     float sess_avg_lap_time,
+                     float sess_total_calories,
+                     float sess_avg_speed,
+                     float sess_max_speed,
+                     float sess_total_ascent,
+                     float sess_total_descent,
+                     float sess_avg_altitude,
+                     float sess_max_altitude,
+                     float sess_min_altitude,
+                     float sess_max_heart_rate,
+                     float sess_avg_heart_rate,
+                     float sess_max_cadence,
+                     float sess_avg_cadence,
+                     float sess_avg_temperature,
+                     float sess_max_temperature,
+                     float sess_min_heart_rate,
+                     float sess_total_anaerobic_training_effect,
+                     time_t tz_offset)
+{
   /* Correct the start and end times to local time. */
   time_t l_time = sess_start_time + tz_offset;
-  psd->start_time = strdup(asctime(gmtime(&l_time)));
+  psd->start_time = strdup (asctime (gmtime (&l_time)));
   l_time = sess_timestamp + tz_offset;
-  psd->timestamp = strdup(asctime(gmtime(&l_time)));
+  psd->timestamp = strdup (asctime (gmtime (&l_time)));
   psd->start_position_lat = sess_start_position_lat;
   psd->start_position_long = sess_start_position_long;
   psd->total_elapsed_time = sess_total_elapsed_time;
   psd->total_timer_time = sess_total_timer_time;
-  if (psd->units == English) {
-    psd->total_distance =
-        sess_total_distance * 0.00062137119; // meters to miles
-  } else {
-    psd->total_distance = sess_total_distance * 0.001; // meters to kilometers
-  }
+  if (psd->units == English)
+    {
+      psd->total_distance =
+          sess_total_distance * 0.00062137119; // meters to miles
+    }
+  else
+    {
+      psd->total_distance = sess_total_distance * 0.001; // meters to kilometers
+    }
   psd->nec_lat = sess_nec_lat;
   psd->nec_long = sess_nec_long;
   psd->swc_lat = sess_swc_lat;
@@ -492,40 +573,49 @@ void raw_to_user_session(
   psd->avg_lap_time = sess_avg_lap_time;
   psd->total_calories = sess_total_calories;
 
-  if (psd->units == English) {
-    psd->avg_speed = sess_avg_speed * 2.2369363; // meters/s to miles/hr
-    psd->max_speed = sess_max_speed * 2.2369363; // meters/s to miles/hr
-  } else {
-    psd->avg_speed = sess_avg_speed * 3.6; // meters/s to kilometers/hr
-    psd->max_speed = sess_max_speed * 3.6; // meters/s to kilometers/hr
-  }
+  if (psd->units == English)
+    {
+      psd->avg_speed = sess_avg_speed * 2.2369363; // meters/s to miles/hr
+      psd->max_speed = sess_max_speed * 2.2369363; // meters/s to miles/hr
+    }
+  else
+    {
+      psd->avg_speed = sess_avg_speed * 3.6; // meters/s to kilometers/hr
+      psd->max_speed = sess_max_speed * 3.6; // meters/s to kilometers/hr
+    }
 
-  if (psd->units == English) {
-    psd->total_ascent = sess_total_ascent * 3.2808399;   // meters to feet
-    psd->total_descent = sess_total_descent * 3.2808399; // meters to feet
-    psd->avg_altitude = sess_avg_altitude * 3.2808399;   // meters to feet
-    psd->max_altitude = sess_max_altitude * 3.2808399;   // meters to feet
-    psd->min_altitude = sess_min_altitude * 3.2808399;   // meters to feet
-  } else {
-    psd->total_ascent = sess_total_ascent * 1.0;   // meters to meters
-    psd->total_descent = sess_total_descent * 1.0; // meters to meters
-    psd->avg_altitude = sess_avg_altitude * 1.0;   // meters to meters
-    psd->max_altitude = sess_max_altitude * 1.0;   // meters to meters
-    psd->min_altitude = sess_min_altitude * 1.0;   // meters to meters
-  }
+  if (psd->units == English)
+    {
+      psd->total_ascent = sess_total_ascent * 3.2808399;   // meters to feet
+      psd->total_descent = sess_total_descent * 3.2808399; // meters to feet
+      psd->avg_altitude = sess_avg_altitude * 3.2808399;   // meters to feet
+      psd->max_altitude = sess_max_altitude * 3.2808399;   // meters to feet
+      psd->min_altitude = sess_min_altitude * 3.2808399;   // meters to feet
+    }
+  else
+    {
+      psd->total_ascent = sess_total_ascent * 1.0;   // meters to meters
+      psd->total_descent = sess_total_descent * 1.0; // meters to meters
+      psd->avg_altitude = sess_avg_altitude * 1.0;   // meters to meters
+      psd->max_altitude = sess_max_altitude * 1.0;   // meters to meters
+      psd->min_altitude = sess_min_altitude * 1.0;   // meters to meters
+    }
 
   psd->max_heart_rate = sess_max_heart_rate;
   psd->avg_heart_rate = sess_avg_heart_rate;
   psd->max_cadence = sess_max_cadence;
   psd->avg_cadence = sess_avg_cadence;
 
-  if (psd->units == English) {
-    psd->avg_temperature = 1.8 * sess_avg_temperature + 32.0;
-    psd->max_temperature = 1.8 * sess_max_temperature + 32.0;
-  } else {
-    psd->avg_temperature = sess_avg_temperature * 1.0;
-    psd->max_temperature = sess_max_temperature * 1.0;
-  }
+  if (psd->units == English)
+    {
+      psd->avg_temperature = 1.8 * sess_avg_temperature + 32.0;
+      psd->max_temperature = 1.8 * sess_max_temperature + 32.0;
+    }
+  else
+    {
+      psd->avg_temperature = sess_avg_temperature * 1.0;
+      psd->max_temperature = sess_max_temperature * 1.0;
+    }
 
   psd->min_heart_rate = sess_min_heart_rate;
   psd->total_anaerobic_training_effect = sess_total_anaerobic_training_effect;
@@ -543,167 +633,217 @@ void raw_to_user_session(
  *  as well as setting labels and range limits to initial values.
  *
  */
-void raw_to_user_plots(PlotData *pdest, int num_recs, float x_raw[NSIZE],
-                       float y_raw[NSIZE], float lat_raw[NSIZE],
-                       float lng_raw[NSIZE], time_t sess_start_time,
-                       time_t tz_offset) {
+void
+raw_to_user_plots (PlotData *pdest,
+                   int num_recs,
+                   float x_raw[NSIZE],
+                   float y_raw[NSIZE],
+                   float lat_raw[NSIZE],
+                   float lng_raw[NSIZE],
+                   time_t sess_start_time,
+                   time_t tz_offset)
+{
   float x_cnv, y_cnv;
   /* Housekeeping. Release any memory previously allocated before
    * reinitializing.
    */
-  if (pdest->x != NULL) {
-    free(pdest->x);
-  }
-  if (pdest->y != NULL) {
-    free(pdest->y);
-  }
-  if (pdest->lat != NULL) {
-    free(pdest->lat);
-  }
-  if (pdest->lng != NULL) {
-    free(pdest->lng);
-  }
+  if (pdest->x != NULL)
+    {
+      free (pdest->x);
+    }
+  if (pdest->y != NULL)
+    {
+      free (pdest->y);
+    }
+  if (pdest->lat != NULL)
+    {
+      free (pdest->lat);
+    }
+  if (pdest->lng != NULL)
+    {
+      free (pdest->lng);
+    }
   /* How big are we? */
   pdest->num_pts = num_recs;
   /* Allocate new memory for the converted values. */
-  pdest->lat = (PLFLT *)malloc(pdest->num_pts * sizeof(PLFLT));
-  pdest->lng = (PLFLT *)malloc(pdest->num_pts * sizeof(PLFLT));
-  pdest->x = (PLFLT *)malloc(pdest->num_pts * sizeof(PLFLT));
-  pdest->y = (PLFLT *)malloc(pdest->num_pts * sizeof(PLFLT));
+  pdest->lat = (PLFLT *) malloc (pdest->num_pts * sizeof (PLFLT));
+  pdest->lng = (PLFLT *) malloc (pdest->num_pts * sizeof (PLFLT));
+  pdest->x = (PLFLT *) malloc (pdest->num_pts * sizeof (PLFLT));
+  pdest->y = (PLFLT *) malloc (pdest->num_pts * sizeof (PLFLT));
   /* Assign the conversion factors by plot type. */
-  switch (pdest->ptype) {
-  case PacePlot:
-    if (pdest->units == English) {
-      x_cnv = 0.00062137119; // meters to miles
-      y_cnv = 0.037282272;   // meters per sec to miles per min
-    } else {
-      x_cnv = 0.001; // meters to kilometers
-      y_cnv = 0.06;  // meters per sec to kilometers per min
+  switch (pdest->ptype)
+    {
+    case PacePlot:
+      if (pdest->units == English)
+        {
+          x_cnv = 0.00062137119; // meters to miles
+          y_cnv = 0.037282272;   // meters per sec to miles per min
+        }
+      else
+        {
+          x_cnv = 0.001; // meters to kilometers
+          y_cnv = 0.06;  // meters per sec to kilometers per min
+        }
+      break;
+    case CadencePlot:
+      if (pdest->units == English)
+        {
+          x_cnv = 0.00062137119; // meters to miles
+          y_cnv = 1.0;           // steps to steps
+        }
+      else
+        {
+          x_cnv = 0.001; // meters to kilometers
+          y_cnv = 1.0;   // steps to steps
+        }
+      break;
+    case HeartRatePlot:
+      if (pdest->units == English)
+        {
+          x_cnv = 0.00062137119; // meters to miles
+          y_cnv = 1.0;           // bpm to bpm
+        }
+      else
+        {
+          x_cnv = 0.001; // meters to kilometers
+          y_cnv = 1.0;   // bpm to bpm
+        }
+      break;
+    case AltitudePlot:
+      if (pdest->units == English)
+        {
+          x_cnv = 0.00062137119; // meters to miles
+          y_cnv = 3.28084;       // meters to feet
+        }
+      else
+        {
+          x_cnv = 0.001; // meters to kilometers
+          y_cnv = 1.0;   // meters to meters
+        }
+      break;
+    case LapPlot:
+      if (pdest->units == English)
+        {
+          x_cnv = 0.00062137119; // meters to miles
+          y_cnv = 1.0 / 60.0;    // seconds/lap to minutes/lap
+        }
+      else
+        {
+          x_cnv = 0.001;      // meters to kilometers
+          y_cnv = 1.0 / 60.0; // seconds/lap to minutes/lap
+        }
     }
-    break;
-  case CadencePlot:
-    if (pdest->units == English) {
-      x_cnv = 0.00062137119; // meters to miles
-      y_cnv = 1.0;           // steps to steps
-    } else {
-      x_cnv = 0.001; // meters to kilometers
-      y_cnv = 1.0;   // steps to steps
-    }
-    break;
-  case HeartRatePlot:
-    if (pdest->units == English) {
-      x_cnv = 0.00062137119; // meters to miles
-      y_cnv = 1.0;           // bpm to bpm
-    } else {
-      x_cnv = 0.001; // meters to kilometers
-      y_cnv = 1.0;   // bpm to bpm
-    }
-    break;
-  case AltitudePlot:
-    if (pdest->units == English) {
-      x_cnv = 0.00062137119; // meters to miles
-      y_cnv = 3.28084;       // meters to feet
-    } else {
-      x_cnv = 0.001; // meters to kilometers
-      y_cnv = 1.0;   // meters to meters
-    }
-    break;
-  case LapPlot:
-    if (pdest->units == English) {
-      x_cnv = 0.00062137119; // meters to miles
-      y_cnv = 1.0 / 60.0;    // seconds/lap to minutes/lap
-    } else {
-      x_cnv = 0.001;      // meters to kilometers
-      y_cnv = 1.0 / 60.0; // seconds/lap to minutes/lap
-    }
-  }
   /* Convert (or in the case of positions/time, copy) the raw values to the
    * displayed values.
    */
-  for (int i = 0; i < pdest->num_pts; i++) {
-    pdest->x[i] = (PLFLT)x_raw[i] * x_cnv;
-    pdest->y[i] = (PLFLT)y_raw[i] * y_cnv;
-  }
-  for (int i = 0; i < pdest->num_pts; i++) {
-    pdest->lat[i] = (PLFLT)lat_raw[i];
-    pdest->lng[i] = (PLFLT)lng_raw[i];
-  }
+  for (int i = 0; i < pdest->num_pts; i++)
+    {
+      pdest->x[i] = (PLFLT) x_raw[i] * x_cnv;
+      pdest->y[i] = (PLFLT) y_raw[i] * y_cnv;
+    }
+  for (int i = 0; i < pdest->num_pts; i++)
+    {
+      pdest->lat[i] = (PLFLT) lat_raw[i];
+      pdest->lng[i] = (PLFLT) lng_raw[i];
+    }
   /* Smooth the Y values. */
   // TODO Needs more testing.  I think there are some bugs.
   gboolean filter = FALSE;
-  if (filter) {
-    sg_smooth(pdest);
-  }
+  if (filter)
+    {
+      sg_smooth (pdest);
+    }
   /* Set start time in local time (for title) */
   time_t l_time = sess_start_time + tz_offset;
-  pdest->start_time = strdup(asctime(gmtime(&l_time)));
+  pdest->start_time = strdup (asctime (gmtime (&l_time)));
 
   /* Find plot data min, max */
   pdest->xmin = FLT_MAX;
   pdest->xmax = -FLT_MAX;
   pdest->ymin = FLT_MAX;
   pdest->ymax = -FLT_MAX;
-  for (int i = 0; i < pdest->num_pts; i++) {
-    if (pdest->x[i] < pdest->xmin) {
-      pdest->xmin = pdest->x[i];
+  for (int i = 0; i < pdest->num_pts; i++)
+    {
+      if (pdest->x[i] < pdest->xmin)
+        {
+          pdest->xmin = pdest->x[i];
+        }
+      if (pdest->x[i] > pdest->xmax)
+        {
+          pdest->xmax = pdest->x[i];
+        }
+      if (pdest->y[i] < pdest->ymin)
+        {
+          pdest->ymin = pdest->y[i];
+        }
+      if (pdest->y[i] > pdest->ymax)
+        {
+          pdest->ymax = pdest->y[i];
+        }
     }
-    if (pdest->x[i] > pdest->xmax) {
-      pdest->xmax = pdest->x[i];
-    }
-    if (pdest->y[i] < pdest->ymin) {
-      pdest->ymin = pdest->y[i];
-    }
-    if (pdest->y[i] > pdest->ymax) {
-      pdest->ymax = pdest->y[i];
-    }
-  }
   /* Set axis labels based on plot type and unit system. */
-  switch (pdest->ptype) {
-  case PacePlot:
-    if (pdest->units == English) {
-      pdest->xaxislabel = "Distance(miles)";
-      pdest->yaxislabel = "Pace(min/mile)";
-    } else {
-      pdest->xaxislabel = "Distance(km)";
-      pdest->yaxislabel = "Pace(min/km)";
+  switch (pdest->ptype)
+    {
+    case PacePlot:
+      if (pdest->units == English)
+        {
+          pdest->xaxislabel = "Distance(miles)";
+          pdest->yaxislabel = "Pace(min/mile)";
+        }
+      else
+        {
+          pdest->xaxislabel = "Distance(km)";
+          pdest->yaxislabel = "Pace(min/km)";
+        }
+      break;
+    case CadencePlot:
+      if (pdest->units == English)
+        {
+          pdest->xaxislabel = "Distance(miles)";
+          pdest->yaxislabel = "Cadence(steps/min)";
+        }
+      else
+        {
+          pdest->xaxislabel = "Distance(km)";
+          pdest->yaxislabel = "Cadence(steps/min)";
+        }
+      break;
+    case AltitudePlot:
+      if (pdest->units == English)
+        {
+          pdest->xaxislabel = "Distance(miles)";
+          pdest->yaxislabel = "Altitude (feet)";
+        }
+      else
+        {
+          pdest->xaxislabel = "Distance(km)";
+          pdest->yaxislabel = "Altitude(meters)";
+        }
+      break;
+    case HeartRatePlot:
+      if (pdest->units == English)
+        {
+          pdest->xaxislabel = "Distance(miles)";
+          pdest->yaxislabel = "Heart rate (bpm)";
+        }
+      else
+        {
+          pdest->xaxislabel = "Distance(km)";
+          pdest->yaxislabel = "Heart rate (bpm)";
+        }
+      break;
+    case LapPlot:
+      if (pdest->units == English)
+        {
+          pdest->xaxislabel = "Lap";
+          pdest->yaxislabel = "Elapsed Split Time(min)";
+        }
+      else
+        {
+          pdest->xaxislabel = "Lap";
+          pdest->yaxislabel = "Elapsed Split Time(min)";
+        }
     }
-    break;
-  case CadencePlot:
-    if (pdest->units == English) {
-      pdest->xaxislabel = "Distance(miles)";
-      pdest->yaxislabel = "Cadence(steps/min)";
-    } else {
-      pdest->xaxislabel = "Distance(km)";
-      pdest->yaxislabel = "Cadence(steps/min)";
-    }
-    break;
-  case AltitudePlot:
-    if (pdest->units == English) {
-      pdest->xaxislabel = "Distance(miles)";
-      pdest->yaxislabel = "Altitude (feet)";
-    } else {
-      pdest->xaxislabel = "Distance(km)";
-      pdest->yaxislabel = "Altitude(meters)";
-    }
-    break;
-  case HeartRatePlot:
-    if (pdest->units == English) {
-      pdest->xaxislabel = "Distance(miles)";
-      pdest->yaxislabel = "Heart rate (bpm)";
-    } else {
-      pdest->xaxislabel = "Distance(km)";
-      pdest->yaxislabel = "Heart rate (bpm)";
-    }
-    break;
-  case LapPlot:
-    if (pdest->units == English) {
-      pdest->xaxislabel = "Lap";
-      pdest->yaxislabel = "Elapsed Split Time(min)";
-    } else {
-      pdest->xaxislabel = "Lap";
-      pdest->yaxislabel = "Elapsed Split Time(min)";
-    }
-  }
   /* Set the view to the data extents. */
   pdest->xvmax = pdest->xmax;
   pdest->yvmin = pdest->ymin;
@@ -718,29 +858,34 @@ void raw_to_user_plots(PlotData *pdest, int num_recs, float x_raw[NSIZE],
 
 /* Read the raw file data, call helper routines to convert to user-facing
    values. */
-gboolean init_plot_data(AllData *pall) {
+gboolean
+init_plot_data (AllData *pall)
+{
   /* Unit system first. */
-  gchar *user_units = gtk_combo_box_text_get_active_text(cb_Units);
-  if (!strcmp(user_units, "Metric")) {
-    pall->ppace->units = Metric;
-    pall->pcadence->units = Metric;
-    pall->pheart->units = Metric;
-    pall->paltitude->units = Metric;
-    pall->plap->units = Metric;
-    pall->psd->units = Metric;
-  } else {
-    pall->ppace->units = English;
-    pall->pcadence->units = English;
-    pall->pheart->units = English;
-    pall->paltitude->units = English;
-    pall->plap->units = English;
-    pall->psd->units = English;
-  }
-  g_free(user_units);
+  gchar *user_units = gtk_combo_box_text_get_active_text (cb_Units);
+  if (!strcmp (user_units, "Metric"))
+    {
+      pall->ppace->units = Metric;
+      pall->pcadence->units = Metric;
+      pall->pheart->units = Metric;
+      pall->paltitude->units = Metric;
+      pall->plap->units = Metric;
+      pall->psd->units = Metric;
+    }
+  else
+    {
+      pall->ppace->units = English;
+      pall->pcadence->units = English;
+      pall->pheart->units = English;
+      pall->paltitude->units = English;
+      pall->plap->units = English;
+      pall->psd->units = English;
+    }
+  g_free (user_units);
   /* Parse the data from the fit file in a cGO routine and return the
    * result as a structure defined by fitwrapper.go.
    */
-  result = parse_fit_file(fname, NSIZE, LSIZE);
+  result = parse_fit_file (fname, NSIZE, LSIZE);
   //  long  *pRecTimestamp = result.r1;
   float *pRecDistance = result.r3;
   float *pRecSpeed = result.r5;
@@ -793,20 +938,20 @@ gboolean init_plot_data(AllData *pall) {
   long tzOffset = result.r66;
 
   /* Convert the raw values to user-facing values. */
-  raw_to_user_plots(pall->ppace, nRecs, pRecDistance, pRecSpeed, pRecLat,
-                    pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots(pall->pcadence, nRecs, pRecDistance, pRecCadence, pRecLat,
-                    pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots(pall->pheart, nRecs, pRecDistance, pRecHeartRate, pRecLat,
-                    pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots(pall->paltitude, nRecs, pRecDistance, pRecAltitude, pRecLat,
-                    pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots(pall->plap, nLaps, pLapTotalDistance, pLapTotalElapsedTime,
-                    pLapStartPositionLat, pLapStartPositionLong, sessStartTime,
-                    tzOffset);
+  raw_to_user_plots (pall->ppace, nRecs, pRecDistance, pRecSpeed, pRecLat,
+                     pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots (pall->pcadence, nRecs, pRecDistance, pRecCadence, pRecLat,
+                     pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots (pall->pheart, nRecs, pRecDistance, pRecHeartRate, pRecLat,
+                     pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots (pall->paltitude, nRecs, pRecDistance, pRecAltitude,
+                     pRecLat, pRecLong, sessStartTime, tzOffset);
+  raw_to_user_plots (pall->plap, nLaps, pLapTotalDistance, pLapTotalElapsedTime,
+                     pLapStartPositionLat, pLapStartPositionLong, sessStartTime,
+                     tzOffset);
 
   /* Convert the raw values to user-facing values. */
-  raw_to_user_session(
+  raw_to_user_session (
       pall->psd, sessTimestamp, sessStartTime, sessStartPositionLat,
       sessStartPositionLong, sessTotalElapsedTime, sessTotalTimerTime,
       sessTotalDistance, sessNecLat, sessNecLong, sessSwcLat, sessSwcLong,
@@ -820,154 +965,181 @@ gboolean init_plot_data(AllData *pall) {
 }
 
 /* A custom axis labeling function for a pace plot. */
-void pace_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
-                       PLPointer label_data) {
+void
+pace_plot_labeler (
+    PLINT axis, PLFLT value, char *label, PLINT length, PLPointer label_data)
+{
   PLFLT label_val = 0.0;
   PLFLT pace_units = 0.0;
   label_val = value;
 
-  if (axis == PL_Y_AXIS) {
-    if (label_val > 0) {
-      pace_units = 1 / label_val;
-    } else {
-      pace_units = 999.0;
+  if (axis == PL_Y_AXIS)
+    {
+      if (label_val > 0)
+        {
+          pace_units = 1 / label_val;
+        }
+      else
+        {
+          pace_units = 999.0;
+        }
+      double secs, mins;
+      secs = modf (pace_units, &mins);
+      secs *= 60.0;
+      snprintf (label, (size_t) length, "%02.0f:%02.0f", mins, secs);
     }
-    double secs, mins;
-    secs = modf(pace_units, &mins);
-    secs *= 60.0;
-    snprintf(label, (size_t)length, "%02.0f:%02.0f", mins, secs);
-  }
 
-  if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", value);
-  }
+  if (axis == PL_X_AXIS)
+    {
+      snprintf (label, (size_t) length, "%3.2f", value);
+    }
 }
 
 /* A custom axis labeling function for a cadence plot. */
-void cadence_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
-                          PLPointer label_data) {
-  if (axis == PL_Y_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", value);
-  }
-  if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", value);
-  }
+void
+cadence_plot_labeler (
+    PLINT axis, PLFLT value, char *label, PLINT length, PLPointer label_data)
+{
+  if (axis == PL_Y_AXIS)
+    {
+      snprintf (label, (size_t) length, "%3.2f", value);
+    }
+  if (axis == PL_X_AXIS)
+    {
+      snprintf (label, (size_t) length, "%3.2f", value);
+    }
 }
 
 /* A custom axis labeling function for a heart rate plot. */
-void heart_rate_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
-                             PLPointer label_data) {
-  if (axis == PL_Y_AXIS) {
-    snprintf(label, (size_t)length, "%3.0f", value);
-  }
-  if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", value);
-  }
+void
+heart_rate_plot_labeler (
+    PLINT axis, PLFLT value, char *label, PLINT length, PLPointer label_data)
+{
+  if (axis == PL_Y_AXIS)
+    {
+      snprintf (label, (size_t) length, "%3.0f", value);
+    }
+  if (axis == PL_X_AXIS)
+    {
+      snprintf (label, (size_t) length, "%3.2f", value);
+    }
 }
 
 /* A custom axis labeling function for an altitude plot. */
-void altitude_plot_labeler(PLINT axis, PLFLT value, char *label, PLINT length,
-                           PLPointer label_data) {
-  if (axis == PL_Y_AXIS) {
-    snprintf(label, (size_t)length, "%3.0f", value);
-  }
-  if (axis == PL_X_AXIS) {
-    snprintf(label, (size_t)length, "%3.2f", value);
-  }
+void
+altitude_plot_labeler (
+    PLINT axis, PLFLT value, char *label, PLINT length, PLPointer label_data)
+{
+  if (axis == PL_Y_AXIS)
+    {
+      snprintf (label, (size_t) length, "%3.0f", value);
+    }
+  if (axis == PL_X_AXIS)
+    {
+      snprintf (label, (size_t) length, "%3.2f", value);
+    }
 }
 
 /* Draw an xy plot. */
 
-void draw_xy(PlotData *pd, int width, int height) {
+void
+draw_xy (PlotData *pd, int width, int height)
+{
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
   PLFLT x_hair = 0;
   PLFLT hairline_x[2], hairline_y[2];
-  if ((pd->x != NULL) && (pd->y != NULL)) {
-    /* Do your drawing. */
-    /* Color */
-    plscol0a(1, 65, 209, 65, 0.25);   // light green for selector
-    plscol0a(15, 128, 128, 128, 0.9); // light gray for background
-    plscol0a(2, pd->linecolor[0], pd->linecolor[1], pd->linecolor[2], 0.8);
-    plwind(pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
-    /* Adjust character size. */
-    plschr(ch_size, scf);
-    plcol0(15);
-    /* Setup a custom axis tick label function. */
-    switch (pd->ptype) {
-    case PacePlot:
-      plslabelfunc(pace_plot_labeler, NULL);
-      break;
-    case CadencePlot:
-      plslabelfunc(cadence_plot_labeler, NULL);
-      break;
-    case AltitudePlot:
-      plslabelfunc(altitude_plot_labeler, NULL);
-      break;
-    case HeartRatePlot:
-      plslabelfunc(heart_rate_plot_labeler, NULL);
-      break;
-    case LapPlot:
-      break;
+  if ((pd->x != NULL) && (pd->y != NULL))
+    {
+      /* Do your drawing. */
+      /* Color */
+      plscol0a (1, 65, 209, 65, 0.25);   // light green for selector
+      plscol0a (15, 128, 128, 128, 0.9); // light gray for background
+      plscol0a (2, pd->linecolor[0], pd->linecolor[1], pd->linecolor[2], 0.8);
+      plwind (pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
+      /* Adjust character size. */
+      plschr (ch_size, scf);
+      plcol0 (15);
+      /* Setup a custom axis tick label function. */
+      switch (pd->ptype)
+        {
+        case PacePlot:
+          plslabelfunc (pace_plot_labeler, NULL);
+          break;
+        case CadencePlot:
+          plslabelfunc (cadence_plot_labeler, NULL);
+          break;
+        case AltitudePlot:
+          plslabelfunc (altitude_plot_labeler, NULL);
+          break;
+        case HeartRatePlot:
+          plslabelfunc (heart_rate_plot_labeler, NULL);
+          break;
+        case LapPlot:
+          break;
+        }
+      /* Create a labelled box to hold the plot using custom x,y labels. */
+      // We want finer control here, so we ignore the convenience function.
+      char *xopt = "bnost";
+      char *yopt = "bgnost";
+      // TODO valgrind reports mem lost on below line...
+      plaxes (pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
+      /* Setup axis labels and titles. */
+      pllab (pd->xaxislabel, pd->yaxislabel, pd->start_time);
+      /* Set line color to the second pallette color. */
+      plcol0 (2);
+      /* Plot the data that was loaded. */
+      plwidth (2);
+      plline (pd->num_pts, pd->x, pd->y);
+      /* Plot symbols for individual data points. */
+      // TODO valgrind reports mem lost on below line...
+      // plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
+      /* Calculate the zoom limits (in pixels) for the graph. */
+      plgvpd (&n_xmin, &n_xmax, &n_ymin, &n_ymax);
+      pd->zmxmin = width * n_xmin;
+      pd->zmxmax = width * n_xmax;
+      pd->zmymin = height * (n_ymin - 1.0) + height;
+      pd->zmymax = height * (n_ymax - 1.0) + height;
+      /*  Draw_selection box "rubber-band". */
+      PLFLT rb_x[4];
+      PLFLT rb_y[4];
+      rb_x[0] = pd->zm_startx;
+      rb_y[0] = pd->zm_starty;
+      rb_x[1] = pd->zm_startx;
+      rb_y[1] = pd->zm_endy;
+      rb_x[2] = pd->zm_endx;
+      rb_y[2] = pd->zm_endy;
+      rb_x[3] = pd->zm_endx;
+      rb_y[3] = pd->zm_starty;
+      if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy))
+        {
+          plcol0 (1);
+          plfill (4, rb_x, rb_y);
+        }
+      /* Add a hairline */
+      plcol0 (15);
+      /* If we are between the view limits, draw a line from the
+       * current index on the x scale from the bottom to the top
+       * of the view. */
+      x_hair = pd->x[currIdx];
+      if ((x_hair >= pd->xvmin) && (x_hair <= pd->xvmax))
+        {
+          hairline_x[0] = x_hair;
+          hairline_x[1] = x_hair;
+          hairline_y[0] = pd->yvmin;
+          hairline_y[1] = pd->yvmax;
+          pllsty (2);
+          plline (2, hairline_x, hairline_y);
+          pllsty (1);
+        }
     }
-    /* Create a labelled box to hold the plot using custom x,y labels. */
-    // We want finer control here, so we ignore the convenience function.
-    char *xopt = "bnost";
-    char *yopt = "bgnost";
-    // TODO valgrind reports mem lost on below line...
-    plaxes(pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
-    /* Setup axis labels and titles. */
-    pllab(pd->xaxislabel, pd->yaxislabel, pd->start_time);
-    /* Set line color to the second pallette color. */
-    plcol0(2);
-    /* Plot the data that was loaded. */
-    plwidth(2);
-    plline(pd->num_pts, pd->x, pd->y);
-    /* Plot symbols for individual data points. */
-    // TODO valgrind reports mem lost on below line...
-    // plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
-    /* Calculate the zoom limits (in pixels) for the graph. */
-    plgvpd(&n_xmin, &n_xmax, &n_ymin, &n_ymax);
-    pd->zmxmin = width * n_xmin;
-    pd->zmxmax = width * n_xmax;
-    pd->zmymin = height * (n_ymin - 1.0) + height;
-    pd->zmymax = height * (n_ymax - 1.0) + height;
-    /*  Draw_selection box "rubber-band". */
-    PLFLT rb_x[4];
-    PLFLT rb_y[4];
-    rb_x[0] = pd->zm_startx;
-    rb_y[0] = pd->zm_starty;
-    rb_x[1] = pd->zm_startx;
-    rb_y[1] = pd->zm_endy;
-    rb_x[2] = pd->zm_endx;
-    rb_y[2] = pd->zm_endy;
-    rb_x[3] = pd->zm_endx;
-    rb_y[3] = pd->zm_starty;
-    if ((pd->zm_startx != pd->zm_endx) && (pd->zm_starty != pd->zm_endy)) {
-      plcol0(1);
-      plfill(4, rb_x, rb_y);
-    }
-    /* Add a hairline */
-    plcol0(15);
-    /* If we are between the view limits, draw a line from the
-     * current index on the x scale from the bottom to the top
-     * of the view. */
-    x_hair = pd->x[currIdx];
-    if ((x_hair >= pd->xvmin) && (x_hair <= pd->xvmax)) {
-      hairline_x[0] = x_hair;
-      hairline_x[1] = x_hair;
-      hairline_y[0] = pd->yvmin;
-      hairline_y[1] = pd->yvmax;
-      pllsty(2);
-      plline(2, hairline_x, hairline_y);
-      pllsty(1);
-    }
-  }
 }
 
 /* Draw a filled box. */
-void plfbox(PLFLT x0, PLFLT y0, PLINT color) {
+void
+plfbox (PLFLT x0, PLFLT y0, PLINT color)
+{
   PLFLT x[4], y[4];
 
   x[0] = x0;
@@ -978,58 +1150,66 @@ void plfbox(PLFLT x0, PLFLT y0, PLINT color) {
   y[2] = y0;
   x[3] = x0 + 1.;
   y[3] = 0.;
-  plcol0(color);
-  plfill(4, x, y);
-  plcol0(15);
-  pllsty(1);
-  plline(4, x, y);
+  plcol0 (color);
+  plfill (4, x, y);
+  plcol0 (15);
+  pllsty (1);
+  plline (4, x, y);
 }
 
 /* Draw a bar chart */
-void draw_bar(PlotData *plap, PlotData *ppace, int width, int height) {
+void
+draw_bar (PlotData *plap, PlotData *ppace, int width, int height)
+{
   char string[8];
-  plwind(0.0, (float)plap->num_pts - 1.0, plap->ymin, plap->ymax);
-  plscol0a(15, 128, 128, 128, 0.9); // light gray for background
-  plcol0(15);
-  plbox("bc", 1.0, 0, "bcnv", 1.0, 0);
-  pllab(plap->xaxislabel, plap->yaxislabel, plap->start_time);
+  plwind (0.0, (float) plap->num_pts - 1.0, plap->ymin, plap->ymax);
+  plscol0a (15, 128, 128, 128, 0.9); // light gray for background
+  plcol0 (15);
+  plbox ("bc", 1.0, 0, "bcnv", 1.0, 0);
+  pllab (plap->xaxislabel, plap->yaxislabel, plap->start_time);
   // Normal color.
-  plscol0a(2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.3);
+  plscol0a (2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.3);
   // Highlight (progress) color.
-  plscol0a(3, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.5);
+  plscol0a (3, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.5);
   float tot_dist = 0.0;
-  for (int i = 0; i < plap->num_pts - 1; i++) {
-    tot_dist = plap->x[i] + tot_dist;
-    plcol0(15);
-    plpsty(0);
-    if (ppace->x[currIdx] > tot_dist) {
-      plfbox(i, plap->y[i], 3);
-    } else {
-      plfbox(i, plap->y[i], 2);
+  for (int i = 0; i < plap->num_pts - 1; i++)
+    {
+      tot_dist = plap->x[i] + tot_dist;
+      plcol0 (15);
+      plpsty (0);
+      if (ppace->x[currIdx] > tot_dist)
+        {
+          plfbox (i, plap->y[i], 3);
+        }
+      else
+        {
+          plfbox (i, plap->y[i], 2);
+        }
+      /* x axis */
+      sprintf (string, "%1.0f", (float) i + 1.0);
+      float bar_width = 1.0 / ((float) (plap->num_pts) - 1.0);
+      float xposn = (i + 0.5) * bar_width;
+      plmtex ("b", 1.0, xposn, 0.5, string);
+      /* bar label */
+      double secs, mins;
+      secs = modf (plap->y[i], &mins);
+      secs *= 60.0;
+      snprintf (string, 8, "%2.0f:%02.0f", mins, secs);
+      plptex ((float) i + 0.5, (1.1 * plap->ymin), 0.0, 90.0, 0.0, string);
     }
-    /* x axis */
-    sprintf(string, "%1.0f", (float)i + 1.0);
-    float bar_width = 1.0 / ((float)(plap->num_pts) - 1.0);
-    float xposn = (i + 0.5) * bar_width;
-    plmtex("b", 1.0, xposn, 0.5, string);
-    /* bar label */
-    double secs, mins;
-    secs = modf(plap->y[i], &mins);
-    secs *= 60.0;
-    snprintf(string, 8, "%2.0f:%02.0f", mins, secs);
-    plptex((float)i + 0.5, (1.1 * plap->ymin), 0.0, 90.0, 0.0, string);
-  }
 }
 
 /* Convenience function to find active radio button. */
-enum PlotType checkRadioButtons() {
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Pace)) == TRUE)
+enum PlotType
+checkRadioButtons ()
+{
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Pace)) == TRUE)
     return PacePlot;
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Cadence)) == TRUE)
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Cadence)) == TRUE)
     return CadencePlot;
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_HeartRate)) == TRUE)
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_HeartRate)) == TRUE)
     return HeartRatePlot;
-  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(rb_Altitude)) == TRUE)
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Altitude)) == TRUE)
     return AltitudePlot;
   return LapPlot;
 }
@@ -1045,75 +1225,76 @@ enum PlotType checkRadioButtons() {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
+gboolean
+on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
+{
 
   PLINT width, height;
   /* Can't plot uninitialized. */
-  if ((data->pd == NULL) || (data->plap == NULL)) {
-    return TRUE;
-  }
+  if ((data->pd == NULL) || (data->plap == NULL))
+    {
+      return TRUE;
+    }
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
-  GdkWindow *window = gtk_widget_get_window(widget);
-  cairo_region_t *cairoRegion = cairo_region_create();
+  GdkWindow *window = gtk_widget_get_window (widget);
+  cairo_region_t *cairoRegion = cairo_region_create ();
   GdkDrawingContext *drawingContext;
-  drawingContext = gdk_window_begin_draw_frame(window, cairoRegion);
+  drawingContext = gdk_window_begin_draw_frame (window, cairoRegion);
   /* Say: "I want to start drawing". */
-  cairo_t *cr = gdk_drawing_context_get_cairo_context(drawingContext);
-  /* Initialize plplot using the external cairo backend. */
-  // plsdev("extcairo");
-  plsdev("svg");
+  cairo_t *cr = gdk_drawing_context_get_cairo_context (drawingContext);
+  /* Initialize plplot using the svg backend. */
+  plsdev ("svg");
   /* Device attributes */
-  char *tmpfile = path_to_temp_dir();
-  strcat(tmpfile, "runplotter.svg");
+  char *tmpfile = path_to_temp_dir ();
+  strcat (tmpfile, "runplotter.svg");
+  FILE *fp = fopen (tmpfile, "w");
+  plsfile (fp);
+  plinit ();
 
-  // FILE* fp = fopen("runplotter.svg", "w");
-  FILE *fp = fopen(tmpfile, "w");
-  plsfile(fp);
-  plinit();
+  pl_cmd (PLESC_DEVINIT, cr);
 
-  pl_cmd(PLESC_DEVINIT, cr);
-
-  GtkAllocation *alloc = g_new(GtkAllocation, 1);
-  gtk_widget_get_allocation(widget, alloc);
+  GtkAllocation *alloc = g_new (GtkAllocation, 1);
+  gtk_widget_get_allocation (widget, alloc);
   width = alloc->width;
   height = alloc->height;
-  g_free(alloc);
+  g_free (alloc);
   /* Viewport and window */
-  pladv(0);
-  plvasp((float)height / (float)width);
+  pladv (0);
+  plvasp ((float) height / (float) width);
 
   /* Draw an xy plot or a bar chart. */
-  switch (checkRadioButtons()) {
-  case PacePlot:
-    draw_xy(data->pd, width, height);
-    break;
-  case CadencePlot:
-    draw_xy(data->pd, width, height);
-    break;
-  case HeartRatePlot:
-    draw_xy(data->pd, width, height);
-    break;
-  case AltitudePlot:
-    draw_xy(data->pd, width, height);
-    break;
-  case LapPlot:
-    draw_bar(data->plap, data->ppace, width, height);
-    break;
-  }
+  switch (checkRadioButtons ())
+    {
+    case PacePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case CadencePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case HeartRatePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case AltitudePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case LapPlot:
+      draw_bar (data->plap, data->ppace, width, height);
+      break;
+    }
 
   /* Close PLplot library */
-  plend();
+  plend ();
 
   /* Reload svg to cairo context. */
   GError **error = NULL;
-  RsvgHandle *handle = rsvg_handle_new_from_file(tmpfile, error);
-  RsvgRectangle viewport = {0, 0, 0, 0};
-  rsvg_handle_render_document(handle, cr, &viewport, error);
+  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
+  RsvgRectangle viewport = { 0, 0, 0, 0 };
+  rsvg_handle_render_document (handle, cr, &viewport, error);
 
   /* Say: "I'm finished drawing. */
-  gdk_window_end_draw_frame(window, drawingContext);
+  gdk_window_end_draw_frame (window, drawingContext);
   /* Cleanup */
-  cairo_region_destroy(cairoRegion);
+  cairo_region_destroy (cairoRegion);
   return FALSE;
 }
 
@@ -1125,51 +1306,62 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
  * by the draw routine.
  *
  */
-void gui_to_world(struct PlotData *pd, GdkEventButton *event,
-                  enum ZoomState state) {
-  if (pd == NULL) {
-    return;
-  }
+void
+gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
+{
+  if (pd == NULL)
+    {
+      return;
+    }
   float fractx = (event->x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
   float fracty = (pd->zmymax - event->y) / (pd->zmymax - pd->zmymin);
-  if (state == Press) {
-    pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-    pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
-  }
-  if (state == Release || state == Move) {
-    pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-    pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
-  }
+  if (state == Press)
+    {
+      pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+      pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+    }
+  if (state == Release || state == Move)
+    {
+      pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
+      pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+    }
 }
 
 /* Convenience routine to change the cursor style. */
-void change_cursor(GtkWidget *widget, const gchar *name) {
-  GdkDisplay *display = gtk_widget_get_display(widget);
+void
+change_cursor (GtkWidget *widget, const gchar *name)
+{
+  GdkDisplay *display = gtk_widget_get_display (widget);
   GdkCursor *cursor;
-  cursor = gdk_cursor_new_from_name(display, name);
-  gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
+  cursor = gdk_cursor_new_from_name (display, name);
+  gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
   // Release the (memory) reference on the cursor.
-  g_object_unref(cursor);
+  g_object_unref (cursor);
 }
 
 /* Handle mouse button press. */
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_button_press(GtkWidget *widget, GdkEvent *event, AllData *data) {
+gboolean
+on_button_press (GtkWidget *widget, GdkEvent *event, AllData *data)
+{
   guint buttonnum;
-  if (data->pd == NULL) {
-    return FALSE;
-  }
-  gdk_event_get_button(event, &buttonnum);
-  if (buttonnum == 3) {
-    change_cursor(widget, "crosshair");
-  }
-  if (buttonnum == 1) {
-    change_cursor(widget, "hand1");
-  }
+  if (data->pd == NULL)
+    {
+      return FALSE;
+    }
+  gdk_event_get_button (event, &buttonnum);
+  if (buttonnum == 3)
+    {
+      change_cursor (widget, "crosshair");
+    }
+  if (buttonnum == 1)
+    {
+      change_cursor (widget, "hand1");
+    }
   /* Set user selected starting x, y in world coordinates. */
-  gui_to_world(data->pd, (GdkEventButton *)event, Press);
+  gui_to_world (data->pd, (GdkEventButton *) event, Press);
   return TRUE;
 }
 
@@ -1177,46 +1369,53 @@ gboolean on_button_press(GtkWidget *widget, GdkEvent *event, AllData *data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData *data) {
+gboolean
+on_button_release (GtkWidget *widget, GdkEvent *event, AllData *data)
+{
   guint buttonnum;
-  if (data->pd == NULL) {
-    return FALSE;
-  }
-  change_cursor(widget, "default");
-  gdk_event_get_button(event, &buttonnum);
+  if (data->pd == NULL)
+    {
+      return FALSE;
+    }
+  change_cursor (widget, "default");
+  gdk_event_get_button (event, &buttonnum);
   /* Zoom out if right mouse button release. */
-  if (buttonnum == 2) {
-    reset_view_limits(data->pd);
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    reset_zoom(data->pd);
-    return TRUE;
-  }
+  if (buttonnum == 2)
+    {
+      reset_view_limits (data->pd);
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      reset_zoom (data->pd);
+      return TRUE;
+    }
   /* Zoom in if left mouse button release. */
   /* Set user selected ending x, y in world coordinates. */
-  gui_to_world(data->pd, (GdkEventButton *)event, Release);
+  gui_to_world (data->pd, (GdkEventButton *) event, Release);
   if ((data->pd->zm_startx != data->pd->zm_endx) &&
-      (data->pd->zm_starty != data->pd->zm_endy)) {
-    /* Zoom */
-    if (buttonnum == 3) {
-      data->pd->xvmin = fmin(data->pd->zm_startx, data->pd->zm_endx);
-      data->pd->yvmin = fmin(data->pd->zm_starty, data->pd->zm_endy);
-      data->pd->xvmax = fmax(data->pd->zm_startx, data->pd->zm_endx);
-      data->pd->yvmax = fmax(data->pd->zm_starty, data->pd->zm_endy);
+      (data->pd->zm_starty != data->pd->zm_endy))
+    {
+      /* Zoom */
+      if (buttonnum == 3)
+        {
+          data->pd->xvmin = fmin (data->pd->zm_startx, data->pd->zm_endx);
+          data->pd->yvmin = fmin (data->pd->zm_starty, data->pd->zm_endy);
+          data->pd->xvmax = fmax (data->pd->zm_startx, data->pd->zm_endx);
+          data->pd->yvmax = fmax (data->pd->zm_starty, data->pd->zm_endy);
+        }
+      /* Pan */
+      if (buttonnum == 1)
+        {
+          data->pd->xvmin =
+              data->pd->xvmin + (data->pd->zm_startx - data->pd->zm_endx);
+          data->pd->xvmax =
+              data->pd->xvmax + (data->pd->zm_startx - data->pd->zm_endx);
+          data->pd->yvmin =
+              data->pd->yvmin + (data->pd->zm_starty - data->pd->zm_endy);
+          data->pd->yvmax =
+              data->pd->yvmax + (data->pd->zm_starty - data->pd->zm_endy);
+        }
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      reset_zoom (data->pd);
     }
-    /* Pan */
-    if (buttonnum == 1) {
-      data->pd->xvmin =
-          data->pd->xvmin + (data->pd->zm_startx - data->pd->zm_endx);
-      data->pd->xvmax =
-          data->pd->xvmax + (data->pd->zm_startx - data->pd->zm_endx);
-      data->pd->yvmin =
-          data->pd->yvmin + (data->pd->zm_starty - data->pd->zm_endy);
-      data->pd->yvmax =
-          data->pd->yvmax + (data->pd->zm_starty - data->pd->zm_endy);
-    }
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    reset_zoom(data->pd);
-  }
   return TRUE;
 }
 
@@ -1226,16 +1425,19 @@ gboolean on_button_release(GtkWidget *widget, GdkEvent *event, AllData *data) {
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
-                          AllData *data) {
+gboolean
+on_motion_notify (GtkWidget *widget, GdkEventButton *event, AllData *data)
+{
 
-  if (data->pd == NULL) {
-    return FALSE;
-  }
-  if (event->state & GDK_BUTTON3_MASK) {
-    gui_to_world(data->pd, event, Move);
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-  }
+  if (data->pd == NULL)
+    {
+      return FALSE;
+    }
+  if (event->state & GDK_BUTTON3_MASK)
+    {
+      gui_to_world (data->pd, event, Move);
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+    }
   return TRUE;
 }
 
@@ -1246,53 +1448,68 @@ gboolean on_motion_notify(GtkWidget *widget, GdkEventButton *event,
 /* Instantiate a global instance of a map widget.
  * Add it to a GTKFrame named viewport.
  */
-static int init_map() {
+static int
+init_map ()
+{
 
   // Load start, stop image for map points of interest.
-  starImage = gdk_pixbuf_new_from_file_at_size("poi.png", 24, 24, NULL);
+  starImage = gdk_pixbuf_new_from_file_at_size ("poi.png", 24, 24, NULL);
 
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
   int defaultzoom = 4;
 
-  GtkWidget *wid = g_object_new(OSM_TYPE_GPS_MAP, NULL);
-  g_object_set(wid, "map-source", source, NULL);
-  g_object_set(wid, "tile-cache", "/tmp/", NULL);
-  map = OSM_GPS_MAP(wid);
-  osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), defaultLatitude,
-                                  defaultLongitude, defaultzoom);
+  GtkWidget *wid = g_object_new (OSM_TYPE_GPS_MAP, NULL);
+  g_object_set (wid, "map-source", source, NULL);
+  g_object_set (wid, "tile-cache", "/tmp/", NULL);
+  map = OSM_GPS_MAP (wid);
+  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), defaultLatitude,
+                                   defaultLongitude, defaultzoom);
   /* Add the global widget to the global GTKFrame named viewport */
-  gtk_container_add(GTK_CONTAINER(viewport), wid);
+  gtk_container_add (GTK_CONTAINER (viewport), wid);
 
   return 0;
 }
 
 /* Convenience routine to move marker. */
-static void move_marker(gdouble new_lat, gdouble new_lng) {
-  if (posnTrackMarker != NULL) {
-    osm_gps_map_image_remove(map, posnTrackMarker);
-    posnTrackMarker = osm_gps_map_image_add(map, new_lat, new_lng, starImage);
-  }
+static void
+move_marker (gdouble new_lat, gdouble new_lng)
+{
+  if (posnTrackMarker != NULL)
+    {
+      osm_gps_map_image_remove (map, posnTrackMarker);
+      posnTrackMarker =
+          osm_gps_map_image_add (map, new_lat, new_lng, starImage);
+    }
 }
 
 /* Calculate center of latitude and longitude readings.*/
-void findCenter(int numPts, double lat[], double lng[], double center[],
-                float *minLat, float *minLng, float *maxLat, float *maxLng) {
+void
+findCenter (int numPts,
+            double lat[],
+            double lng[],
+            double center[],
+            float *minLat,
+            float *minLng,
+            float *maxLat,
+            float *maxLng)
+{
   *minLat = DBL_MAX;
   *maxLat = -DBL_MAX;
   *minLng = DBL_MAX;
   *maxLng = -DBL_MAX;
-  for (int i = 1; i < numPts; i++) {
-    if (lat[i] < *minLat)
-      *minLat = lat[i];
-    if (lng[i] < *minLng)
-      *minLng = lng[i];
-    if (lat[i] > *maxLat)
-      *maxLat = lat[i];
-    if (lng[i] > *maxLng)
-      *maxLng = lng[i];
-  }
+  for (int i = 1; i < numPts; i++)
+    {
+      if (lat[i] < *minLat)
+        *minLat = lat[i];
+      if (lng[i] < *minLng)
+        *minLng = lng[i];
+      if (lat[i] > *maxLat)
+        *maxLat = lat[i];
+      if (lng[i] > *maxLng)
+        *maxLng = lng[i];
+    }
   center[0] = (*maxLat + *minLat) / 2.0;
   center[1] = (*maxLng + *minLng) / 2.0;
 }
@@ -1300,74 +1517,87 @@ void findCenter(int numPts, double lat[], double lng[], double center[],
 /* Return the latitude, longitude limits for a map at a particular
  * zoom level.
  */
-void mapLimits(float *minMapLat, float *minMapLng, float *maxMapLat,
-               float *maxMapLng) {
+void
+mapLimits (float *minMapLat,
+           float *minMapLng,
+           float *maxMapLat,
+           float *maxMapLng)
+{
   OsmGpsMapPoint topLeft;
   OsmGpsMapPoint botRight;
   float tlLat, tlLng, brLat, brLng;
-  osm_gps_map_get_bbox(map, &topLeft, &botRight);
-  osm_gps_map_point_get_degrees(&topLeft, &tlLat, &tlLng);
-  osm_gps_map_point_get_degrees(&botRight, &brLat, &brLng);
-  *maxMapLat = fmaxf(tlLat, brLat);
-  *minMapLat = fminf(tlLat, brLat);
-  *maxMapLng = fmaxf(tlLng, brLng);
-  *minMapLng = fminf(tlLng, brLng);
+  osm_gps_map_get_bbox (map, &topLeft, &botRight);
+  osm_gps_map_point_get_degrees (&topLeft, &tlLat, &tlLng);
+  osm_gps_map_point_get_degrees (&botRight, &brLat, &brLng);
+  *maxMapLat = fmaxf (tlLat, brLat);
+  *minMapLat = fminf (tlLat, brLat);
+  *maxMapLng = fmaxf (tlLng, brLng);
+  *minMapLng = fminf (tlLng, brLng);
 }
 
 /* Calculate the center and zoom level based on the latitude
  * and longitude readings.
  */
-void setCenterAndZoom(AllData *data) {
-  double center[2] = {0.0, 0.0};
+void
+setCenterAndZoom (AllData *data)
+{
+  double center[2] = { 0.0, 0.0 };
   float maxLat, minLat, maxLng, minLng;
   float maxMapLat, minMapLat, maxMapLng, minMapLng;
   int minZoom, maxZoom, zoom;
-  maxZoom = osm_gps_map_source_get_max_zoom(source);
-  minZoom = osm_gps_map_source_get_min_zoom(source);
+  maxZoom = osm_gps_map_source_get_max_zoom (source);
+  minZoom = osm_gps_map_source_get_min_zoom (source);
   zoom = maxZoom;
-  findCenter(data->pd->num_pts, data->pd->lat, data->pd->lng, center, &minLat,
-             &minLng, &maxLat, &maxLng);
-  osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1], zoom);
-  mapLimits(&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
+  findCenter (data->pd->num_pts, data->pd->lat, data->pd->lng, center, &minLat,
+              &minLng, &maxLat, &maxLng);
+  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), center[0], center[1],
+                                   zoom);
+  mapLimits (&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
   /* Repeatedly zoom out until we cover the range of the run. */
   while (((maxMapLat < maxLat || maxMapLng < maxLng || minMapLat > minLat ||
            minMapLng > minLng) &&
-          zoom > minZoom)) {
-    zoom--;
-    osm_gps_map_set_center_and_zoom(OSM_GPS_MAP(map), center[0], center[1],
-                                    zoom);
-    mapLimits(&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
-  }
+          zoom > minZoom))
+    {
+      zoom--;
+      osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), center[0], center[1],
+                                       zoom);
+      mapLimits (&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
+    }
 }
 
 /* Calculate the mean and standard deviation. */
-void stats(double *arr, int arr_size, float *mean, float *stdev) {
+void
+stats (double *arr, int arr_size, float *mean, float *stdev)
+{
   float sum = 0.0;
-  for (int i = 0; i < arr_size; i++) {
-    sum += arr[i];
-  }
-  *mean = sum / ((float)arr_size);
+  for (int i = 0; i < arr_size; i++)
+    {
+      sum += arr[i];
+    }
+  *mean = sum / ((float) arr_size);
   // printf("%.2f ", *mean);
   sum = 0.0;
-  for (int i = 0; i < arr_size; i++) {
-    sum += pow((arr[i] - *mean), 2);
-  }
-  *stdev = sqrt((sum / (float)(arr_size)));
+  for (int i = 0; i < arr_size; i++)
+    {
+      sum += pow ((arr[i] - *mean), 2);
+    }
+  *stdev = sqrt ((sum / (float) (arr_size)));
   // printf("%.2f", *stdev);
 }
 
 /* Return a color based on how far an individual pace is
  * from the average.  This is used to construct a heat-map.
  */
-GdkRGBA pick_color(float average, float stdev, float speed,
-                   enum UnitSystem units) {
+GdkRGBA
+pick_color (float average, float stdev, float speed, enum UnitSystem units)
+{
   GdkRGBA slowest, slower, slow, fast, faster, fastest;
-  gdk_rgba_parse(&slowest, "rgba(255,255,212, 1.0)");
-  gdk_rgba_parse(&slower, "rgba(254,227,145, 1.0)");
-  gdk_rgba_parse(&slow, "rgba(254,196,79, 1.0)");
-  gdk_rgba_parse(&fast, "rgba(254,153,41, 1.0)");
-  gdk_rgba_parse(&faster, "rgba(217,95,14, 1.0)");
-  gdk_rgba_parse(&fastest, "rgba(153,52,4, 1.0)");
+  gdk_rgba_parse (&slowest, "rgba(255,255,212, 1.0)");
+  gdk_rgba_parse (&slower, "rgba(254,227,145, 1.0)");
+  gdk_rgba_parse (&slow, "rgba(254,196,79, 1.0)");
+  gdk_rgba_parse (&fast, "rgba(254,153,41, 1.0)");
+  gdk_rgba_parse (&faster, "rgba(217,95,14, 1.0)");
+  gdk_rgba_parse (&fastest, "rgba(153,52,4, 1.0)");
   /* Blue color gradients */
   /*
   gdk_rgba_parse(&fastest,  "rgba( 8,  81,156, 1.0)");
@@ -1402,7 +1632,9 @@ GdkRGBA pick_color(float average, float stdev, float speed,
 }
 
 /* Update the map. */
-static void update_map(AllData *data) {
+static void
+update_map (AllData *data)
+{
   // Geographical center of contiguous US
   float defaultLatitude = 39.8355;
   float defaultLongitude = -99.0909;
@@ -1410,59 +1642,72 @@ static void update_map(AllData *data) {
   OsmGpsMapTrack *routeTrack;
   float avg_pace, stdev_pace;
   /* Get some statistics for use in generating a heatmap. */
-  stats(data->ppace->y, data->ppace->num_pts, &avg_pace, &stdev_pace);
+  stats (data->ppace->y, data->ppace->num_pts, &avg_pace, &stdev_pace);
   if ((map != NULL) && (data->pd != NULL) && (data->pd->lat != NULL) &&
-      (data->pd->lng != NULL)) {
-    /* Remove any previously displayed tracks. */
-    osm_gps_map_track_remove_all(map);
-    /* Zoom and center the map. */
-    setCenterAndZoom(data);
-    /* Display tracks based on speeds (aka heatmap). */
-    for (int i = 0; i < data->pd->num_pts; i++) {
-      trackColor = pick_color(avg_pace, stdev_pace, data->ppace->y[i],
-                              data->ppace->units);
-      if (&trackColor != &prevTrackColor) {
-        routeTrack = osm_gps_map_track_new();
-        osm_gps_map_track_set_color(routeTrack, &trackColor);
-        osm_gps_map_track_add(OSM_GPS_MAP(map), routeTrack);
-      }
-      prevTrackColor = trackColor;
-      OsmGpsMapPoint *mapPoint =
-          osm_gps_map_point_new_degrees(data->pd->lat[i], data->pd->lng[i]);
-      osm_gps_map_track_add_point(routeTrack, mapPoint);
+      (data->pd->lng != NULL))
+    {
+      /* Remove any previously displayed tracks. */
+      osm_gps_map_track_remove_all (map);
+      /* Zoom and center the map. */
+      setCenterAndZoom (data);
+      /* Display tracks based on speeds (aka heatmap). */
+      for (int i = 0; i < data->pd->num_pts; i++)
+        {
+          trackColor = pick_color (avg_pace, stdev_pace, data->ppace->y[i],
+                                   data->ppace->units);
+          if (&trackColor != &prevTrackColor)
+            {
+              routeTrack = osm_gps_map_track_new ();
+              osm_gps_map_track_set_color (routeTrack, &trackColor);
+              osm_gps_map_track_add (OSM_GPS_MAP (map), routeTrack);
+            }
+          prevTrackColor = trackColor;
+          OsmGpsMapPoint *mapPoint = osm_gps_map_point_new_degrees (
+              data->pd->lat[i], data->pd->lng[i]);
+          osm_gps_map_track_add_point (routeTrack, mapPoint);
+        }
+      /* Add start and end markers. */
+      if (startTrackMarker != NULL)
+        {
+          osm_gps_map_image_remove (map, startTrackMarker);
+        }
+      if (endTrackMarker != NULL)
+        {
+          osm_gps_map_image_remove (map, endTrackMarker);
+        }
+      if (posnTrackMarker != NULL)
+        {
+          osm_gps_map_image_remove (map, posnTrackMarker);
+        }
+      startTrackMarker = osm_gps_map_image_add (map, data->pd->lat[0],
+                                                data->pd->lng[0], starImage);
+      endTrackMarker = osm_gps_map_image_add (
+          map, data->pd->lat[data->pd->num_pts - 1],
+          data->pd->lng[data->pd->num_pts - 1], starImage);
+      /* Add current position marker */
+      posnTrackMarker = osm_gps_map_image_add (
+          map, data->pd->lat[currIdx], data->pd->lng[currIdx], starImage);
     }
-    /* Add start and end markers. */
-    if (startTrackMarker != NULL) {
-      osm_gps_map_image_remove(map, startTrackMarker);
+  else
+    {
+      /* Start-up. */
+      osm_gps_map_set_center (OSM_GPS_MAP (map), defaultLatitude,
+                              defaultLongitude);
     }
-    if (endTrackMarker != NULL) {
-      osm_gps_map_image_remove(map, endTrackMarker);
-    }
-    if (posnTrackMarker != NULL) {
-      osm_gps_map_image_remove(map, posnTrackMarker);
-    }
-    startTrackMarker = osm_gps_map_image_add(map, data->pd->lat[0],
-                                             data->pd->lng[0], starImage);
-    endTrackMarker =
-        osm_gps_map_image_add(map, data->pd->lat[data->pd->num_pts - 1],
-                              data->pd->lng[data->pd->num_pts - 1], starImage);
-    /* Add current position marker */
-    posnTrackMarker = osm_gps_map_image_add(map, data->pd->lat[currIdx],
-                                            data->pd->lng[currIdx], starImage);
-  } else {
-    /* Start-up. */
-    osm_gps_map_set_center(OSM_GPS_MAP(map), defaultLatitude, defaultLongitude);
-  }
 }
 
 /* Zoom in. */
-static void zoom_in(GtkWidget *widget) {
-  osm_gps_map_zoom_in(OSM_GPS_MAP(map));
+static void
+zoom_in (GtkWidget *widget)
+{
+  osm_gps_map_zoom_in (OSM_GPS_MAP (map));
 }
 
 /* Zoom out. */
-static void zoom_out(GtkWidget *widget) {
-  osm_gps_map_zoom_out(OSM_GPS_MAP(map));
+static void
+zoom_out (GtkWidget *widget)
+{
+  osm_gps_map_zoom_out (OSM_GPS_MAP (map));
 }
 
 //
@@ -1472,101 +1717,126 @@ static void zoom_out(GtkWidget *widget) {
 /* Convenience function to reload data, update the internal data structures
  * and redraw all the widgets.
  */
-void reload_all(AllData *pall) {
-  if ((pall != NULL) && (fname != NULL)) {
-    /* Update the plots */
-    init_plot_data(pall);
-    /* Force a redraw on the drawing area. */
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    /* Update the summary table. */
-    update_summary(pall->psd);
-    /* Update the map. */
-    update_map(pall);
-    /* Update the slider and redraw. */
-    g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  }
+void
+reload_all (AllData *pall)
+{
+  if ((pall != NULL) && (fname != NULL))
+    {
+      /* Update the plots */
+      init_plot_data (pall);
+      /* Force a redraw on the drawing area. */
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      /* Update the summary table. */
+      update_summary (pall->psd);
+      /* Update the map. */
+      update_map (pall);
+      /* Update the slider and redraw. */
+      g_signal_emit_by_name (sc_IdxPct, "value-changed");
+    }
 }
 
 /* Default to the pace chart. */
-gboolean default_chart() {
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
+gboolean
+default_chart ()
+{
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (rb_Pace), TRUE);
   return TRUE;
 }
 
 /* User has changed unit system. */
-void on_cb_units_changed(GtkComboBox *cb_Units, AllData *data) {
-  reload_all(data);
+void
+on_cb_units_changed (GtkComboBox *cb_Units, AllData *data)
+{
+  reload_all (data);
 }
 
 /* User has selected Pace Graph. */
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_pace(GtkToggleButton *togglebutton, AllData *data) {
-  if ((data->ppace->x != NULL) && (data->ppace->y != NULL)) {
-    data->pd = data->ppace;
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  }
+void
+on_rb_pace (GtkToggleButton *togglebutton, AllData *data)
+{
+  if ((data->ppace->x != NULL) && (data->ppace->y != NULL))
+    {
+      data->pd = data->ppace;
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      g_signal_emit_by_name (sc_IdxPct, "value-changed");
+    }
 }
 
 /* User has selected Cadence Graph. */
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_cadence(GtkToggleButton *togglebutton, AllData *data) {
-  if ((data->pcadence->x != NULL) && (data->pcadence->y != NULL)) {
-    data->pd = data->pcadence;
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  }
+void
+on_rb_cadence (GtkToggleButton *togglebutton, AllData *data)
+{
+  if ((data->pcadence->x != NULL) && (data->pcadence->y != NULL))
+    {
+      data->pd = data->pcadence;
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      g_signal_emit_by_name (sc_IdxPct, "value-changed");
+    }
 }
 
 /* User has selected Heartrate Graph. */
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_heartrate(GtkToggleButton *togglebutton, AllData *data) {
-  if ((data->pheart->x != NULL) && (data->pheart->y != NULL)) {
-    data->pd = data->pheart;
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  }
+void
+on_rb_heartrate (GtkToggleButton *togglebutton, AllData *data)
+{
+  if ((data->pheart->x != NULL) && (data->pheart->y != NULL))
+    {
+      data->pd = data->pheart;
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      g_signal_emit_by_name (sc_IdxPct, "value-changed");
+    }
 }
 
 /* User has selected Altitude Graph. */
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_altitude(GtkToggleButton *togglebutton, AllData *data) {
-  if ((data->paltitude->x != NULL) && (data->paltitude->y != NULL)) {
-    data->pd = data->paltitude;
-    gtk_widget_queue_draw(GTK_WIDGET(da));
-    g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  }
+void
+on_rb_altitude (GtkToggleButton *togglebutton, AllData *data)
+{
+  if ((data->paltitude->x != NULL) && (data->paltitude->y != NULL))
+    {
+      data->pd = data->paltitude;
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      g_signal_emit_by_name (sc_IdxPct, "value-changed");
+    }
 }
 
 /* User has selected Splits Graph. */
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_rb_splits(GtkToggleButton *togglebutton, AllData *data) {
-  if ((data->plap->x != NULL) && (data->plap->y != NULL)) {
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  g_signal_emit_by_name(sc_IdxPct, "value-changed");
-  }
+void
+on_rb_splits (GtkToggleButton *togglebutton, AllData *data)
+{
+  if ((data->plap->x != NULL) && (data->plap->y != NULL))
+    {
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      g_signal_emit_by_name (sc_IdxPct, "value-changed");
+    }
 }
 
 /* User has pressed open a new file. */
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData *pall) {
+void
+on_btnFileOpen_file_set (GtkFileChooserButton *btnFileOpen, AllData *pall)
+{
   /* fname is a global */
-  fname = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(btnFileOpen));
-  if (pall != NULL) {
-    reload_all(pall);
-  }
+  fname = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (btnFileOpen));
+  if (pall != NULL)
+    {
+      reload_all (pall);
+    }
 }
 
 //
@@ -1576,61 +1846,69 @@ void on_btnFileOpen_file_set(GtkFileChooserButton *btnFileOpen, AllData *pall) {
  *  Update the map, graph, and indicator label based on the
  *  slider position.
  */
-void on_update_index(GtkScale *widget, AllData *data) {
+void
+on_update_index (GtkScale *widget, AllData *data)
+{
   GtkAdjustment *adj;
   // What's the new value in percent of scale?
-  adj = gtk_range_get_adjustment((GtkRange *)widget);
-  gdouble val = gtk_adjustment_get_value(adj);
+  adj = gtk_range_get_adjustment ((GtkRange *) widget);
+  gdouble val = gtk_adjustment_get_value (adj);
   // Slider from zero to 100 - normalized.  Calculate portion of activity.
-  currIdx = (int)floor(val / 100.0 * (float)data->ppace->num_pts);
+  currIdx = (int) floor (val / 100.0 * (float) data->ppace->num_pts);
   // Redraw graph.
-  gtk_widget_queue_draw(GTK_WIDGET(da));
+  gtk_widget_queue_draw (GTK_WIDGET (da));
   // Redraw the position marker on the map.
-  if ((map != NULL) && (posnTrackMarker != NULL)) {
-    move_marker(data->pd->lat[currIdx], data->pd->lng[currIdx]);
-  }
+  if ((map != NULL) && (posnTrackMarker != NULL))
+    {
+      move_marker (data->pd->lat[currIdx], data->pd->lng[currIdx]);
+    }
   // Update the label below the graph.
   char yval[15];
   char xval[15];
-  switch (data->pd->ptype) {
-  case PacePlot:
-    pace_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-    pace_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
-    break;
-  case CadencePlot:
-    cadence_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-    cadence_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
-    break;
-  case AltitudePlot:
-    altitude_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-    altitude_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
-    break;
-  case HeartRatePlot:
-    heart_rate_plot_labeler(PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-    heart_rate_plot_labeler(PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
-    break;
-  case LapPlot:
-    break;
-  }
+  switch (data->pd->ptype)
+    {
+    case PacePlot:
+      pace_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+      pace_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      break;
+    case CadencePlot:
+      cadence_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+      cadence_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      break;
+    case AltitudePlot:
+      altitude_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+      altitude_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      break;
+    case HeartRatePlot:
+      heart_rate_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
+      heart_rate_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      break;
+    case LapPlot:
+      break;
+    }
   char *curr_vals;
-  curr_vals = malloc(strlen(data->pd->xaxislabel) + 2 + strlen(xval) + 2 +
-                     strlen(data->pd->yaxislabel) + 2 + strlen(yval) + 1);
-  strcpy(curr_vals, data->pd->xaxislabel);
-  strcat(curr_vals, "= ");
-  strcat(curr_vals, xval);
-  strcat(curr_vals, ", ");
-  strcat(curr_vals, data->pd->yaxislabel);
-  strcat(curr_vals, "= ");
-  strcat(curr_vals, yval);
-  gtk_label_set_text(lbl_val, curr_vals);
-  free(curr_vals);
+  curr_vals = malloc (strlen (data->pd->xaxislabel) + 2 + strlen (xval) + 2 +
+                      strlen (data->pd->yaxislabel) + 2 + strlen (yval) + 1);
+  strcpy (curr_vals, data->pd->xaxislabel);
+  strcat (curr_vals, "= ");
+  strcat (curr_vals, xval);
+  strcat (curr_vals, ", ");
+  strcat (curr_vals, data->pd->yaxislabel);
+  strcat (curr_vals, "= ");
+  strcat (curr_vals, yval);
+  gtk_label_set_text (lbl_val, curr_vals);
+  free (curr_vals);
 }
 
 /* Call when the main window is closed.*/
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void on_window_destroy(AllData *data) { gtk_main_quit(); }
+void
+on_window_destroy (AllData *data)
+{
+  gtk_main_quit ();
+}
 
 //
 // Main
@@ -1641,7 +1919,9 @@ void on_window_destroy(AllData *data) { gtk_main_quit(); }
  * by the Glade application and instantiate the associated (global) objects.
  *
  */
-int main(int argc, char *argv[]) {
+int
+main (int argc, char *argv[])
+{
   /*
    * Initialize instances of the main data structure.
    */
@@ -1823,123 +2103,128 @@ int main(int argc, char *argv[]) {
   GtkBuilder *builder;
   GtkWidget *window;
 
-  gtk_init(&argc, &argv);
+  gtk_init (&argc, &argv);
 
-  builder = gtk_builder_new_from_file("gtkdraw.glade");
+  builder = gtk_builder_new_from_file ("gtkdraw.glade");
 
-  window = GTK_WIDGET(gtk_builder_get_object(builder, "window"));
-  textbuffer1 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textbuffer1"));
-  viewport = GTK_FRAME(gtk_builder_get_object(builder, "viewport"));
-  da = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "da"));
-  rb_Pace = GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Pace"));
-  rb_Cadence = GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Cadence"));
+  window = GTK_WIDGET (gtk_builder_get_object (builder, "window"));
+  textbuffer1 =
+      GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbuffer1"));
+  viewport = GTK_FRAME (gtk_builder_get_object (builder, "viewport"));
+  da = GTK_DRAWING_AREA (gtk_builder_get_object (builder, "da"));
+  rb_Pace = GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Pace"));
+  rb_Cadence =
+      GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Cadence"));
   rb_HeartRate =
-      GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_HeartRate"));
+      GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_HeartRate"));
   rb_Altitude =
-      GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Altitude"));
-  rb_Splits = GTK_RADIO_BUTTON(gtk_builder_get_object(builder, "rb_Splits"));
+      GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Altitude"));
+  rb_Splits = GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Splits"));
   btnFileOpen =
-      GTK_FILE_CHOOSER_BUTTON(gtk_builder_get_object(builder, "btnFileOpen"));
-  btn_Zoom_In = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_In"));
-  btn_Zoom_Out = GTK_BUTTON(gtk_builder_get_object(builder, "btn_Zoom_Out"));
-  cb_Units = GTK_COMBO_BOX_TEXT(gtk_builder_get_object(builder, "cb_Units"));
-  sc_IdxPct = GTK_SCALE(gtk_builder_get_object(builder, "sc_IdxPct"));
-  lbl_val = GTK_LABEL(gtk_builder_get_object(builder, "lbl_val"));
+      GTK_FILE_CHOOSER_BUTTON (gtk_builder_get_object (builder, "btnFileOpen"));
+  btn_Zoom_In = GTK_BUTTON (gtk_builder_get_object (builder, "btn_Zoom_In"));
+  btn_Zoom_Out = GTK_BUTTON (gtk_builder_get_object (builder, "btn_Zoom_Out"));
+  cb_Units = GTK_COMBO_BOX_TEXT (gtk_builder_get_object (builder, "cb_Units"));
+  sc_IdxPct = GTK_SCALE (gtk_builder_get_object (builder, "sc_IdxPct"));
+  lbl_val = GTK_LABEL (gtk_builder_get_object (builder, "lbl_val"));
 
   /* Select a default chart to start. */
-  default_chart();
+  default_chart ();
 
   /* Initialize a map and add it to a frame.
    */
-  if (init_map() != 0) {
-    return 1;
-  }
-  gtk_widget_show_all(window);
+  if (init_map () != 0)
+    {
+      return 1;
+    }
+  gtk_widget_show_all (window);
 
   /* Signals and events */
-  gtk_builder_connect_signals(builder, NULL);
-  gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_PRESS_MASK);
-  gtk_widget_add_events(GTK_WIDGET(da), GDK_BUTTON_RELEASE_MASK);
-  gtk_widget_add_events(GTK_WIDGET(da), GDK_POINTER_MOTION_MASK);
-  g_signal_connect(GTK_DRAWING_AREA(da), "button-press-event",
-                   G_CALLBACK(on_button_press), pall);
-  g_signal_connect(GTK_DRAWING_AREA(da), "button-release-event",
-                   G_CALLBACK(on_button_release), pall);
-  g_signal_connect(GTK_DRAWING_AREA(da), "motion-notify-event",
-                   G_CALLBACK(on_motion_notify), pall);
-  g_signal_connect(GTK_DRAWING_AREA(da), "draw", G_CALLBACK(on_da_draw), pall);
-  g_signal_connect(GTK_RADIO_BUTTON(rb_Pace), "toggled", G_CALLBACK(on_rb_pace),
-                   pall);
-  g_signal_connect(GTK_RADIO_BUTTON(rb_Cadence), "toggled",
-                   G_CALLBACK(on_rb_cadence), pall);
-  g_signal_connect(GTK_RADIO_BUTTON(rb_HeartRate), "toggled",
-                   G_CALLBACK(on_rb_heartrate), pall);
-  g_signal_connect(GTK_RADIO_BUTTON(rb_Altitude), "toggled",
-                   G_CALLBACK(on_rb_altitude), pall);
-  g_signal_connect(GTK_RADIO_BUTTON(rb_Splits), "toggled",
-                   G_CALLBACK(on_rb_splits), pall);
-  g_signal_connect(GTK_BUTTON(btn_Zoom_In), "clicked", G_CALLBACK(zoom_in),
-                   NULL);
-  g_signal_connect(GTK_BUTTON(btn_Zoom_Out), "clicked", G_CALLBACK(zoom_out),
-                   NULL);
-  g_signal_connect(GTK_COMBO_BOX_TEXT(cb_Units), "changed",
-                   G_CALLBACK(on_cb_units_changed), pall);
-  g_signal_connect(GTK_FILE_CHOOSER(btnFileOpen), "file-set",
-                   G_CALLBACK(on_btnFileOpen_file_set), pall);
-  g_signal_connect(GTK_SCALE(sc_IdxPct), "value-changed",
-                   G_CALLBACK(on_update_index), pall);
-  g_signal_connect(GTK_WIDGET(window), "destroy", G_CALLBACK(on_window_destroy),
-                   pall);
+  gtk_builder_connect_signals (builder, NULL);
+  gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_PRESS_MASK);
+  gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_RELEASE_MASK);
+  gtk_widget_add_events (GTK_WIDGET (da), GDK_POINTER_MOTION_MASK);
+  g_signal_connect (GTK_DRAWING_AREA (da), "button-press-event",
+                    G_CALLBACK (on_button_press), pall);
+  g_signal_connect (GTK_DRAWING_AREA (da), "button-release-event",
+                    G_CALLBACK (on_button_release), pall);
+  g_signal_connect (GTK_DRAWING_AREA (da), "motion-notify-event",
+                    G_CALLBACK (on_motion_notify), pall);
+  g_signal_connect (GTK_DRAWING_AREA (da), "draw", G_CALLBACK (on_da_draw),
+                    pall);
+  g_signal_connect (GTK_RADIO_BUTTON (rb_Pace), "toggled",
+                    G_CALLBACK (on_rb_pace), pall);
+  g_signal_connect (GTK_RADIO_BUTTON (rb_Cadence), "toggled",
+                    G_CALLBACK (on_rb_cadence), pall);
+  g_signal_connect (GTK_RADIO_BUTTON (rb_HeartRate), "toggled",
+                    G_CALLBACK (on_rb_heartrate), pall);
+  g_signal_connect (GTK_RADIO_BUTTON (rb_Altitude), "toggled",
+                    G_CALLBACK (on_rb_altitude), pall);
+  g_signal_connect (GTK_RADIO_BUTTON (rb_Splits), "toggled",
+                    G_CALLBACK (on_rb_splits), pall);
+  g_signal_connect (GTK_BUTTON (btn_Zoom_In), "clicked", G_CALLBACK (zoom_in),
+                    NULL);
+  g_signal_connect (GTK_BUTTON (btn_Zoom_Out), "clicked", G_CALLBACK (zoom_out),
+                    NULL);
+  g_signal_connect (GTK_COMBO_BOX_TEXT (cb_Units), "changed",
+                    G_CALLBACK (on_cb_units_changed), pall);
+  g_signal_connect (GTK_FILE_CHOOSER (btnFileOpen), "file-set",
+                    G_CALLBACK (on_btnFileOpen_file_set), pall);
+  g_signal_connect (GTK_SCALE (sc_IdxPct), "value-changed",
+                    G_CALLBACK (on_update_index), pall);
+  g_signal_connect (GTK_WIDGET (window), "destroy",
+                    G_CALLBACK (on_window_destroy), pall);
 
   /* Release the builder memory. */
-  g_object_unref(builder);
+  g_object_unref (builder);
 
   /* Process command line options. */
   // TODO This may not be available for Windows.
   int c;
   opterr = 0;
-  while ((c = getopt(argc, argv, "mf:hv")) != -1)
-    switch (c) {
-    case 'm':
-      /* Set combo box to metric */
-      gtk_combo_box_set_active(GTK_COMBO_BOX(cb_Units), Metric);
-      break;
-    case 'f':
-      fname = optarg;
-      /* This seems sketchy to run before the input event loop
-       * but seems to work.
-       */
-      reload_all(pall);
-      break;
-    case '?':
-      if (optopt == 'f')
-        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-      else if (isprint(optopt))
-        fprintf(stderr, "Unknown option `-%c'.\n", optopt);
-      else
-        fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
-      return 1;
-    case 'h':
-      fprintf(stdout, "Usage: %s [OPTION]...[FILENAME]\n", argv[0]);
-      fprintf(stdout, " -f  open filename\n");
-      fprintf(stdout, " -m  use metric units\n");
-      fprintf(stdout, " -h  print program help\n");
-      fprintf(stdout, " -v  print program version\n");
-      return 0;
-      break;
-    case 'v':
-      fprintf(stdout, "%s v%4.2f\n", argv[0], VERSION);
-      return 0;
-      break;
-    default:
-      abort();
-    }
+  while ((c = getopt (argc, argv, "mf:hv")) != -1)
+    switch (c)
+      {
+      case 'm':
+        /* Set combo box to metric */
+        gtk_combo_box_set_active (GTK_COMBO_BOX (cb_Units), Metric);
+        break;
+      case 'f':
+        fname = optarg;
+        /* This seems sketchy to run before the input event loop
+         * but seems to work.
+         */
+        reload_all (pall);
+        break;
+      case '?':
+        if (optopt == 'f')
+          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+        else if (isprint (optopt))
+          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+        else
+          fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
+        return 1;
+      case 'h':
+        fprintf (stdout, "Usage: %s [OPTION]...[FILENAME]\n", argv[0]);
+        fprintf (stdout, " -f  open filename\n");
+        fprintf (stdout, " -m  use metric units\n");
+        fprintf (stdout, " -h  print program help\n");
+        fprintf (stdout, " -v  print program version\n");
+        return 0;
+        break;
+      case 'v':
+        fprintf (stdout, "%s v%4.2f\n", argv[0], VERSION);
+        return 0;
+        break;
+      default:
+        abort ();
+      }
 
   for (int index = optind; index < argc; index++)
-    printf("Non-option argument %s\n", argv[index]);
+    printf ("Non-option argument %s\n", argv[index]);
 
-  gtk_widget_show(window);
-  gtk_main();
+  gtk_widget_show (window);
+  gtk_main ();
 
   return 0;
 }
