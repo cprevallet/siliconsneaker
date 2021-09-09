@@ -2108,7 +2108,6 @@ main (int argc, char *argv[])
   g_object_unref (builder);
 
   /* Process command line options. */
-  // TODO This may not be available for Windows.
   int c;
   opterr = 0;
   while ((c = getopt (argc, argv, "mf:hv")) != -1)
