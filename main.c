@@ -40,8 +40,8 @@
 #include <string.h>
 #include <unistd.h>
 
-/* 
- * GUI 
+/*
+ * GUI
  */
 #include <gdk/gdk.h>
 #include <glib.h>
@@ -917,26 +917,29 @@ init_plot_data (AllData *pall)
   /* Convert the raw values to user-facing values. */
   raw_to_user_plots (pall->ppace, nRecs, prec_distance, prec_speed, prec_lat,
                      prec_long, sess_start_time, time_zone_offset);
-  raw_to_user_plots (pall->pcadence, nRecs, prec_distance, prec_cadence, prec_lat,
-                     prec_long, sess_start_time, time_zone_offset);
-  raw_to_user_plots (pall->pheart, nRecs, prec_distance, prec_heartrate, prec_lat,
-                     prec_long, sess_start_time, time_zone_offset);
+  raw_to_user_plots (pall->pcadence, nRecs, prec_distance, prec_cadence,
+                     prec_lat, prec_long, sess_start_time, time_zone_offset);
+  raw_to_user_plots (pall->pheart, nRecs, prec_distance, prec_heartrate,
+                     prec_lat, prec_long, sess_start_time, time_zone_offset);
   raw_to_user_plots (pall->paltitude, nRecs, prec_distance, prec_altitude,
                      prec_lat, prec_long, sess_start_time, time_zone_offset);
-  raw_to_user_plots (pall->plap, nLaps, plap_total_distance, plap_total_elapsed_time,
-                     plap_start_position_lat, plap_start_position_long, sess_start_time,
+  raw_to_user_plots (pall->plap, nLaps, plap_total_distance,
+                     plap_total_elapsed_time, plap_start_position_lat,
+                     plap_start_position_long, sess_start_time,
                      time_zone_offset);
 
   /* Convert the raw values to user-facing values. */
   raw_to_user_session (
       pall->psd, sess_timestamp, sess_start_time, sess_start_position_lat,
       sess_start_position_long, sess_total_elapsed_time, sess_total_timer_time,
-      sess_total_distance, sess_nec_latitude, sess_nec_longitude, sess_swc_latitude, sess_swc_longitude,
-      sess_total_work, sess_total_moving_time, sess_average_lap_time, sess_total_calories,
+      sess_total_distance, sess_nec_latitude, sess_nec_longitude,
+      sess_swc_latitude, sess_swc_longitude, sess_total_work,
+      sess_total_moving_time, sess_average_lap_time, sess_total_calories,
       sess_avg_speed, sess_max_speed, sess_total_ascent, sess_total_descent,
-      sess_avg_altitude, sess_max_altitude, sess_min_altitude, sess_max_heartrate,
-      sess_avg_heartrate, sess_max_cadence, sess_avg_cadence, sess_avg_temperature,
-      sess_max_temperature, sess_min_heartrate, sess_total_anaerobic_training_effect,
+      sess_avg_altitude, sess_max_altitude, sess_min_altitude,
+      sess_max_heartrate, sess_avg_heartrate, sess_max_cadence,
+      sess_avg_cadence, sess_avg_temperature, sess_max_temperature,
+      sess_min_heartrate, sess_total_anaerobic_training_effect,
       time_zone_offset);
   return TRUE;
 }
