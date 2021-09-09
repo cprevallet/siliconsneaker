@@ -218,9 +218,12 @@ char *fname = NULL;
  */
 OsmGpsMap *map;
 static GdkPixbuf *starImage = NULL;
-OsmGpsMapImage *startTrackMarker = NULL;
-OsmGpsMapImage *endTrackMarker = NULL;
-OsmGpsMapImage *posnTrackMarker = NULL;
+/* Map marker, start of run. */
+OsmGpsMapImage *start_track_marker = NULL;
+/* Map marker, end of run. */
+OsmGpsMapImage *end_track_marker = NULL;
+/* Map marker, current position based on slider. */
+OsmGpsMapImage *posn_track_marker = NULL;
 /*
 OSM_GPS_MAP_SOURCE_NULL,
 OSM_GPS_MAP_SOURCE_OPENSTREETMAP,
@@ -243,8 +246,8 @@ OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
 // if ( !osm_gps_map_source_is_valid(source) )
 //       return 1;
 
-/* Current index */
-int currIdx = 0;
+/* The array index into the x,y arrays based on the slider position. */
+int curr_idx = 0;
 //
 // Convenience functions.
 //
@@ -1084,7 +1087,7 @@ draw_xy (PlotData *pd, int width, int height)
       /* If we are between the view limits, draw a line from the
        * current index on the x scale from the bottom to the top
        * of the view. */
-      x_hair = pd->x[currIdx];
+      x_hair = pd->x[curr_idx];
       if ((x_hair >= pd->vw_xmin) && (x_hair <= pd->vw_xmax))
         {
           hairline_x[0] = x_hair;
@@ -1139,7 +1142,7 @@ draw_bar (PlotData *plap, PlotData *ppace, int width, int height)
       tot_dist = plap->x[i] + tot_dist;
       plcol0 (15);
       plpsty (0);
-      if (ppace->x[currIdx] > tot_dist)
+      if (ppace->x[curr_idx] > tot_dist)
         plfbox (i, plap->y[i], 3);
       else
         plfbox (i, plap->y[i], 2);
@@ -1416,10 +1419,10 @@ init_map ()
 static void
 move_marker (gdouble new_lat, gdouble new_lng)
 {
-  if (posnTrackMarker != NULL)
+  if (posn_track_marker != NULL)
     {
-      osm_gps_map_image_remove (map, posnTrackMarker);
-      posnTrackMarker =
+      osm_gps_map_image_remove (map, posn_track_marker);
+      posn_track_marker =
           osm_gps_map_image_add (map, new_lat, new_lng, starImage);
     }
 }
@@ -1572,10 +1575,10 @@ static void
 update_map (AllData *data)
 {
   // Geographical center of contiguous US
-  float defaultLatitude = 39.8355;
-  float defaultLongitude = -99.0909;
-  GdkRGBA trackColor, prevTrackColor;
-  OsmGpsMapTrack *routeTrack;
+  float default_latitude = 39.8355;
+  float default_longitude = -99.0909;
+  GdkRGBA track_color, prev_track_color;
+  OsmGpsMapTrack *route_track;
   float avg_pace, stdev_pace;
   /* Get some statistics for use in generating a heatmap. */
   stats (data->ppace->y, data->ppace->num_pts, &avg_pace, &stdev_pace);
@@ -1589,40 +1592,40 @@ update_map (AllData *data)
       /* Display tracks based on speeds (aka heatmap). */
       for (int i = 0; i < data->pd->num_pts; i++)
         {
-          trackColor = pick_color (avg_pace, stdev_pace, data->ppace->y[i],
-                                   data->ppace->units);
-          if (&trackColor != &prevTrackColor)
+          track_color = pick_color (avg_pace, stdev_pace, data->ppace->y[i],
+                                    data->ppace->units);
+          if (&track_color != &prev_track_color)
             {
-              routeTrack = osm_gps_map_track_new ();
-              osm_gps_map_track_set_color (routeTrack, &trackColor);
-              osm_gps_map_track_add (OSM_GPS_MAP (map), routeTrack);
+              route_track = osm_gps_map_track_new ();
+              osm_gps_map_track_set_color (route_track, &track_color);
+              osm_gps_map_track_add (OSM_GPS_MAP (map), route_track);
             }
-          prevTrackColor = trackColor;
+          prev_track_color = track_color;
           OsmGpsMapPoint *mapPoint = osm_gps_map_point_new_degrees (
               data->pd->lat[i], data->pd->lng[i]);
-          osm_gps_map_track_add_point (routeTrack, mapPoint);
+          osm_gps_map_track_add_point (route_track, mapPoint);
         }
       /* Add start and end markers. */
-      if (startTrackMarker != NULL)
-        osm_gps_map_image_remove (map, startTrackMarker);
-      if (endTrackMarker != NULL)
-        osm_gps_map_image_remove (map, endTrackMarker);
-      if (posnTrackMarker != NULL)
-        osm_gps_map_image_remove (map, posnTrackMarker);
-      startTrackMarker = osm_gps_map_image_add (map, data->pd->lat[0],
-                                                data->pd->lng[0], starImage);
-      endTrackMarker = osm_gps_map_image_add (
+      if (start_track_marker != NULL)
+        osm_gps_map_image_remove (map, start_track_marker);
+      if (end_track_marker != NULL)
+        osm_gps_map_image_remove (map, end_track_marker);
+      if (posn_track_marker != NULL)
+        osm_gps_map_image_remove (map, posn_track_marker);
+      start_track_marker = osm_gps_map_image_add (map, data->pd->lat[0],
+                                                  data->pd->lng[0], starImage);
+      end_track_marker = osm_gps_map_image_add (
           map, data->pd->lat[data->pd->num_pts - 1],
           data->pd->lng[data->pd->num_pts - 1], starImage);
       /* Add current position marker */
-      posnTrackMarker = osm_gps_map_image_add (
-          map, data->pd->lat[currIdx], data->pd->lng[currIdx], starImage);
+      posn_track_marker = osm_gps_map_image_add (
+          map, data->pd->lat[curr_idx], data->pd->lng[curr_idx], starImage);
     }
   else
     {
       /* Start-up. */
-      osm_gps_map_set_center (OSM_GPS_MAP (map), defaultLatitude,
-                              defaultLongitude);
+      osm_gps_map_set_center (OSM_GPS_MAP (map), default_latitude,
+                              default_longitude);
     }
 }
 
@@ -1782,32 +1785,34 @@ on_update_index (GtkScale *widget, AllData *data)
   adj = gtk_range_get_adjustment ((GtkRange *) widget);
   gdouble val = gtk_adjustment_get_value (adj);
   // Slider from zero to 100 - normalized.  Calculate portion of activity.
-  currIdx = (int) floor (val / 100.0 * (float) data->ppace->num_pts);
+  curr_idx = (int) floor (val / 100.0 * (float) data->ppace->num_pts);
   // Redraw graph.
   gtk_widget_queue_draw (GTK_WIDGET (da));
   // Redraw the position marker on the map.
-  if ((map != NULL) && (posnTrackMarker != NULL))
-    move_marker (data->pd->lat[currIdx], data->pd->lng[currIdx]);
+  if ((map != NULL) && (posn_track_marker != NULL))
+    move_marker (data->pd->lat[curr_idx], data->pd->lng[curr_idx]);
   // Update the label below the graph.
   char yval[15];
   char xval[15];
   switch (data->pd->ptype)
     {
     case PacePlot:
-      pace_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-      pace_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      pace_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
+      pace_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
       break;
     case CadencePlot:
-      cadence_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-      cadence_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      cadence_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
+      cadence_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
       break;
     case AltitudePlot:
-      altitude_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-      altitude_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      altitude_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
+      altitude_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
       break;
     case HeartRatePlot:
-      heart_rate_plot_labeler (PL_Y_AXIS, data->pd->y[currIdx], yval, 15, NULL);
-      heart_rate_plot_labeler (PL_X_AXIS, data->pd->x[currIdx], xval, 15, NULL);
+      heart_rate_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15,
+                               NULL);
+      heart_rate_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15,
+                               NULL);
       break;
     case LapPlot:
       break;
