@@ -248,14 +248,6 @@ OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
 
 /* The array index into the x,y arrays based on the slider position. */
 int curr_idx = 0;
-//
-// Convenience functions.
-//
-void
-printfloat (float x, char *name)
-{
-  printf ("%s = %f \n", name, x);
-}
 
 /* Return a fully qualified path to a temporary directory for either
  * Windows or Linux.
@@ -472,34 +464,6 @@ reset_zoom (PlotData *pd)
   pd->zm_starty = 0;
   pd->zm_endx = 0;
   pd->zm_endy = 0;
-}
-
-/* Smooth the data via a 5 element Savitzky-Golay filter (destructively).
- * Ref: https://en.wikipedia.org/wiki/Savitzky%E2%80%93Golay_filter */
-void
-sg_smooth (PlotData *pdest)
-{
-  /* Set up an array with 4 extra elements to handle the start and
-   * end of the series. */
-  PLFLT *smooth_arr = NULL;
-  int np = pdest->num_pts;
-  smooth_arr = (PLFLT *) malloc ((np + 4) * sizeof (PLFLT));
-  smooth_arr[0] = pdest->y[2];
-  smooth_arr[1] = pdest->y[1];
-  smooth_arr[np + 1] = pdest->y[np - 1];
-  smooth_arr[np + 2] = pdest->y[np - 2];
-  for (int i = 0; i < np; i++)
-    {
-      smooth_arr[i + 2] = pdest->y[i];
-    }
-  for (int i = 0; i < pdest->num_pts; i++)
-    {
-      pdest->y[i] = 1.0 / 35.0 *
-                    ((-3.0 * smooth_arr[i]) + (12.0 * smooth_arr[i + 1]) +
-                     (17.0 * smooth_arr[i + 2]) + (12.0 * smooth_arr[i + 3]) +
-                     (-3.0 * smooth_arr[i + 4]));
-    }
-  free (smooth_arr);
 }
 
 /*  This routine is where the bulk of the session report
@@ -736,11 +700,6 @@ raw_to_user_plots (PlotData *pdest,
       pdest->lat[i] = (PLFLT) lat_raw[i];
       pdest->lng[i] = (PLFLT) lng_raw[i];
     }
-  /* Smooth the Y values. */
-  // TODO Needs more testing.  I think there are some bugs.
-  gboolean filter = FALSE;
-  if (filter)
-    sg_smooth (pdest);
   /* Set start time in local time (for title) */
   time_t l_time = sess_start_time + tz_offset;
   pdest->start_time = strdup (asctime (gmtime (&l_time)));
