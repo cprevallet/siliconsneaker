@@ -1,6 +1,7 @@
 /*
  * This program provides a GTK graphical user interface to PLPlot graphical
- * plotting routines.
+ * plotting routines in order to plot running files stored in the Garmin
+ * (Dynasteam) FIT format.
  *
  * License:
  *
@@ -24,15 +25,11 @@
  */
 
 /* Required external top level-dependencies.
- *  libplplot.so.17
- *  libosmgpsmap-1.0
  *	libgtk-3.so.0
- *	libgdk-3.so.0
+ *  libplplot.so.17
  *	libcairo.so.2
- *	libgobject-2.0.so.0
- *	libglib-2.0.so.0
- *	libm.so.6 =>
- *	libc.so.6
+ *  libosmgpsmap-1.0
+ *  librsvg-2.0
  */
 
 /* Utilities */
@@ -43,6 +40,9 @@
 #include <string.h>
 #include <unistd.h>
 
+/* 
+ * GUI 
+ */
 #include <gdk/gdk.h>
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -864,80 +864,80 @@ init_plot_data (AllData *pall)
    */
   result = parse_fit_file (fname, NSIZE, LSIZE);
   //  long  *pRecTimestamp = result.r1;
-  float *pRecDistance = result.r3;
-  float *pRecSpeed = result.r5;
-  float *pRecAltitude = result.r7;
-  float *pRecCadence = result.r9;
-  float *pRecHeartRate = result.r11;
-  float *pRecLat = result.r13;
-  float *pRecLong = result.r15;
+  float *prec_distance = result.r3;
+  float *prec_speed = result.r5;
+  float *prec_altitude = result.r7;
+  float *prec_cadence = result.r9;
+  float *prec_heartrate = result.r11;
+  float *prec_lat = result.r13;
+  float *prec_long = result.r15;
   long nRecs = result.r16;
   //  long  *pLapTimestamp = result.r18;
-  float *pLapTotalDistance = result.r20;
-  float *pLapStartPositionLat = result.r22;
-  float *pLapStartPositionLong = result.r24;
-  //  float *pLapEndPositionLat = result.r26;
-  //  float *pLapEndPositionLong = result.r28;
-  //  float *pLapTotalCalories = result.r30;
-  float *pLapTotalElapsedTime = result.r32;
+  float *plap_total_distance = result.r20;
+  float *plap_start_position_lat = result.r22;
+  float *plap_start_position_long = result.r24;
+  //  float *plap_end_position_lat = result.r26;
+  //  float *plap_end_position_long = result.r28;
+  //  float *plap_total_calories = result.r30;
+  float *plap_total_elapsed_time = result.r32;
   //  float *pLapTotalTimerTime = result.r34;
   long nLaps = result.r35;
-  long sessTimestamp = result.r36;
-  long sessStartTime = result.r37;
-  float sessStartPositionLat = result.r38;
-  float sessStartPositionLong = result.r39;
-  float sessTotalElapsedTime = result.r40;
-  float sessTotalTimerTime = result.r41;
-  float sessTotalDistance = result.r42;
-  float sessNecLat = result.r43;
-  float sessNecLong = result.r44;
-  float sessSwcLat = result.r45;
-  float sessSwcLong = result.r46;
-  float sessTotalWork = result.r47;
-  float sessTotalMovingTime = result.r48;
-  float sessAvgLapTime = result.r49;
-  float sessTotalCalories = result.r50;
-  float sessAvgSpeed = result.r51;
-  float sessMaxSpeed = result.r52;
-  float sessTotalAscent = result.r53;
-  float sessTotalDescent = result.r54;
-  float sessAvgAltitude = result.r55;
-  float sessMaxAltitude = result.r56;
-  float sessMinAltitude = result.r57;
-  float sessAvgHeartRate = result.r58;
-  float sessMaxHeartRate = result.r59;
-  float sessMinHeartRate = result.r60;
-  float sessAvgCadence = result.r61;
-  float sessMaxCadence = result.r62;
-  float sessAvgTemperature = result.r63;
-  float sessMaxTemperature = result.r64;
-  float sessTotalAnaerobicTrainingEffect = result.r65;
-  long tzOffset = result.r66;
+  long sess_timestamp = result.r36;
+  long sess_start_time = result.r37;
+  float sess_start_position_lat = result.r38;
+  float sess_start_position_long = result.r39;
+  float sess_total_elapsed_time = result.r40;
+  float sess_total_timer_time = result.r41;
+  float sess_total_distance = result.r42;
+  float sess_nec_latitude = result.r43;
+  float sess_nec_longitude = result.r44;
+  float sess_swc_latitude = result.r45;
+  float sess_swc_longitude = result.r46;
+  float sess_total_work = result.r47;
+  float sess_total_moving_time = result.r48;
+  float sess_average_lap_time = result.r49;
+  float sess_total_calories = result.r50;
+  float sess_avg_speed = result.r51;
+  float sess_max_speed = result.r52;
+  float sess_total_ascent = result.r53;
+  float sess_total_descent = result.r54;
+  float sess_avg_altitude = result.r55;
+  float sess_max_altitude = result.r56;
+  float sess_min_altitude = result.r57;
+  float sess_avg_heartrate = result.r58;
+  float sess_max_heartrate = result.r59;
+  float sess_min_heartrate = result.r60;
+  float sess_avg_cadence = result.r61;
+  float sess_max_cadence = result.r62;
+  float sess_avg_temperature = result.r63;
+  float sess_max_temperature = result.r64;
+  float sess_total_anaerobic_training_effect = result.r65;
+  long time_zone_offset = result.r66;
 
   /* Convert the raw values to user-facing values. */
-  raw_to_user_plots (pall->ppace, nRecs, pRecDistance, pRecSpeed, pRecLat,
-                     pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots (pall->pcadence, nRecs, pRecDistance, pRecCadence, pRecLat,
-                     pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots (pall->pheart, nRecs, pRecDistance, pRecHeartRate, pRecLat,
-                     pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots (pall->paltitude, nRecs, pRecDistance, pRecAltitude,
-                     pRecLat, pRecLong, sessStartTime, tzOffset);
-  raw_to_user_plots (pall->plap, nLaps, pLapTotalDistance, pLapTotalElapsedTime,
-                     pLapStartPositionLat, pLapStartPositionLong, sessStartTime,
-                     tzOffset);
+  raw_to_user_plots (pall->ppace, nRecs, prec_distance, prec_speed, prec_lat,
+                     prec_long, sess_start_time, time_zone_offset);
+  raw_to_user_plots (pall->pcadence, nRecs, prec_distance, prec_cadence, prec_lat,
+                     prec_long, sess_start_time, time_zone_offset);
+  raw_to_user_plots (pall->pheart, nRecs, prec_distance, prec_heartrate, prec_lat,
+                     prec_long, sess_start_time, time_zone_offset);
+  raw_to_user_plots (pall->paltitude, nRecs, prec_distance, prec_altitude,
+                     prec_lat, prec_long, sess_start_time, time_zone_offset);
+  raw_to_user_plots (pall->plap, nLaps, plap_total_distance, plap_total_elapsed_time,
+                     plap_start_position_lat, plap_start_position_long, sess_start_time,
+                     time_zone_offset);
 
   /* Convert the raw values to user-facing values. */
   raw_to_user_session (
-      pall->psd, sessTimestamp, sessStartTime, sessStartPositionLat,
-      sessStartPositionLong, sessTotalElapsedTime, sessTotalTimerTime,
-      sessTotalDistance, sessNecLat, sessNecLong, sessSwcLat, sessSwcLong,
-      sessTotalWork, sessTotalMovingTime, sessAvgLapTime, sessTotalCalories,
-      sessAvgSpeed, sessMaxSpeed, sessTotalAscent, sessTotalDescent,
-      sessAvgAltitude, sessMaxAltitude, sessMinAltitude, sessMaxHeartRate,
-      sessAvgHeartRate, sessMaxCadence, sessAvgCadence, sessAvgTemperature,
-      sessMaxTemperature, sessMinHeartRate, sessTotalAnaerobicTrainingEffect,
-      tzOffset);
+      pall->psd, sess_timestamp, sess_start_time, sess_start_position_lat,
+      sess_start_position_long, sess_total_elapsed_time, sess_total_timer_time,
+      sess_total_distance, sess_nec_latitude, sess_nec_longitude, sess_swc_latitude, sess_swc_longitude,
+      sess_total_work, sess_total_moving_time, sess_average_lap_time, sess_total_calories,
+      sess_avg_speed, sess_max_speed, sess_total_ascent, sess_total_descent,
+      sess_avg_altitude, sess_max_altitude, sess_min_altitude, sess_max_heartrate,
+      sess_avg_heartrate, sess_max_cadence, sess_avg_cadence, sess_avg_temperature,
+      sess_max_temperature, sess_min_heartrate, sess_total_anaerobic_training_effect,
+      time_zone_offset);
   return TRUE;
 }
 
