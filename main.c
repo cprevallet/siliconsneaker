@@ -1396,16 +1396,16 @@ init_map ()
   starImage = gdk_pixbuf_new_from_file_at_size ("poi.png", 24, 24, NULL);
 
   // Geographical center of contiguous US
-  float defaultLatitude = 39.8355;
-  float defaultLongitude = -99.0909;
+  float default_latitude = 39.8355;
+  float default_longitude = -99.0909;
   int defaultzoom = 4;
 
   GtkWidget *wid = g_object_new (OSM_TYPE_GPS_MAP, NULL);
   g_object_set (wid, "map-source", source, NULL);
   g_object_set (wid, "tile-cache", "/tmp/", NULL);
   map = OSM_GPS_MAP (wid);
-  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), defaultLatitude,
-                                   defaultLongitude, defaultzoom);
+  osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), default_latitude,
+                                   default_longitude, defaultzoom);
   /* Add the global widget to the global GTKFrame named viewport */
   gtk_container_add (GTK_CONTAINER (viewport), wid);
 
@@ -1430,49 +1430,49 @@ findCenter (int numPts,
             double lat[],
             double lng[],
             double center[],
-            float *minLat,
-            float *minLng,
-            float *maxLat,
-            float *maxLng)
+            float *min_lat,
+            float *min_lng,
+            float *max_lat,
+            float *max_lng)
 {
-  *minLat = DBL_MAX;
-  *maxLat = -DBL_MAX;
-  *minLng = DBL_MAX;
-  *maxLng = -DBL_MAX;
+  *min_lat = DBL_MAX;
+  *max_lat = -DBL_MAX;
+  *min_lng = DBL_MAX;
+  *max_lng = -DBL_MAX;
   for (int i = 1; i < numPts; i++)
     {
-      if (lat[i] < *minLat)
-        *minLat = lat[i];
-      if (lng[i] < *minLng)
-        *minLng = lng[i];
-      if (lat[i] > *maxLat)
-        *maxLat = lat[i];
-      if (lng[i] > *maxLng)
-        *maxLng = lng[i];
+      if (lat[i] < *min_lat)
+        *min_lat = lat[i];
+      if (lng[i] < *min_lng)
+        *min_lng = lng[i];
+      if (lat[i] > *max_lat)
+        *max_lat = lat[i];
+      if (lng[i] > *max_lng)
+        *max_lng = lng[i];
     }
-  center[0] = (*maxLat + *minLat) / 2.0;
-  center[1] = (*maxLng + *minLng) / 2.0;
+  center[0] = (*max_lat + *min_lat) / 2.0;
+  center[1] = (*max_lng + *min_lng) / 2.0;
 }
 
 /* Return the latitude, longitude limits for a map at a particular
  * zoom level.
  */
 void
-mapLimits (float *minMapLat,
-           float *minMapLng,
-           float *maxMapLat,
-           float *maxMapLng)
+mapLimits (float *min_map_lat,
+           float *min_map_lng,
+           float *max_map_lat,
+           float *max_map_lng)
 {
-  OsmGpsMapPoint topLeft;
-  OsmGpsMapPoint botRight;
-  float tlLat, tlLng, brLat, brLng;
-  osm_gps_map_get_bbox (map, &topLeft, &botRight);
-  osm_gps_map_point_get_degrees (&topLeft, &tlLat, &tlLng);
-  osm_gps_map_point_get_degrees (&botRight, &brLat, &brLng);
-  *maxMapLat = fmaxf (tlLat, brLat);
-  *minMapLat = fminf (tlLat, brLat);
-  *maxMapLng = fmaxf (tlLng, brLng);
-  *minMapLng = fminf (tlLng, brLng);
+  OsmGpsMapPoint top_left;
+  OsmGpsMapPoint bot_right;
+  float tl_lat, tl_lng, br_lat, br_lng;
+  osm_gps_map_get_bbox (map, &top_left, &bot_right);
+  osm_gps_map_point_get_degrees (&top_left, &tl_lat, &tl_lng);
+  osm_gps_map_point_get_degrees (&bot_right, &br_lat, &br_lng);
+  *max_map_lat = fmaxf (tl_lat, br_lat);
+  *min_map_lat = fminf (tl_lat, br_lat);
+  *max_map_lng = fmaxf (tl_lng, br_lng);
+  *min_map_lng = fminf (tl_lng, br_lng);
 }
 
 /* Calculate the center and zoom level based on the latitude
@@ -1482,26 +1482,26 @@ void
 setCenterAndZoom (AllData *data)
 {
   double center[2] = { 0.0, 0.0 };
-  float maxLat, minLat, maxLng, minLng;
-  float maxMapLat, minMapLat, maxMapLng, minMapLng;
-  int minZoom, maxZoom, zoom;
-  maxZoom = osm_gps_map_source_get_max_zoom (source);
-  minZoom = osm_gps_map_source_get_min_zoom (source);
-  zoom = maxZoom;
-  findCenter (data->pd->num_pts, data->pd->lat, data->pd->lng, center, &minLat,
-              &minLng, &maxLat, &maxLng);
+  float max_lat, min_lat, max_lng, min_lng;
+  float max_map_lat, min_map_lat, max_map_lng, min_map_lng;
+  int min_zoom, max_zoom, zoom;
+  max_zoom = osm_gps_map_source_get_max_zoom (source);
+  min_zoom = osm_gps_map_source_get_min_zoom (source);
+  zoom = max_zoom;
+  findCenter (data->pd->num_pts, data->pd->lat, data->pd->lng, center, &min_lat,
+              &min_lng, &max_lat, &max_lng);
   osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), center[0], center[1],
                                    zoom);
-  mapLimits (&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
+  mapLimits (&min_map_lat, &min_map_lng, &max_map_lat, &max_map_lng);
   /* Repeatedly zoom out until we cover the range of the run. */
-  while (((maxMapLat < maxLat || maxMapLng < maxLng || minMapLat > minLat ||
-           minMapLng > minLng) &&
-          zoom > minZoom))
+  while (((max_map_lat < max_lat || max_map_lng < max_lng ||
+           min_map_lat > min_lat || min_map_lng > min_lng) &&
+          zoom > min_zoom))
     {
       zoom--;
       osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), center[0], center[1],
                                        zoom);
-      mapLimits (&minMapLat, &minMapLng, &maxMapLat, &maxMapLng);
+      mapLimits (&min_map_lat, &min_map_lng, &max_map_lat, &max_map_lng);
     }
 }
 
