@@ -37,11 +37,11 @@
 
 /* Utilities */
 #include <ctype.h>
-#include <math.h>
-#include <string.h>
 #include <float.h>
-#include <unistd.h>
+#include <math.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <gdk/gdk.h>
 #include <glib.h>
@@ -237,23 +237,19 @@ int currIdx = 0;
 //
 void printfloat(float x, char *name) { printf("%s = %f \n", name, x); }
 
-/* Return a fully qualified path to a temporary directory for either 
+/* Return a fully qualified path to a temporary directory for either
  * Windows or Linux.
  */
 #ifdef __linux__
-char* path_to_temp_dir() 
-{
-  char * tmpdir = malloc(sizeof(char) * 4096); //4096 is the longest ext4 path
-  if (getenv("TMPDIR"))  { 
-    strcpy(tmpdir, getenv("TMPDIR")); 
-  }
-  else if (getenv("TMP"))  {
+char *path_to_temp_dir() {
+  char *tmpdir = malloc(sizeof(char) * 4096); // 4096 is the longest ext4 path
+  if (getenv("TMPDIR")) {
+    strcpy(tmpdir, getenv("TMPDIR"));
+  } else if (getenv("TMP")) {
     strcpy(tmpdir, getenv("TMP"));
-  }
-  else if (getenv("TEMP"))  {
+  } else if (getenv("TEMP")) {
     strcpy(tmpdir, getenv("TEMP"));
-  }
-  else if (getenv("TEMPDIR"))  {
+  } else if (getenv("TEMPDIR")) {
     strcpy(tmpdir, getenv("TEMPDIR"));
   } else {
     strcpy(tmpdir, "/tmp/");
@@ -262,26 +258,20 @@ char* path_to_temp_dir()
 }
 #endif
 #ifdef _WIN32
-char* path_to_temp_dir() 
-{
-  char * tmpdir = malloc(sizeof(char) * 260); //260 is the longest NTFS path
-  if (getenv("TMP"))  { 
+char *path_to_temp_dir() {
+  char *tmpdir = malloc(sizeof(char) * 260); // 260 is the longest NTFS path
+  if (getenv("TMP")) {
     strcpy(tmpdir, getenv("TMP"));
-  }
-  else if (getenv("TEMP"))  {
+  } else if (getenv("TEMP")) {
     strcpy(tmpdir, getenv("TEMP"));
-  }
-  else if (getenv("USERPROFILE") )  {
+  } else if (getenv("USERPROFILE")) {
     strcpy(tmpdir, getenv("USERPROFILE"));
-  }
-  else {
+  } else {
     strcpy(tmpdir, "C:\\Temp\\");
   }
   return tmpdir;
 }
 #endif
-
-
 
 //
 // Summary routines.
@@ -386,9 +376,9 @@ void update_summary(SessionData *psd) {
 
   char line[80];
   /*Create a new summary file.*/
-  char * tmpfile = path_to_temp_dir();
+  char *tmpfile = path_to_temp_dir();
   strcat(tmpfile, "runplotter.txt");
-  FILE* fp = fopen(tmpfile, "w");
+  FILE *fp = fopen(tmpfile, "w");
   create_summary(fp, psd);
   fclose(fp);
   fp = fopen(tmpfile, "r");
@@ -1073,11 +1063,11 @@ gboolean on_da_draw(GtkWidget *widget, GdkEventExpose *event, AllData *data) {
   // plsdev("extcairo");
   plsdev("svg");
   /* Device attributes */
-  char * tmpfile = path_to_temp_dir();
+  char *tmpfile = path_to_temp_dir();
   strcat(tmpfile, "runplotter.svg");
- 
-  //FILE* fp = fopen("runplotter.svg", "w");
-  FILE* fp = fopen(tmpfile, "w");
+
+  // FILE* fp = fopen("runplotter.svg", "w");
+  FILE *fp = fopen(tmpfile, "w");
   plsfile(fp);
   plinit();
 
@@ -1496,7 +1486,7 @@ void reload_all(AllData *pall) {
     g_signal_emit_by_name(sc_IdxPct, "value-changed");
   }
 }
- 
+
 /* Default to the pace chart. */
 gboolean default_chart() {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(rb_Pace), TRUE);
@@ -1513,9 +1503,11 @@ void on_cb_units_changed(GtkComboBox *cb_Units, AllData *data) {
 G_MODULE_EXPORT
 #endif
 void on_rb_pace(GtkToggleButton *togglebutton, AllData *data) {
-  data->pd = data->ppace;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  if ((data->ppace->x != NULL) && (data->ppace->y != NULL)) {
+    data->pd = data->ppace;
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  }
 }
 
 /* User has selected Cadence Graph. */
@@ -1523,9 +1515,11 @@ void on_rb_pace(GtkToggleButton *togglebutton, AllData *data) {
 G_MODULE_EXPORT
 #endif
 void on_rb_cadence(GtkToggleButton *togglebutton, AllData *data) {
-  data->pd = data->pcadence;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  if ((data->pcadence->x != NULL) && (data->pcadence->y != NULL)) {
+    data->pd = data->pcadence;
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  }
 }
 
 /* User has selected Heartrate Graph. */
@@ -1533,9 +1527,11 @@ void on_rb_cadence(GtkToggleButton *togglebutton, AllData *data) {
 G_MODULE_EXPORT
 #endif
 void on_rb_heartrate(GtkToggleButton *togglebutton, AllData *data) {
-  data->pd = data->pheart;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  if ((data->pheart->x != NULL) && (data->pheart->y != NULL)) {
+    data->pd = data->pheart;
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  }
 }
 
 /* User has selected Altitude Graph. */
@@ -1543,9 +1539,11 @@ void on_rb_heartrate(GtkToggleButton *togglebutton, AllData *data) {
 G_MODULE_EXPORT
 #endif
 void on_rb_altitude(GtkToggleButton *togglebutton, AllData *data) {
-  data->pd = data->paltitude;
-  gtk_widget_queue_draw(GTK_WIDGET(da));
-  g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  if ((data->paltitude->x != NULL) && (data->paltitude->y != NULL)) {
+    data->pd = data->paltitude;
+    gtk_widget_queue_draw(GTK_WIDGET(da));
+    g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  }
 }
 
 /* User has selected Splits Graph. */
@@ -1553,11 +1551,12 @@ void on_rb_altitude(GtkToggleButton *togglebutton, AllData *data) {
 G_MODULE_EXPORT
 #endif
 void on_rb_splits(GtkToggleButton *togglebutton, AllData *data) {
+  if ((data->plap->x != NULL) && (data->plap->y != NULL)) {
   gtk_widget_queue_draw(GTK_WIDGET(da));
   g_signal_emit_by_name(sc_IdxPct, "value-changed");
+  }
 }
 
- 
 /* User has pressed open a new file. */
 #ifdef _WIN32
 G_MODULE_EXPORT
@@ -1899,48 +1898,45 @@ int main(int argc, char *argv[]) {
   // TODO This may not be available for Windows.
   int c;
   opterr = 0;
-  while ((c = getopt (argc, argv, "mf:hv")) != -1)
-    switch (c)
-      {
-      case 'm':
-        /* Set combo box to metric */
-        gtk_combo_box_set_active(GTK_COMBO_BOX(cb_Units), Metric);
-        break;
-      case 'f':
-        fname = optarg;
-        /* This seems sketchy to run before the input event loop 
-         * but seems to work.
-         */
-        reload_all(pall);
-        break;
-      case '?':
-        if (optopt == 'f')
-          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-        else if (isprint (optopt))
-          fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-        else
-          fprintf (stderr,
-                   "Unknown option character `\\x%x'.\n",
-                   optopt);
-        return 1;
-      case 'h':
-        fprintf(stdout, "Usage: %s [OPTION]...[FILENAME]\n", argv[0]);
-        fprintf(stdout, " -f  open filename\n");
-        fprintf(stdout, " -m  use metric units\n");
-        fprintf(stdout, " -h  print program help\n");
-        fprintf(stdout, " -v  print program version\n");
-        return 0;
-        break;
-      case 'v':
-        fprintf(stdout, "%s v%4.2f\n", argv[0], VERSION);
-        return 0;
-        break;
-      default:
-        abort ();
-      }
+  while ((c = getopt(argc, argv, "mf:hv")) != -1)
+    switch (c) {
+    case 'm':
+      /* Set combo box to metric */
+      gtk_combo_box_set_active(GTK_COMBO_BOX(cb_Units), Metric);
+      break;
+    case 'f':
+      fname = optarg;
+      /* This seems sketchy to run before the input event loop
+       * but seems to work.
+       */
+      reload_all(pall);
+      break;
+    case '?':
+      if (optopt == 'f')
+        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+      else if (isprint(optopt))
+        fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+      else
+        fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+      return 1;
+    case 'h':
+      fprintf(stdout, "Usage: %s [OPTION]...[FILENAME]\n", argv[0]);
+      fprintf(stdout, " -f  open filename\n");
+      fprintf(stdout, " -m  use metric units\n");
+      fprintf(stdout, " -h  print program help\n");
+      fprintf(stdout, " -v  print program version\n");
+      return 0;
+      break;
+    case 'v':
+      fprintf(stdout, "%s v%4.2f\n", argv[0], VERSION);
+      return 0;
+      break;
+    default:
+      abort();
+    }
 
   for (int index = optind; index < argc; index++)
-    printf ("Non-option argument %s\n", argv[index]);
+    printf("Non-option argument %s\n", argv[index]);
 
   gtk_widget_show(window);
   gtk_main();
