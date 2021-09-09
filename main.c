@@ -115,14 +115,14 @@ typedef struct PlotData
   PLFLT xmax;
   PLFLT ymin;
   PLFLT ymax;
-  PLFLT xvmin; // view, world coordinates
-  PLFLT xvmax;
-  PLFLT yvmin;
-  PLFLT yvmax;
-  PLFLT zmxmin; // zoom limits, world coordinates
-  PLFLT zmxmax;
-  PLFLT zmymin;
-  PLFLT zmymax;
+  PLFLT vw_xmin; // view, world coordinates
+  PLFLT vw_xmax;
+  PLFLT vw_ymin;
+  PLFLT vw_ymax;
+  PLFLT zm_xmin; // zoom limits, world coordinates
+  PLFLT zm_xmax;
+  PLFLT zm_ymin;
+  PLFLT zm_ymax;
   PLFLT zm_startx; // zoom, world coordinates
   PLFLT zm_starty;
   PLFLT zm_endx;
@@ -453,10 +453,10 @@ reset_view_limits (PlotData *pd)
 {
   if (pd == NULL)
     return;
-  pd->xvmax = pd->xmax;
-  pd->yvmin = pd->ymin;
-  pd->yvmax = pd->ymax;
-  pd->xvmin = pd->xmin;
+  pd->vw_xmax = pd->xmax;
+  pd->vw_ymin = pd->ymin;
+  pd->vw_ymax = pd->ymax;
+  pd->vw_xmin = pd->xmin;
 }
 
 /* Set zoom back to zero. */
@@ -822,10 +822,10 @@ raw_to_user_plots (PlotData *pdest,
         }
     }
   /* Set the view to the data extents. */
-  pdest->xvmax = pdest->xmax;
-  pdest->yvmin = pdest->ymin;
-  pdest->yvmax = pdest->ymax;
-  pdest->xvmin = pdest->xmin;
+  pdest->vw_xmax = pdest->xmax;
+  pdest->vw_ymin = pdest->ymin;
+  pdest->vw_ymax = pdest->ymax;
+  pdest->vw_xmin = pdest->xmin;
   pdest->zm_startx = 0;
   pdest->zm_starty = 0;
   pdest->zm_endx = 0;
@@ -1019,7 +1019,7 @@ draw_xy (PlotData *pd, int width, int height)
       plscol0a (1, 65, 209, 65, 0.25);   // light green for selector
       plscol0a (15, 128, 128, 128, 0.9); // light gray for background
       plscol0a (2, pd->linecolor[0], pd->linecolor[1], pd->linecolor[2], 0.8);
-      plwind (pd->xvmin, pd->xvmax, pd->yvmin, pd->yvmax);
+      plwind (pd->vw_xmin, pd->vw_xmax, pd->vw_ymin, pd->vw_ymax);
       /* Adjust character size. */
       plschr (ch_size, scf);
       plcol0 (15);
@@ -1046,7 +1046,7 @@ draw_xy (PlotData *pd, int width, int height)
       char *xopt = "bnost";
       char *yopt = "bgnost";
       // TODO valgrind reports mem lost on below line...
-      plaxes (pd->xvmin, pd->yvmin, xopt, 0, 0, yopt, 0, 0);
+      plaxes (pd->vw_xmin, pd->vw_ymin, xopt, 0, 0, yopt, 0, 0);
       /* Setup axis labels and titles. */
       pllab (pd->xaxislabel, pd->yaxislabel, pd->start_time);
       /* Set line color to the second pallette color. */
@@ -1059,10 +1059,10 @@ draw_xy (PlotData *pd, int width, int height)
       // plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
       /* Calculate the zoom limits (in pixels) for the graph. */
       plgvpd (&n_xmin, &n_xmax, &n_ymin, &n_ymax);
-      pd->zmxmin = width * n_xmin;
-      pd->zmxmax = width * n_xmax;
-      pd->zmymin = height * (n_ymin - 1.0) + height;
-      pd->zmymax = height * (n_ymax - 1.0) + height;
+      pd->zm_xmin = width * n_xmin;
+      pd->zm_xmax = width * n_xmax;
+      pd->zm_ymin = height * (n_ymin - 1.0) + height;
+      pd->zm_ymax = height * (n_ymax - 1.0) + height;
       /*  Draw_selection box "rubber-band". */
       PLFLT rb_x[4];
       PLFLT rb_y[4];
@@ -1085,12 +1085,12 @@ draw_xy (PlotData *pd, int width, int height)
        * current index on the x scale from the bottom to the top
        * of the view. */
       x_hair = pd->x[currIdx];
-      if ((x_hair >= pd->xvmin) && (x_hair <= pd->xvmax))
+      if ((x_hair >= pd->vw_xmin) && (x_hair <= pd->vw_xmax))
         {
           hairline_x[0] = x_hair;
           hairline_x[1] = x_hair;
-          hairline_y[0] = pd->yvmin;
-          hairline_y[1] = pd->yvmax;
+          hairline_y[0] = pd->vw_ymin;
+          hairline_y[1] = pd->vw_ymax;
           pllsty (2);
           plline (2, hairline_x, hairline_y);
           pllsty (1);
@@ -1251,8 +1251,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 /* Calculate the graph ("world") x,y coordinates corresponding to the
  * GUI mouse ("device") coordinates.
  *
- * The plot view bounds (xvmin, xvmax, yvmin, yvmax) and the plot
- * zoom bounds (zmxmin, zmxmax, zmymin, zmymax) are calculated
+ * The plot view bounds (vw_xmin, vw_xmax, vw_ymin, vw_ymax) and the plot
+ * zoom bounds (zm_xmin, zm_xmax, zm_ymin, zm_ymax) are calculated
  * by the draw routine.
  *
  */
@@ -1263,17 +1263,17 @@ gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
     {
       return;
     }
-  float fractx = (event->x - pd->zmxmin) / (pd->zmxmax - pd->zmxmin);
-  float fracty = (pd->zmymax - event->y) / (pd->zmymax - pd->zmymin);
+  float fractx = (event->x - pd->zm_xmin) / (pd->zm_xmax - pd->zm_xmin);
+  float fracty = (pd->zm_ymax - event->y) / (pd->zm_ymax - pd->zm_ymin);
   if (state == Press)
     {
-      pd->zm_startx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-      pd->zm_starty = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+      pd->zm_startx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
+      pd->zm_starty = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
     }
   if (state == Release || state == Move)
     {
-      pd->zm_endx = fractx * (pd->xvmax - pd->xvmin) + pd->xvmin;
-      pd->zm_endy = fracty * (pd->yvmax - pd->yvmin) + pd->yvmin;
+      pd->zm_endx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
+      pd->zm_endy = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
     }
 }
 
@@ -1338,22 +1338,22 @@ on_button_release (GtkWidget *widget, GdkEvent *event, AllData *data)
       /* Zoom */
       if (buttonnum == 3)
         {
-          data->pd->xvmin = fmin (data->pd->zm_startx, data->pd->zm_endx);
-          data->pd->yvmin = fmin (data->pd->zm_starty, data->pd->zm_endy);
-          data->pd->xvmax = fmax (data->pd->zm_startx, data->pd->zm_endx);
-          data->pd->yvmax = fmax (data->pd->zm_starty, data->pd->zm_endy);
+          data->pd->vw_xmin = fmin (data->pd->zm_startx, data->pd->zm_endx);
+          data->pd->vw_ymin = fmin (data->pd->zm_starty, data->pd->zm_endy);
+          data->pd->vw_xmax = fmax (data->pd->zm_startx, data->pd->zm_endx);
+          data->pd->vw_ymax = fmax (data->pd->zm_starty, data->pd->zm_endy);
         }
       /* Pan */
       if (buttonnum == 1)
         {
-          data->pd->xvmin =
-              data->pd->xvmin + (data->pd->zm_startx - data->pd->zm_endx);
-          data->pd->xvmax =
-              data->pd->xvmax + (data->pd->zm_startx - data->pd->zm_endx);
-          data->pd->yvmin =
-              data->pd->yvmin + (data->pd->zm_starty - data->pd->zm_endy);
-          data->pd->yvmax =
-              data->pd->yvmax + (data->pd->zm_starty - data->pd->zm_endy);
+          data->pd->vw_xmin =
+              data->pd->vw_xmin + (data->pd->zm_startx - data->pd->zm_endx);
+          data->pd->vw_xmax =
+              data->pd->vw_xmax + (data->pd->zm_startx - data->pd->zm_endx);
+          data->pd->vw_ymin =
+              data->pd->vw_ymin + (data->pd->zm_starty - data->pd->zm_endy);
+          data->pd->vw_ymax =
+              data->pd->vw_ymax + (data->pd->zm_starty - data->pd->zm_endy);
         }
       gtk_widget_queue_draw (GTK_WIDGET (da));
       reset_zoom (data->pd);
@@ -1868,14 +1868,14 @@ main (int argc, char *argv[])
   paceplot.num_pts = 0;
   paceplot.x = NULL;
   paceplot.y = NULL;
-  paceplot.xvmax = 0;
-  paceplot.yvmin = 0;
-  paceplot.yvmax = 0;
-  paceplot.xvmin = 0;
-  paceplot.zmxmin = 0;
-  paceplot.zmxmax = 0;
-  paceplot.zmymin = 0;
-  paceplot.zmymax = 0;
+  paceplot.vw_xmax = 0;
+  paceplot.vw_ymin = 0;
+  paceplot.vw_ymax = 0;
+  paceplot.vw_xmin = 0;
+  paceplot.zm_xmin = 0;
+  paceplot.zm_xmax = 0;
+  paceplot.zm_ymin = 0;
+  paceplot.zm_ymax = 0;
   paceplot.zm_startx = 0;
   paceplot.zm_starty = 0;
   paceplot.zm_endx = 0;
@@ -1899,14 +1899,14 @@ main (int argc, char *argv[])
   cadenceplot.num_pts = 0;
   cadenceplot.x = NULL;
   cadenceplot.y = NULL;
-  cadenceplot.xvmax = 0;
-  cadenceplot.yvmin = 0;
-  cadenceplot.yvmax = 0;
-  cadenceplot.xvmin = 0;
-  cadenceplot.zmxmin = 0;
-  cadenceplot.zmxmax = 0;
-  cadenceplot.zmymin = 0;
-  cadenceplot.zmymax = 0;
+  cadenceplot.vw_xmax = 0;
+  cadenceplot.vw_ymin = 0;
+  cadenceplot.vw_ymax = 0;
+  cadenceplot.vw_xmin = 0;
+  cadenceplot.zm_xmin = 0;
+  cadenceplot.zm_xmax = 0;
+  cadenceplot.zm_ymin = 0;
+  cadenceplot.zm_ymax = 0;
   cadenceplot.zm_startx = 0;
   cadenceplot.zm_starty = 0;
   cadenceplot.zm_endx = 0;
@@ -1930,14 +1930,14 @@ main (int argc, char *argv[])
   heartrateplot.num_pts = 0;
   heartrateplot.x = NULL;
   heartrateplot.y = NULL;
-  heartrateplot.xvmax = 0;
-  heartrateplot.yvmin = 0;
-  heartrateplot.yvmax = 0;
-  heartrateplot.xvmin = 0;
-  heartrateplot.zmxmin = 0;
-  heartrateplot.zmxmax = 0;
-  heartrateplot.zmymin = 0;
-  heartrateplot.zmymax = 0;
+  heartrateplot.vw_xmax = 0;
+  heartrateplot.vw_ymin = 0;
+  heartrateplot.vw_ymax = 0;
+  heartrateplot.vw_xmin = 0;
+  heartrateplot.zm_xmin = 0;
+  heartrateplot.zm_xmax = 0;
+  heartrateplot.zm_ymin = 0;
+  heartrateplot.zm_ymax = 0;
   heartrateplot.zm_startx = 0;
   heartrateplot.zm_starty = 0;
   heartrateplot.zm_endx = 0;
@@ -1961,14 +1961,14 @@ main (int argc, char *argv[])
   altitudeplot.num_pts = 0;
   altitudeplot.x = NULL;
   altitudeplot.y = NULL;
-  altitudeplot.xvmax = 0;
-  altitudeplot.yvmin = 0;
-  altitudeplot.yvmax = 0;
-  altitudeplot.xvmin = 0;
-  altitudeplot.zmxmin = 0;
-  altitudeplot.zmxmax = 0;
-  altitudeplot.zmymin = 0;
-  altitudeplot.zmymax = 0;
+  altitudeplot.vw_xmax = 0;
+  altitudeplot.vw_ymin = 0;
+  altitudeplot.vw_ymax = 0;
+  altitudeplot.vw_xmin = 0;
+  altitudeplot.zm_xmin = 0;
+  altitudeplot.zm_xmax = 0;
+  altitudeplot.zm_ymin = 0;
+  altitudeplot.zm_ymax = 0;
   altitudeplot.zm_startx = 0;
   altitudeplot.zm_starty = 0;
   altitudeplot.zm_endx = 0;
@@ -1992,14 +1992,14 @@ main (int argc, char *argv[])
   lapplot.num_pts = 0;
   lapplot.x = NULL;
   lapplot.y = NULL;
-  lapplot.xvmax = 0;
-  lapplot.yvmin = 0;
-  lapplot.yvmax = 0;
-  lapplot.xvmin = 0;
-  lapplot.zmxmin = 0;
-  lapplot.zmxmax = 0;
-  lapplot.zmymin = 0;
-  lapplot.zmymax = 0;
+  lapplot.vw_xmax = 0;
+  lapplot.vw_ymin = 0;
+  lapplot.vw_ymax = 0;
+  lapplot.vw_xmin = 0;
+  lapplot.zm_xmin = 0;
+  lapplot.zm_xmax = 0;
+  lapplot.zm_ymin = 0;
+  lapplot.zm_ymax = 0;
   lapplot.zm_startx = 0;
   lapplot.zm_starty = 0;
   lapplot.zm_endx = 0;
