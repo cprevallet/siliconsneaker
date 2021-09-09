@@ -1,1 +1,1 @@
-.\bin\runplotter.exe
+.\bin\siliconsneaker.exe
