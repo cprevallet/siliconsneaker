@@ -420,7 +420,6 @@ update_summary (SessionData *psd)
   GtkTextIter iter;
   GtkTextIter start;
   GtkTextIter end;
-
   char line[80];
   /*Create a new summary file.*/
   char *tmpfile = path_to_temp_dir ();
@@ -453,9 +452,7 @@ void
 reset_view_limits (PlotData *pd)
 {
   if (pd == NULL)
-    {
-      return;
-    }
+    return;
   pd->xvmax = pd->xmax;
   pd->yvmin = pd->ymin;
   pd->yvmax = pd->ymax;
@@ -467,9 +464,7 @@ void
 reset_zoom (PlotData *pd)
 {
   if (pd == NULL)
-    {
-      return;
-    }
+    return;
   pd->zm_startx = 0;
   pd->zm_starty = 0;
   pd->zm_endx = 0;
@@ -648,21 +643,13 @@ raw_to_user_plots (PlotData *pdest,
    * reinitializing.
    */
   if (pdest->x != NULL)
-    {
-      free (pdest->x);
-    }
+    free (pdest->x);
   if (pdest->y != NULL)
-    {
-      free (pdest->y);
-    }
+    free (pdest->y);
   if (pdest->lat != NULL)
-    {
-      free (pdest->lat);
-    }
+    free (pdest->lat);
   if (pdest->lng != NULL)
-    {
-      free (pdest->lng);
-    }
+    free (pdest->lng);
   /* How big are we? */
   pdest->num_pts = num_recs;
   /* Allocate new memory for the converted values. */
@@ -750,9 +737,7 @@ raw_to_user_plots (PlotData *pdest,
   // TODO Needs more testing.  I think there are some bugs.
   gboolean filter = FALSE;
   if (filter)
-    {
-      sg_smooth (pdest);
-    }
+    sg_smooth (pdest);
   /* Set start time in local time (for title) */
   time_t l_time = sess_start_time + tz_offset;
   pdest->start_time = strdup (asctime (gmtime (&l_time)));
@@ -765,21 +750,13 @@ raw_to_user_plots (PlotData *pdest,
   for (int i = 0; i < pdest->num_pts; i++)
     {
       if (pdest->x[i] < pdest->xmin)
-        {
-          pdest->xmin = pdest->x[i];
-        }
+        pdest->xmin = pdest->x[i];
       if (pdest->x[i] > pdest->xmax)
-        {
-          pdest->xmax = pdest->x[i];
-        }
+        pdest->xmax = pdest->x[i];
       if (pdest->y[i] < pdest->ymin)
-        {
-          pdest->ymin = pdest->y[i];
-        }
+        pdest->ymin = pdest->y[i];
       if (pdest->y[i] > pdest->ymax)
-        {
-          pdest->ymax = pdest->y[i];
-        }
+        pdest->ymax = pdest->y[i];
     }
   /* Set axis labels based on plot type and unit system. */
   switch (pdest->ptype)
@@ -976,13 +953,9 @@ pace_plot_labeler (
   if (axis == PL_Y_AXIS)
     {
       if (label_val > 0)
-        {
-          pace_units = 1 / label_val;
-        }
+        pace_units = 1 / label_val;
       else
-        {
-          pace_units = 999.0;
-        }
+        pace_units = 999.0;
       double secs, mins;
       secs = modf (pace_units, &mins);
       secs *= 60.0;
@@ -990,9 +963,7 @@ pace_plot_labeler (
     }
 
   if (axis == PL_X_AXIS)
-    {
-      snprintf (label, (size_t) length, "%3.2f", value);
-    }
+    snprintf (label, (size_t) length, "%3.2f", value);
 }
 
 /* A custom axis labeling function for a cadence plot. */
@@ -1001,13 +972,9 @@ cadence_plot_labeler (
     PLINT axis, PLFLT value, char *label, PLINT length, PLPointer label_data)
 {
   if (axis == PL_Y_AXIS)
-    {
-      snprintf (label, (size_t) length, "%3.2f", value);
-    }
+    snprintf (label, (size_t) length, "%3.2f", value);
   if (axis == PL_X_AXIS)
-    {
-      snprintf (label, (size_t) length, "%3.2f", value);
-    }
+    snprintf (label, (size_t) length, "%3.2f", value);
 }
 
 /* A custom axis labeling function for a heart rate plot. */
@@ -1016,13 +983,9 @@ heart_rate_plot_labeler (
     PLINT axis, PLFLT value, char *label, PLINT length, PLPointer label_data)
 {
   if (axis == PL_Y_AXIS)
-    {
-      snprintf (label, (size_t) length, "%3.0f", value);
-    }
+    snprintf (label, (size_t) length, "%3.0f", value);
   if (axis == PL_X_AXIS)
-    {
-      snprintf (label, (size_t) length, "%3.2f", value);
-    }
+    snprintf (label, (size_t) length, "%3.2f", value);
 }
 
 /* A custom axis labeling function for an altitude plot. */
@@ -1031,13 +994,9 @@ altitude_plot_labeler (
     PLINT axis, PLFLT value, char *label, PLINT length, PLPointer label_data)
 {
   if (axis == PL_Y_AXIS)
-    {
-      snprintf (label, (size_t) length, "%3.0f", value);
-    }
+    snprintf (label, (size_t) length, "%3.0f", value);
   if (axis == PL_X_AXIS)
-    {
-      snprintf (label, (size_t) length, "%3.2f", value);
-    }
+    snprintf (label, (size_t) length, "%3.2f", value);
 }
 
 /* Draw an xy plot. */
@@ -1178,13 +1137,9 @@ draw_bar (PlotData *plap, PlotData *ppace, int width, int height)
       plcol0 (15);
       plpsty (0);
       if (ppace->x[currIdx] > tot_dist)
-        {
-          plfbox (i, plap->y[i], 3);
-        }
+        plfbox (i, plap->y[i], 3);
       else
-        {
-          plfbox (i, plap->y[i], 2);
-        }
+        plfbox (i, plap->y[i], 2);
       /* x axis */
       sprintf (string, "%1.0f", (float) i + 1.0);
       float bar_width = 1.0 / ((float) (plap->num_pts) - 1.0);
@@ -1228,13 +1183,10 @@ G_MODULE_EXPORT
 gboolean
 on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 {
-
   PLINT width, height;
   /* Can't plot uninitialized. */
   if ((data->pd == NULL) || (data->plap == NULL))
-    {
-      return TRUE;
-    }
+    return TRUE;
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow *window = gtk_widget_get_window (widget);
   cairo_region_t *cairoRegion = cairo_region_create ();
@@ -1250,9 +1202,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   FILE *fp = fopen (tmpfile, "w");
   plsfile (fp);
   plinit ();
-
   pl_cmd (PLESC_DEVINIT, cr);
-
+  /* Find widget allocated width, height.*/
   GtkAllocation *alloc = g_new (GtkAllocation, 1);
   gtk_widget_get_allocation (widget, alloc);
   width = alloc->width;
@@ -1261,7 +1212,6 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Viewport and window */
   pladv (0);
   plvasp ((float) height / (float) width);
-
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons ())
     {
@@ -1281,16 +1231,13 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
       draw_bar (data->plap, data->ppace, width, height);
       break;
     }
-
   /* Close PLplot library */
   plend ();
-
   /* Reload svg to cairo context. */
   GError **error = NULL;
   RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
   RsvgRectangle viewport = { 0, 0, 0, 0 };
   rsvg_handle_render_document (handle, cr, &viewport, error);
-
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame (window, drawingContext);
   /* Cleanup */
@@ -1348,18 +1295,12 @@ on_button_press (GtkWidget *widget, GdkEvent *event, AllData *data)
 {
   guint buttonnum;
   if (data->pd == NULL)
-    {
-      return FALSE;
-    }
+    return FALSE;
   gdk_event_get_button (event, &buttonnum);
   if (buttonnum == 3)
-    {
-      change_cursor (widget, "crosshair");
-    }
+    change_cursor (widget, "crosshair");
   if (buttonnum == 1)
-    {
-      change_cursor (widget, "hand1");
-    }
+    change_cursor (widget, "hand1");
   /* Set user selected starting x, y in world coordinates. */
   gui_to_world (data->pd, (GdkEventButton *) event, Press);
   return TRUE;
@@ -1374,9 +1315,7 @@ on_button_release (GtkWidget *widget, GdkEvent *event, AllData *data)
 {
   guint buttonnum;
   if (data->pd == NULL)
-    {
-      return FALSE;
-    }
+    return FALSE;
   change_cursor (widget, "default");
   gdk_event_get_button (event, &buttonnum);
   /* Zoom out if right mouse button release. */
@@ -1430,9 +1369,7 @@ on_motion_notify (GtkWidget *widget, GdkEventButton *event, AllData *data)
 {
 
   if (data->pd == NULL)
-    {
-      return FALSE;
-    }
+    return FALSE;
   if (event->state & GDK_BUTTON3_MASK)
     {
       gui_to_world (data->pd, event, Move);
@@ -1571,16 +1508,12 @@ stats (double *arr, int arr_size, float *mean, float *stdev)
 {
   float sum = 0.0;
   for (int i = 0; i < arr_size; i++)
-    {
-      sum += arr[i];
-    }
+    sum += arr[i];
   *mean = sum / ((float) arr_size);
   // printf("%.2f ", *mean);
   sum = 0.0;
   for (int i = 0; i < arr_size; i++)
-    {
-      sum += pow ((arr[i] - *mean), 2);
-    }
+    sum += pow ((arr[i] - *mean), 2);
   *stdev = sqrt ((sum / (float) (arr_size)));
   // printf("%.2f", *stdev);
 }
@@ -1668,17 +1601,11 @@ update_map (AllData *data)
         }
       /* Add start and end markers. */
       if (startTrackMarker != NULL)
-        {
-          osm_gps_map_image_remove (map, startTrackMarker);
-        }
+        osm_gps_map_image_remove (map, startTrackMarker);
       if (endTrackMarker != NULL)
-        {
-          osm_gps_map_image_remove (map, endTrackMarker);
-        }
+        osm_gps_map_image_remove (map, endTrackMarker);
       if (posnTrackMarker != NULL)
-        {
-          osm_gps_map_image_remove (map, posnTrackMarker);
-        }
+        osm_gps_map_image_remove (map, posnTrackMarker);
       startTrackMarker = osm_gps_map_image_add (map, data->pd->lat[0],
                                                 data->pd->lng[0], starImage);
       endTrackMarker = osm_gps_map_image_add (
@@ -1834,9 +1761,7 @@ on_btnFileOpen_file_set (GtkFileChooserButton *btnFileOpen, AllData *pall)
   /* fname is a global */
   fname = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (btnFileOpen));
   if (pall != NULL)
-    {
-      reload_all (pall);
-    }
+    reload_all (pall);
 }
 
 //
@@ -1859,9 +1784,7 @@ on_update_index (GtkScale *widget, AllData *data)
   gtk_widget_queue_draw (GTK_WIDGET (da));
   // Redraw the position marker on the map.
   if ((map != NULL) && (posnTrackMarker != NULL))
-    {
-      move_marker (data->pd->lat[currIdx], data->pd->lng[currIdx]);
-    }
+    move_marker (data->pd->lat[currIdx], data->pd->lng[currIdx]);
   // Update the label below the graph.
   char yval[15];
   char xval[15];
@@ -2134,9 +2057,7 @@ main (int argc, char *argv[])
   /* Initialize a map and add it to a frame.
    */
   if (init_map () != 0)
-    {
-      return 1;
-    }
+    return 1;
   gtk_widget_show_all (window);
 
   /* Signals and events */
