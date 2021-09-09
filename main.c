@@ -426,7 +426,7 @@ update_summary (SessionData *psd)
   char line[80];
   /*Create a new summary file.*/
   char *tmpfile = path_to_temp_dir ();
-  strcat (tmpfile, "runplotter.txt");
+  strcat (tmpfile, "siliconsneaker.txt");
   FILE *fp = fopen (tmpfile, "w");
   create_summary (fp, psd);
   fclose (fp);
@@ -1204,7 +1204,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   plsdev ("svg");
   /* Device attributes */
   char *tmpfile = path_to_temp_dir ();
-  strcat (tmpfile, "runplotter.svg");
+  strcat (tmpfile, "siliconsneaker.svg");
   FILE *fp = fopen (tmpfile, "w");
   plsfile (fp);
   plinit ();
