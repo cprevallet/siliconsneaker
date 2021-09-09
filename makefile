@@ -1,5 +1,5 @@
 # change application name here (executable output name)
-TARGET=runplotter
+TARGET=siliconsneaker
 
 # compiler
 CC=gcc
