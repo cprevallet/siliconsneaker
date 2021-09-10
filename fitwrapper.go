@@ -33,7 +33,7 @@ package main
 import (
 	"C"
 	"bytes"
-	"fmt"
+	//"fmt"
 	"github.com/tormoder/fit"
   "math"
 	"io/ioutil"
@@ -65,22 +65,21 @@ func malloc_long_slice(size int) (p unsafe.Pointer, long_slice []C.long) {
 func open_fit_file(fit_filename string) (af *fit.ActivityFile) {
 	infile, err := os.Open(fit_filename) // For read access.
 	if err != nil {
-		panic("Can't open input file. Aborting.")
+    return nil
 	}
 	/* fBytes is an in-memory array of bytes read from the file. */
 	fBytes, err := ioutil.ReadAll(infile)
 	if err != nil {
-		panic("Can't read input file. Aborting.")
+    return nil
 	}
 	// Decode the FIT file data
 	fit, err := fit.Decode(bytes.NewReader(fBytes))
 	if err != nil {
-		fmt.Println(err)
-		return
+		return nil
 	}
 	af, err = fit.Activity()
 	if err != nil {
-		panic("Not an activity fit file. Aborting.")
+		return nil
 	}
 	return af
 }
@@ -242,6 +241,7 @@ func num_cvt(sessionval interface{}) (C.float) {
 
 //export parse_fit_file
 func parse_fit_file(fname *C.char, recSize int, lapSize int) (
+  C.long,
 	C.size_t, *C.long,
 	C.size_t, *C.float,
 	C.size_t, *C.float,
@@ -295,79 +295,137 @@ func parse_fit_file(fname *C.char, recSize int, lapSize int) (
 	/* Open an activity file. */
 	filename := C.GoString(fname)
 	af := open_fit_file(filename)
-	/* Convert the records to arrays (for items that are time based). */
-	pRecTimestamp,
-		pRecDistance,
-		pRecSpeed,
-		pRecAltitude,
-		pRecCadence,
-		pRecHeartRate,
-		pRecLat,
-		pRecLong,
-		nRecs,
-		pLapTimestamp,
-		pLapTotalDistance,
-		pLapStartPositionLat,
-		pLapStartPositionLong,
-		pLapEndPositionLat,
-		pLapEndPositionLong,
-		pLapTotalCalories,
-		pLapTotalElapsedTime,
-		pLapTotalTimerTime,
-		nLaps := make_arrays(af, recSize, lapSize)
-	/* Find the local time zone offset from UTC. */
-	_, tzOffset := af.Activity.LocalTimestamp.Zone()
+  if af != nil {
+    /* Convert the records to arrays (for items that are time based). */
+      pRecTimestamp,
+      pRecDistance,
+      pRecSpeed,
+      pRecAltitude,
+      pRecCadence,
+      pRecHeartRate,
+      pRecLat,
+      pRecLong,
+      nRecs,
+      pLapTimestamp,
+      pLapTotalDistance,
+      pLapStartPositionLat,
+      pLapStartPositionLong,
+      pLapEndPositionLat,
+      pLapEndPositionLong,
+      pLapTotalCalories,
+      pLapTotalElapsedTime,
+      pLapTotalTimerTime,
+      nLaps := make_arrays(af, recSize, lapSize)
+      /* Find the local time zone offset from UTC. */
+      _, tzOffset := af.Activity.LocalTimestamp.Zone()
+      /* Successful read, return values and error = 0. */
+      return 0,  //success!!
+      C.size_t(recSize), (*C.long)(pRecTimestamp),
+      C.size_t(recSize), (*C.float)(pRecDistance),
+      C.size_t(recSize), (*C.float)(pRecSpeed),
+      C.size_t(recSize), (*C.float)(pRecAltitude),
+      C.size_t(recSize), (*C.float)(pRecCadence),
+      C.size_t(recSize), (*C.float)(pRecHeartRate),
+      C.size_t(recSize), (*C.float)(pRecLat),
+      C.size_t(recSize), (*C.float)(pRecLong),
+      C.long(nRecs),
+      C.size_t(lapSize), (*C.long)(pLapTimestamp),
+      C.size_t(lapSize), (*C.float)(pLapTotalDistance),
+      C.size_t(lapSize), (*C.float)(pLapStartPositionLat),
+      C.size_t(lapSize), (*C.float)(pLapStartPositionLong),
+      C.size_t(lapSize), (*C.float)(pLapEndPositionLat),
+      C.size_t(lapSize), (*C.float)(pLapEndPositionLong),
+      C.size_t(lapSize), (*C.float)(pLapTotalCalories),
+      C.size_t(lapSize), (*C.float)(pLapTotalElapsedTime),
+      C.size_t(lapSize), (*C.float)(pLapTotalTimerTime),
+      C.long(nLaps),
+      C.long(af.Sessions[0].Timestamp.Unix()),
+      C.long(af.Sessions[0].StartTime.Unix()),
+      num_cvt(af.Sessions[0].StartPositionLat.Degrees()),
+      num_cvt(af.Sessions[0].StartPositionLong.Degrees()),
+      num_cvt(af.Sessions[0].GetTotalElapsedTimeScaled()),
+      num_cvt(af.Sessions[0].GetTotalTimerTimeScaled()),
+      num_cvt(af.Sessions[0].GetTotalDistanceScaled()),
+      num_cvt(af.Sessions[0].NecLat.Degrees()),
+      num_cvt(af.Sessions[0].NecLong.Degrees()),
+      num_cvt(af.Sessions[0].SwcLat.Degrees()),
+      num_cvt(af.Sessions[0].SwcLong.Degrees()),
+      num_cvt(af.Sessions[0].TotalWork),
+      num_cvt(af.Sessions[0].GetTotalMovingTimeScaled()),
+      num_cvt(af.Sessions[0].GetAvgLapTimeScaled()),
+      num_cvt(af.Sessions[0].TotalCalories),
+      num_cvt(af.Sessions[0].GetAvgSpeedScaled()),
+      num_cvt(af.Sessions[0].GetMaxSpeedScaled()),
+      num_cvt(af.Sessions[0].TotalAscent),
+      num_cvt(af.Sessions[0].TotalDescent),
+      num_cvt(af.Sessions[0].GetAvgAltitudeScaled()),
+      num_cvt(af.Sessions[0].GetMaxAltitudeScaled()),
+      num_cvt(af.Sessions[0].GetMinAltitudeScaled()),
+      num_cvt(af.Sessions[0].AvgHeartRate),
+      num_cvt(af.Sessions[0].MaxHeartRate),
+      num_cvt(af.Sessions[0].MinHeartRate),
+      num_cvt(af.Sessions[0].AvgCadence),
+      num_cvt(af.Sessions[0].MaxCadence),
+      num_cvt(af.Sessions[0].AvgTemperature),
+      num_cvt(af.Sessions[0].MaxTemperature),
+      num_cvt(af.Sessions[0].TotalAnaerobicTrainingEffect),
+      C.long(tzOffset)
 
-	return C.size_t(recSize), (*C.long)(pRecTimestamp),
-		C.size_t(recSize), (*C.float)(pRecDistance),
-		C.size_t(recSize), (*C.float)(pRecSpeed),
-		C.size_t(recSize), (*C.float)(pRecAltitude),
-		C.size_t(recSize), (*C.float)(pRecCadence),
-		C.size_t(recSize), (*C.float)(pRecHeartRate),
-		C.size_t(recSize), (*C.float)(pRecLat),
-		C.size_t(recSize), (*C.float)(pRecLong),
-		C.long(nRecs),
-		C.size_t(lapSize), (*C.long)(pLapTimestamp),
-		C.size_t(lapSize), (*C.float)(pLapTotalDistance),
-		C.size_t(lapSize), (*C.float)(pLapStartPositionLat),
-		C.size_t(lapSize), (*C.float)(pLapStartPositionLong),
-		C.size_t(lapSize), (*C.float)(pLapEndPositionLat),
-		C.size_t(lapSize), (*C.float)(pLapEndPositionLong),
-		C.size_t(lapSize), (*C.float)(pLapTotalCalories),
-		C.size_t(lapSize), (*C.float)(pLapTotalElapsedTime),
-		C.size_t(lapSize), (*C.float)(pLapTotalTimerTime),
-		C.long(nLaps),
-		C.long(af.Sessions[0].Timestamp.Unix()),
-		C.long(af.Sessions[0].StartTime.Unix()),
-		num_cvt(af.Sessions[0].StartPositionLat.Degrees()),
-		num_cvt(af.Sessions[0].StartPositionLong.Degrees()),
-		num_cvt(af.Sessions[0].GetTotalElapsedTimeScaled()),
-		num_cvt(af.Sessions[0].GetTotalTimerTimeScaled()),
-		num_cvt(af.Sessions[0].GetTotalDistanceScaled()),
-		num_cvt(af.Sessions[0].NecLat.Degrees()),
-		num_cvt(af.Sessions[0].NecLong.Degrees()),
-		num_cvt(af.Sessions[0].SwcLat.Degrees()),
-		num_cvt(af.Sessions[0].SwcLong.Degrees()),
-		num_cvt(af.Sessions[0].TotalWork),
-		num_cvt(af.Sessions[0].GetTotalMovingTimeScaled()),
-		num_cvt(af.Sessions[0].GetAvgLapTimeScaled()),
-		num_cvt(af.Sessions[0].TotalCalories),
-		num_cvt(af.Sessions[0].GetAvgSpeedScaled()),
-		num_cvt(af.Sessions[0].GetMaxSpeedScaled()),
-		num_cvt(af.Sessions[0].TotalAscent),
-		num_cvt(af.Sessions[0].TotalDescent),
-		num_cvt(af.Sessions[0].GetAvgAltitudeScaled()),
-		num_cvt(af.Sessions[0].GetMaxAltitudeScaled()),
-		num_cvt(af.Sessions[0].GetMinAltitudeScaled()),
-		num_cvt(af.Sessions[0].AvgHeartRate),
-		num_cvt(af.Sessions[0].MaxHeartRate),
-    num_cvt(af.Sessions[0].MinHeartRate),
-		num_cvt(af.Sessions[0].AvgCadence),
-		num_cvt(af.Sessions[0].MaxCadence),
-		num_cvt(af.Sessions[0].AvgTemperature),
-		num_cvt(af.Sessions[0].MaxTemperature),
-		num_cvt(af.Sessions[0].TotalAnaerobicTrainingEffect),
-		C.long(tzOffset)
+  } else {
+      /* Failed read.  Return garbage values and error = 1. */
+      return 1,  //failed!
+      C.size_t(recSize), (*C.long)(nil),
+      C.size_t(recSize), (*C.float)(nil),
+      C.size_t(recSize), (*C.float)(nil),
+      C.size_t(recSize), (*C.float)(nil),
+      C.size_t(recSize), (*C.float)(nil),
+      C.size_t(recSize), (*C.float)(nil),
+      C.size_t(recSize), (*C.float)(nil),
+      C.size_t(recSize), (*C.float)(nil),
+      C.long(0),
+      C.size_t(lapSize), (*C.long)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.size_t(lapSize), (*C.float)(nil),
+      C.long(0),
+      C.long(0),
+      C.long(0),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.float(math.NaN()),
+      C.long(0)
+  }
+
 }
 
 /* Dummy function (required for cgo) */

@@ -825,56 +825,70 @@ init_plot_data (AllData *pall)
    * result as a structure defined by fitwrapper.go.
    */
   result = parse_fit_file (fname, NSIZE, LSIZE);
-  //  long  *pRecTimestamp = result.r1;
-  float *prec_distance = result.r3;
-  float *prec_speed = result.r5;
-  float *prec_altitude = result.r7;
-  float *prec_cadence = result.r9;
-  float *prec_heartrate = result.r11;
-  float *prec_lat = result.r13;
-  float *prec_long = result.r15;
-  long nRecs = result.r16;
-  //  long  *pLapTimestamp = result.r18;
-  float *plap_total_distance = result.r20;
-  float *plap_start_position_lat = result.r22;
-  float *plap_start_position_long = result.r24;
-  //  float *plap_end_position_lat = result.r26;
-  //  float *plap_end_position_long = result.r28;
-  //  float *plap_total_calories = result.r30;
-  float *plap_total_elapsed_time = result.r32;
-  //  float *pLapTotalTimerTime = result.r34;
-  long nLaps = result.r35;
-  long sess_timestamp = result.r36;
-  long sess_start_time = result.r37;
-  float sess_start_position_lat = result.r38;
-  float sess_start_position_long = result.r39;
-  float sess_total_elapsed_time = result.r40;
-  float sess_total_timer_time = result.r41;
-  float sess_total_distance = result.r42;
-  float sess_nec_latitude = result.r43;
-  float sess_nec_longitude = result.r44;
-  float sess_swc_latitude = result.r45;
-  float sess_swc_longitude = result.r46;
-  float sess_total_work = result.r47;
-  float sess_total_moving_time = result.r48;
-  float sess_average_lap_time = result.r49;
-  float sess_total_calories = result.r50;
-  float sess_avg_speed = result.r51;
-  float sess_max_speed = result.r52;
-  float sess_total_ascent = result.r53;
-  float sess_total_descent = result.r54;
-  float sess_avg_altitude = result.r55;
-  float sess_max_altitude = result.r56;
-  float sess_min_altitude = result.r57;
-  float sess_avg_heartrate = result.r58;
-  float sess_max_heartrate = result.r59;
-  float sess_min_heartrate = result.r60;
-  float sess_avg_cadence = result.r61;
-  float sess_max_cadence = result.r62;
-  float sess_avg_temperature = result.r63;
-  float sess_max_temperature = result.r64;
-  float sess_total_anaerobic_training_effect = result.r65;
-  long time_zone_offset = result.r66;
+  // Not a fit file or could not read.
+  if (result.r0)
+    {
+      GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+      GtkWidget *dialog;
+      dialog = gtk_message_dialog_new (
+          NULL, flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+          "Error loading“%s”.\n File missing, corrupt, or wrong type.\n Try "
+          "another file.",
+          fname);
+      gtk_dialog_run (GTK_DIALOG (dialog));
+      gtk_widget_destroy (dialog);
+      return FALSE;
+    }
+  //  long  *pRecTimestamp = result.r2;
+  float *prec_distance = result.r4;
+  float *prec_speed = result.r6;
+  float *prec_altitude = result.r8;
+  float *prec_cadence = result.r10;
+  float *prec_heartrate = result.r12;
+  float *prec_lat = result.r14;
+  float *prec_long = result.r16;
+  long nRecs = result.r17;
+  //  long  *pLapTimestamp = result.r19;
+  float *plap_total_distance = result.r21;
+  float *plap_start_position_lat = result.r23;
+  float *plap_start_position_long = result.r25;
+  //  float *plap_end_position_lat = result.r27;
+  //  float *plap_end_position_long = result.r29;
+  //  float *plap_total_calories = result.r31;
+  float *plap_total_elapsed_time = result.r33;
+  //  float *pLapTotalTimerTime = result.r35;
+  long nLaps = result.r36;
+  long sess_timestamp = result.r37;
+  long sess_start_time = result.r38;
+  float sess_start_position_lat = result.r39;
+  float sess_start_position_long = result.r40;
+  float sess_total_elapsed_time = result.r41;
+  float sess_total_timer_time = result.r42;
+  float sess_total_distance = result.r43;
+  float sess_nec_latitude = result.r44;
+  float sess_nec_longitude = result.r45;
+  float sess_swc_latitude = result.r46;
+  float sess_swc_longitude = result.r47;
+  float sess_total_work = result.r48;
+  float sess_total_moving_time = result.r49;
+  float sess_average_lap_time = result.r50;
+  float sess_total_calories = result.r51;
+  float sess_avg_speed = result.r52;
+  float sess_max_speed = result.r53;
+  float sess_total_ascent = result.r54;
+  float sess_total_descent = result.r55;
+  float sess_avg_altitude = result.r56;
+  float sess_max_altitude = result.r57;
+  float sess_min_altitude = result.r58;
+  float sess_avg_heartrate = result.r59;
+  float sess_max_heartrate = result.r60;
+  float sess_min_heartrate = result.r61;
+  float sess_avg_cadence = result.r62;
+  float sess_max_cadence = result.r63;
+  float sess_avg_temperature = result.r64;
+  float sess_max_temperature = result.r65;
+  float sess_total_anaerobic_training_effect = result.r66;
+  long time_zone_offset = result.r67;
 
   /* Convert the raw values to user-facing values. */
   raw_to_user_plots (pall->ppace, nRecs, prec_distance, prec_speed, prec_lat,
@@ -1615,15 +1629,17 @@ reload_all (AllData *pall)
   if ((pall != NULL) && (fname != NULL))
     {
       /* Update the plots */
-      init_plot_data (pall);
-      /* Force a redraw on the drawing area. */
-      gtk_widget_queue_draw (GTK_WIDGET (da));
-      /* Update the summary table. */
-      update_summary (pall->psd);
-      /* Update the map. */
-      update_map (pall);
-      /* Update the slider and redraw. */
-      g_signal_emit_by_name (sc_IdxPct, "value-changed");
+      if (init_plot_data (pall))
+        {
+          /* Force a redraw on the drawing area. */
+          gtk_widget_queue_draw (GTK_WIDGET (da));
+          /* Update the summary table. */
+          update_summary (pall->psd);
+          /* Update the map. */
+          update_map (pall);
+          /* Update the slider and redraw. */
+          g_signal_emit_by_name (sc_IdxPct, "value-changed");
+        }
     }
 }
 
