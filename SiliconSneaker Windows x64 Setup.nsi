@@ -1,4 +1,4 @@
-;SiliconSneakers Setup
+;RV Setup
 ;Written by Craig S. Prevallet
 ;based on NSIS Modern User Interface
 ;NSIS Modern User Interface
@@ -123,8 +123,8 @@ Section "Components" Components
     ;Create shortcuts
     CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
     CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"  "" "$INSTDIR\\icons\\siliconsneaker.ico" 0
-    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\siliconsneaker.lnk" "$INSTDIR\run.bat" "" "$INSTDIR\\icons\\siliconsneaker.ico" 0
-    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\siliconsneaker(metric).lnk" "$INSTDIR\runmetric.bat" "" "$INSTDIR\\icons\\siliconsneaker.ico" 0
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\siliconsneaker.lnk" "$INSTDIR\run.bat" "" "$INSTDIR\\icons\\siliconsneaker.ico" 0 SW_SHOWMINIMIZED
+    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\siliconsneaker(metric).lnk" "$INSTDIR\runmetric.bat" "" "$INSTDIR\\icons\\siliconsneaker.ico" 0 SW_SHOWMINIMIZED
     ;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\rv_imperial_doc.lnk" "$INSTDIR\\docs\rv_imperial.1.html" "" "" 0
     ;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\rv_metric_doc.lnk" "$INSTDIR\\docs\rv_metric.1.html" "" "" 0
   
