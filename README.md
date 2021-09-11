@@ -2,7 +2,7 @@
 Generate graphs and a map for runs taken from Garmin watch fit files.  
 The program is GPL licensed, open-source, and cross-platform (Windows 10 and Debian Linux).  
 
-![Screenshot](https://github.com/cprevallet/siliconsneaker/tree/main/screenshot/siliconsneaker.png)
+![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker.png?raw=true)
 
 # Running the program.
 A Garmin running watch must first be plugged directly into a computer USB port with the appropriate charging/data connector.  
