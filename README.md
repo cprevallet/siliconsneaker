@@ -36,18 +36,18 @@ Usage: ./siliconsneaker [OPTION]...[FILENAME]
 - Extensive tooltips are also provided.
 
 # Building from source
-## Install build time dependencies.
+## Install build-time dependencies
 ```
 apt install build-essential libc6-dev libgtk-3-dev libglib2.0-dev librsvg2-dev libcairo2-dev libplplot-dev libosmgpsmap-1.0-dev golang-1.15-go  
 ```
 
-## Get source files.
+## Get source files
 ```
 git clone https://github.com/cprevallet/siliconsneaker  
 go get github.com/tormoder/fit@v0.10.0  
 ```
 
-## Build executables.
+## Build executables
 ```
 make clean  
 make  
