@@ -1,3 +1,4 @@
+![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/readme/screenshot/siliconsneaker.png)
 # SiliconSneaker
 Generate a graph and a map for runs taken from Garmin watch fit files.
 
