@@ -1,6 +1,7 @@
 # SiliconSneaker
 Generate a graphs and a map for runs taken from Garmin watch fit files.  
-The program is GPL licensed, open-source, and cross-platform.
+The program is GPL licensed, open-source, and cross-platform (Windows 10 and Debian Linux).  
+
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/readme/screenshot/siliconsneaker.png)
 
 # Running the program.
