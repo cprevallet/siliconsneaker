@@ -1,12 +1,13 @@
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/readme/screenshot/siliconsneaker.png)
 # SiliconSneaker
-Generate a graph and a map for runs taken from Garmin watch fit files.
+Generate a graphs and a map for runs taken from Garmin watch fit files.  
+The program is GPL licensed, open-source, and cross-platform.
 
 # Running the program.
 A Garmin running watch must first be plugged directly into a computer USB port with the appropriate charging/data connector.  
 Fenix: https://buy.garmin.com/en-US/US/p/107531#overview  
 Forerunner: https://buy.garmin.com/en-US/US/p/620328#devices  
-Once plugged in, the Garmin watch should mount itself as a USB device and present a file system to the host PC.  From this file system a FIT file may be opened from the command line or from within the program.
+Once plugged in, the Garmin watch should mount itself as a USB device and present a file system to the host PC.  Individual activities (runs) may be viewed when FIT files are opened from within the program.
 ```
 siliconsneaker
 ```
@@ -21,6 +22,17 @@ Usage: ./siliconsneaker [OPTION]...[FILENAME]
  -h  print program help
  -v  print program version
 ```
+
+## Features
+- Pace, cadence, heartrate, altitude, and split graphs are provided. (However, not all watches support provide all types.)
+- The map provides a GPS generated path and a heat map based on deviation from average speed.
+- The graphs support the ability to zoom and pan the trends.
+- The ability to switch unit systems is provided.
+- In progress values are provided by a slider widget which will be reflected in the graph and on the map.
+- Text values for measurements are provided near the slider.
+- Overall summary values are provided (again depending on what the watch provides.)
+- Extensive tooltips are also provided.
+
 # Building from source
 ## Install build time dependencies.
 ```
