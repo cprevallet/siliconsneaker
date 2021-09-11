@@ -24,13 +24,13 @@ Usage: ./siliconsneaker [OPTION]...[FILENAME]
 ```
 
 ## Features
-- Pace, cadence, heartrate, altitude, and split graphs are provided. (However, not all watches support provide all types.)
+- Pace, cadence, heartrate, altitude, and split graphs are provided. Values provided are watch dependent.
 - The map provides a GPS generated path and a heat map based on deviation from average speed.
 - The graphs support the ability to zoom and pan the trends.
 - The ability to switch unit systems is provided.
 - In progress values are provided by a slider widget which will be reflected in the graph and on the map.
 - Text values for measurements are provided near the slider.
-- Overall summary values are provided (again depending on what the watch provides.)
+- Overall summary values are provided. Values are watch dependent.
 - Extensive tooltips are also provided.
 
 # Building from source
