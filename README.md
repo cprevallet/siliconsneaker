@@ -5,7 +5,7 @@ The program is GPL licensed, open-source, and cross-platform (Windows 10 and Deb
 
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker.png?raw=true)
 
-# Running the program.
+# Running the program
 A Garmin running watch must first be plugged directly into a computer USB port with the appropriate charging/data connector.  
 Fenix: https://buy.garmin.com/en-US/US/p/107531#overview  
 Forerunner: https://buy.garmin.com/en-US/US/p/620328#devices  
