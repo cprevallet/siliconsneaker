@@ -107,7 +107,6 @@ Section "Components" Components
   File /r "icons\"
   SetOutPath "$INSTDIR"
   File siliconsneaker.glade
-  File poi.png
   File run.bat
   File runmetric.bat
   File LICENSE
