@@ -1,5 +1,7 @@
 # change application name here (executable output name)
 TARGET=siliconsneaker
+# install
+prefix = /usr
 
 # compiler
 CC=gcc
@@ -44,3 +46,13 @@ ui.c: siliconsneaker.glade ui.xml
 
 clean:
 	rm -f *.o *.a ui.c $(TARGET)
+
+install: all
+	install -D siliconsneaker $(DESTDIR)$(prefix)/bin/siliconsneaker
+	install -m 644 -D ./icons/siliconsneaker.svg $(DESTDIR)$(prefix)/share/pixmaps/siliconsneaker.svg
+	install -m 644 -D siliconsneaker.desktop $(DESTDIR)$(prefix)/share/applications/siliconsneaker.desktop
+
+uninstall: 
+	rm $(DESTDIR)$(prefix)/bin/siliconsneaker
+	rm $(DESTDIR)$(prefix)/share/pixmaps/siliconsneaker.svg
+	rm $(DESTDIR)$(prefix)/share/applications/siliconsneaker.desktop

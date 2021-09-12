@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Name=SiliconSneaker
+GenericName=Garmin Watch File Viewer
+Comment=View runs from your Garmin brand watch
+# environmental file vars + executable + executable arguments
+Exec=siliconsneaker
+Icon=/usr/share/pixmaps/siliconsneaker.svg
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true
