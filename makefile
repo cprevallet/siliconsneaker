@@ -24,7 +24,7 @@ else
     LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic -lm
 endif
 
-OBJS= main.o fitwrapper.a
+OBJS= main.o fitwrapper.a ui.o
 
 all: $(OBJS)	
 	$(LD) -o $(TARGET) $(OBJS) $(LDFLAGS)
@@ -34,6 +34,13 @@ main.o: main.c fitwrapper.a
     
 fitwrapper.a: fitwrapper.go 
 	go build -buildmode=c-archive fitwrapper.go
-    
+
+ui.o: ui.c
+	$(CC) -c $(CCFLAGS) ui.c $(GTKLIB)
+
+# resource compiler
+ui.c: siliconsneaker.glade ui.xml
+	glib-compile-resources --target=ui.c --generate-source ui.xml
+
 clean:
-	rm -f *.o *.a $(TARGET)
+	rm -f *.o *.a ui.c $(TARGET)
