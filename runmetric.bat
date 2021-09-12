@@ -1,1 +1,0 @@
-.\bin\siliconsneaker.exe -m
