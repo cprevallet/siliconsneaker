@@ -1,0 +1,59 @@
+# Packaging for Debian Linux
+mkdir deploy
+cd deploy
+git clone https://github.com/cprevallet/siliconsneaker
+mv siliconsneaker/ siliconsneaker-1.0/
+tar -czvf siliconsneaker_1.0.orig.tar.gz siliconsneaker-1.0
+mv debian directory from /siliconsneaker-1.0/deploy/debian to siliconsneaker-1.0/debian
+
+deploy should look like this:
+
+$ tree
+.
+├── siliconsneaker-1.0
+│   ├── debian
+│   │   ├── changelog
+│   │   ├── control
+│   │   ├── copyright
+│   │   ├── rules
+│   │   └── source
+│   │       └── format
+│   ├── deploy
+│   │   └── windows
+│   │       └── SiliconSneaker Windows x64 Setup.nsi
+│   ├── fitwrapper.go
+│   ├── go.mod
+│   ├── go.sum
+│   ├── icons
+│   │   ├── siliconsneaker.Devel.ico
+│   │   ├── siliconsneaker.Devel.svg
+│   │   ├── siliconsneaker.ico
+│   │   ├── siliconsneaker.Source.svg
+│   │   ├── siliconsneaker.svg
+│   │   └── siliconsneaker-symbolic.svg
+│   ├── LICENSE
+│   ├── main.c
+│   ├── makefile
+│   ├── poi.png
+│   ├── README.md
+│   ├── screenshot
+│   │   └── siliconsneaker.png
+│   ├── siliconsneaker.desktop
+│   ├── siliconsneaker.glade
+│   └── ui.xml
+└── siliconsneaker_1.0.tar.gz
+
+
+
+dpkg-buildpackage -us -uc -ui -i
+cd ..
+workproduct => siliconsneaker_1.0_amd64.deb
+
+Installation 
+sudo apt install ./siliconsneaker_1.0_amd64.deb
+
+
+# Packaging for Windows 10
+Start NSIS
+Drag SiliconSneaker Windows x64 Setup.nsi inside NSIS
+
