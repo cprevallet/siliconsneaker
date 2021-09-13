@@ -1,4 +1,5 @@
 # Packaging for Debian Linux
+https://wiki.debian.org/Packaging/Intro?action=show&redirect=IntroDebianPackaging
 mkdir deploy
 cd deploy
 git clone https://github.com/cprevallet/siliconsneaker
@@ -54,6 +55,8 @@ sudo apt install ./siliconsneaker_1.0_amd64.deb
 
 
 # Packaging for Windows 10
+Read: https://www.gtk.org/docs/installations/windows
+Set up MSys2
 Start NSIS
 Drag SiliconSneaker Windows x64 Setup.nsi inside NSIS
 
