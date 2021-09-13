@@ -38,13 +38,14 @@ Usage: ./siliconsneaker [OPTION]...[FILENAME]
 # Building from source
 ## Install build-time dependencies
 ```
-apt install build-essential libc6-dev libgtk-3-dev libglib2.0-dev librsvg2-dev libcairo2-dev libplplot-dev libosmgpsmap-1.0-dev golang-1.15-go  
+apt install build-essential debhelper libc6-dev libgtk-3-dev libglib2.0-dev librsvg2-dev libcairo2-dev libplplot-dev libosmgpsmap-1.0-dev golang-1.15-go  
+export GOROOT=/usr/lib/go-1.15/
+export PATH=$PATH:$GOROOT/bin
 ```
 
 ## Get source files
 ```
 git clone https://github.com/cprevallet/siliconsneaker  
-go get github.com/tormoder/fit@v0.10.0  
 ```
 
 ## Build executables

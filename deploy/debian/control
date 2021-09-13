@@ -11,7 +11,7 @@ Build-Depends: debhelper-compat (= 13),
 	       libcairo2-dev,
 	       libplplot-dev,
 	       libosmgpsmap-1.0-dev,
-	       golang-1.16-go
+	       golang-1.15-go
 Standards-Version: 4.5.0
 Vcs-Browser: https://github.com/cprevallet/siliconsneaker
 Vcs-Git: https://github.com/cprevallet/siliconsneaker
