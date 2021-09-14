@@ -71,7 +71,7 @@
 //
 // Declarations section
 //
-#define VERSION 1.0
+#define VERSION "1.0"
 // Maximum readable records from a fit file.
 // 2880 is large enough for 4 hour marathon at 5 sec intervals
 #define NSIZE 2880
@@ -202,10 +202,12 @@ GtkRadioButton *rb_Altitude;
 GtkRadioButton *rb_Splits;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
-GtkButton *btn_Zoom_In, *btn_Zoom_Out;
+GtkButton *btn_Zoom_In, *btn_Zoom_Out, *btn_About;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
+GtkWindow *window;
+
 
 /* Declaration for the fit filename. */
 char *fname = NULL;
@@ -1100,39 +1102,42 @@ void
 draw_bar (PlotData *plap, PlotData *ppace, int width, int height)
 {
   char string[8];
-  if (plap->num_pts > 0) {
-    plwind (0.0, (float) plap->num_pts - 1.0, plap->ymin, plap->ymax);
-    plscol0a (15, 128, 128, 128, 0.9); // light gray for background
-    plcol0 (15);
-    plbox ("bc", 1.0, 0, "bcnv", 1.0, 0);
-    pllab (plap->xaxislabel, plap->yaxislabel, plap->start_time);
-    // Normal color.
-    plscol0a (2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.3);
-    // Highlight (progress) color.
-    plscol0a (3, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.5);
-    float tot_dist = 0.0;
-    for (int i = 0; i < plap->num_pts - 1; i++)
-      {
-        tot_dist = plap->x[i] + tot_dist;
-        plcol0 (15);
-        plpsty (0);
-        if (ppace->x[curr_idx] > tot_dist)
-          plfbox (i, plap->y[i], 3);
-        else
-          plfbox (i, plap->y[i], 2);
-        /* x axis */
-        sprintf (string, "%1.0f", (float) i + 1.0);
-        float bar_width = 1.0 / ((float) (plap->num_pts) - 1.0);
-        float xposn = (i + 0.5) * bar_width;
-        plmtex ("b", 1.0, xposn, 0.5, string);
-        /* bar label */
-        double secs, mins;
-        secs = modf (plap->y[i], &mins);
-        secs *= 60.0;
-        snprintf (string, 8, "%2.0f:%02.0f", mins, secs);
-        plptex ((float) i + 0.5, (1.1 * plap->ymin), 0.0, 90.0, 0.0, string);
-      }
-  }
+  if (plap->num_pts > 0)
+    {
+      plwind (0.0, (float) plap->num_pts - 1.0, plap->ymin, plap->ymax);
+      plscol0a (15, 128, 128, 128, 0.9); // light gray for background
+      plcol0 (15);
+      plbox ("bc", 1.0, 0, "bcnv", 1.0, 0);
+      pllab (plap->xaxislabel, plap->yaxislabel, plap->start_time);
+      // Normal color.
+      plscol0a (2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2],
+                0.3);
+      // Highlight (progress) color.
+      plscol0a (3, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2],
+                0.5);
+      float tot_dist = 0.0;
+      for (int i = 0; i < plap->num_pts - 1; i++)
+        {
+          tot_dist = plap->x[i] + tot_dist;
+          plcol0 (15);
+          plpsty (0);
+          if (ppace->x[curr_idx] > tot_dist)
+            plfbox (i, plap->y[i], 3);
+          else
+            plfbox (i, plap->y[i], 2);
+          /* x axis */
+          sprintf (string, "%1.0f", (float) i + 1.0);
+          float bar_width = 1.0 / ((float) (plap->num_pts) - 1.0);
+          float xposn = (i + 0.5) * bar_width;
+          plmtex ("b", 1.0, xposn, 0.5, string);
+          /* bar label */
+          double secs, mins;
+          secs = modf (plap->y[i], &mins);
+          secs *= 60.0;
+          snprintf (string, 8, "%2.0f:%02.0f", mins, secs);
+          plptex ((float) i + 0.5, (1.1 * plap->ymin), 0.0, 90.0, 0.0, string);
+        }
+    }
 }
 
 /* Convenience function to find active radio button. */
@@ -1370,7 +1375,6 @@ static int
 init_map ()
 {
   // Load start, stop image for map points of interest.
-  //starImage = gdk_pixbuf_new_from_xpm_data (star);
   starImage = gdk_pixbuf_new_from_resource ("/ui/poi.png", NULL);
 
   // Geographical center of contiguous US
@@ -1772,43 +1776,65 @@ on_update_index (GtkScale *widget, AllData *data)
   char yval[15];
   char xval[15];
   if (data->pd->y && data->pd->x)
-  {
-    switch (data->pd->ptype)
-      {
-      case PacePlot:
-        pace_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
-        pace_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
-        break;
-      case CadencePlot:
-        cadence_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
-        cadence_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
-        break;
-      case AltitudePlot:
-        altitude_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
-        altitude_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
-        break;
-      case HeartRatePlot:
-        heart_rate_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15,
+    {
+      switch (data->pd->ptype)
+        {
+        case PacePlot:
+          pace_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
+          pace_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
+          break;
+        case CadencePlot:
+          cadence_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15,
+                                NULL);
+          cadence_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15,
+                                NULL);
+          break;
+        case AltitudePlot:
+          altitude_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15,
                                  NULL);
-        heart_rate_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15,
+          altitude_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15,
                                  NULL);
-        break;
-      case LapPlot:
-        break;
-      }
-    char *curr_vals;
-    curr_vals = malloc (strlen (data->pd->xaxislabel) + 2 + strlen (xval) + 2 +
-                        strlen (data->pd->yaxislabel) + 2 + strlen (yval) + 1);
-    strcpy (curr_vals, data->pd->xaxislabel);
-    strcat (curr_vals, "= ");
-    strcat (curr_vals, xval);
-    strcat (curr_vals, ", ");
-    strcat (curr_vals, data->pd->yaxislabel);
-    strcat (curr_vals, "= ");
-    strcat (curr_vals, yval);
-    gtk_label_set_text (lbl_val, curr_vals);
-    free (curr_vals);
-  }
+          break;
+        case HeartRatePlot:
+          heart_rate_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15,
+                                   NULL);
+          heart_rate_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15,
+                                   NULL);
+          break;
+        case LapPlot:
+          break;
+        }
+      char *curr_vals;
+      curr_vals =
+          malloc (strlen (data->pd->xaxislabel) + 2 + strlen (xval) + 2 +
+                  strlen (data->pd->yaxislabel) + 2 + strlen (yval) + 1);
+      strcpy (curr_vals, data->pd->xaxislabel);
+      strcat (curr_vals, "= ");
+      strcat (curr_vals, xval);
+      strcat (curr_vals, ", ");
+      strcat (curr_vals, data->pd->yaxislabel);
+      strcat (curr_vals, "= ");
+      strcat (curr_vals, yval);
+      gtk_label_set_text (lbl_val, curr_vals);
+      free (curr_vals);
+    }
+}
+
+#ifdef _WIN32
+G_MODULE_EXPORT
+#endif
+void
+on_window_show_about_dialog (GtkButton *btn, GtkWindow *window)
+{
+  const gchar *artists[] = { "Craig S. Prevallet", "Amos Kofi Commey", NULL };
+  const gchar *authors[] = { "Craig S. Prevallet", "John Stowers",
+                             "Tormod Erevik Lea", NULL };
+  gtk_show_about_dialog (
+      GTK_WINDOW (window), "authors", authors, "artists", artists, "version",
+      VERSION, "comments", "View your run files.", "website",
+      "https://wiki.gnome.org/action/show/Apps/Files", "copyright",
+      "© 2021 Craig S. Prevallet", "license-type", GTK_LICENSE_GPL_2_0,
+      "wrap-license", TRUE, NULL);
 }
 
 /* Call when the main window is closed.*/
@@ -2036,9 +2062,15 @@ main (int argc, char *argv[])
       GTK_FILE_CHOOSER_BUTTON (gtk_builder_get_object (builder, "btnFileOpen"));
   btn_Zoom_In = GTK_BUTTON (gtk_builder_get_object (builder, "btn_Zoom_In"));
   btn_Zoom_Out = GTK_BUTTON (gtk_builder_get_object (builder, "btn_Zoom_Out"));
+  btn_About = GTK_BUTTON (gtk_builder_get_object (builder, "btn_About"));
   cb_Units = GTK_COMBO_BOX_TEXT (gtk_builder_get_object (builder, "cb_Units"));
   sc_IdxPct = GTK_SCALE (gtk_builder_get_object (builder, "sc_IdxPct"));
   lbl_val = GTK_LABEL (gtk_builder_get_object (builder, "lbl_val"));
+
+  /* Set the window icon. */
+//  static GdkPixbuf *icon = NULL;
+//  icon = gdk_pixbuf_new_from_resource ("siliconsneaker.png", NULL);
+//  gtk_window_set_icon (GTK_WINDOW (window), icon);
 
   /* Select a default chart to start. */
   default_chart ();
@@ -2076,6 +2108,9 @@ main (int argc, char *argv[])
                     NULL);
   g_signal_connect (GTK_BUTTON (btn_Zoom_Out), "clicked", G_CALLBACK (zoom_out),
                     NULL);
+  g_signal_connect (GTK_BUTTON (btn_About), "clicked",
+                    G_CALLBACK (on_window_show_about_dialog),
+                    GTK_WINDOW (window));
   g_signal_connect (GTK_COMBO_BOX_TEXT (cb_Units), "changed",
                     G_CALLBACK (on_cb_units_changed), pall);
   g_signal_connect (GTK_FILE_CHOOSER (btnFileOpen), "file-set",
@@ -2122,7 +2157,7 @@ main (int argc, char *argv[])
         return 0;
         break;
       case 'v':
-        fprintf (stdout, "%s v%4.2f\n", argv[0], VERSION);
+        fprintf (stdout, "%s v%s\n", argv[0], VERSION);
         return 0;
         break;
       default:
