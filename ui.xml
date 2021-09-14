@@ -3,5 +3,6 @@
   <gresource prefix="/ui">
     <file preprocess="xml-stripblanks">siliconsneaker.glade</file>
     <file>poi.png</file>
+    <file>siliconsneaker.png</file>
   </gresource>
 </gresources>
