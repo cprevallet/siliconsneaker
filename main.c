@@ -1100,37 +1100,39 @@ void
 draw_bar (PlotData *plap, PlotData *ppace, int width, int height)
 {
   char string[8];
-  plwind (0.0, (float) plap->num_pts - 1.0, plap->ymin, plap->ymax);
-  plscol0a (15, 128, 128, 128, 0.9); // light gray for background
-  plcol0 (15);
-  plbox ("bc", 1.0, 0, "bcnv", 1.0, 0);
-  pllab (plap->xaxislabel, plap->yaxislabel, plap->start_time);
-  // Normal color.
-  plscol0a (2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.3);
-  // Highlight (progress) color.
-  plscol0a (3, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.5);
-  float tot_dist = 0.0;
-  for (int i = 0; i < plap->num_pts - 1; i++)
-    {
-      tot_dist = plap->x[i] + tot_dist;
-      plcol0 (15);
-      plpsty (0);
-      if (ppace->x[curr_idx] > tot_dist)
-        plfbox (i, plap->y[i], 3);
-      else
-        plfbox (i, plap->y[i], 2);
-      /* x axis */
-      sprintf (string, "%1.0f", (float) i + 1.0);
-      float bar_width = 1.0 / ((float) (plap->num_pts) - 1.0);
-      float xposn = (i + 0.5) * bar_width;
-      plmtex ("b", 1.0, xposn, 0.5, string);
-      /* bar label */
-      double secs, mins;
-      secs = modf (plap->y[i], &mins);
-      secs *= 60.0;
-      snprintf (string, 8, "%2.0f:%02.0f", mins, secs);
-      plptex ((float) i + 0.5, (1.1 * plap->ymin), 0.0, 90.0, 0.0, string);
-    }
+  if (plap->num_pts > 0) {
+    plwind (0.0, (float) plap->num_pts - 1.0, plap->ymin, plap->ymax);
+    plscol0a (15, 128, 128, 128, 0.9); // light gray for background
+    plcol0 (15);
+    plbox ("bc", 1.0, 0, "bcnv", 1.0, 0);
+    pllab (plap->xaxislabel, plap->yaxislabel, plap->start_time);
+    // Normal color.
+    plscol0a (2, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.3);
+    // Highlight (progress) color.
+    plscol0a (3, plap->linecolor[0], plap->linecolor[1], plap->linecolor[2], 0.5);
+    float tot_dist = 0.0;
+    for (int i = 0; i < plap->num_pts - 1; i++)
+      {
+        tot_dist = plap->x[i] + tot_dist;
+        plcol0 (15);
+        plpsty (0);
+        if (ppace->x[curr_idx] > tot_dist)
+          plfbox (i, plap->y[i], 3);
+        else
+          plfbox (i, plap->y[i], 2);
+        /* x axis */
+        sprintf (string, "%1.0f", (float) i + 1.0);
+        float bar_width = 1.0 / ((float) (plap->num_pts) - 1.0);
+        float xposn = (i + 0.5) * bar_width;
+        plmtex ("b", 1.0, xposn, 0.5, string);
+        /* bar label */
+        double secs, mins;
+        secs = modf (plap->y[i], &mins);
+        secs *= 60.0;
+        snprintf (string, 8, "%2.0f:%02.0f", mins, secs);
+        plptex ((float) i + 0.5, (1.1 * plap->ymin), 0.0, 90.0, 0.0, string);
+      }
+  }
 }
 
 /* Convenience function to find active radio button. */
