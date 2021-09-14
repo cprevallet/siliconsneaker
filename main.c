@@ -1769,41 +1769,44 @@ on_update_index (GtkScale *widget, AllData *data)
   // Update the label below the graph.
   char yval[15];
   char xval[15];
-  switch (data->pd->ptype)
-    {
-    case PacePlot:
-      pace_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
-      pace_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
-      break;
-    case CadencePlot:
-      cadence_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
-      cadence_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
-      break;
-    case AltitudePlot:
-      altitude_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
-      altitude_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
-      break;
-    case HeartRatePlot:
-      heart_rate_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15,
-                               NULL);
-      heart_rate_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15,
-                               NULL);
-      break;
-    case LapPlot:
-      break;
-    }
-  char *curr_vals;
-  curr_vals = malloc (strlen (data->pd->xaxislabel) + 2 + strlen (xval) + 2 +
-                      strlen (data->pd->yaxislabel) + 2 + strlen (yval) + 1);
-  strcpy (curr_vals, data->pd->xaxislabel);
-  strcat (curr_vals, "= ");
-  strcat (curr_vals, xval);
-  strcat (curr_vals, ", ");
-  strcat (curr_vals, data->pd->yaxislabel);
-  strcat (curr_vals, "= ");
-  strcat (curr_vals, yval);
-  gtk_label_set_text (lbl_val, curr_vals);
-  free (curr_vals);
+  if (data->pd->y && data->pd->x)
+  {
+    switch (data->pd->ptype)
+      {
+      case PacePlot:
+        pace_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
+        pace_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
+        break;
+      case CadencePlot:
+        cadence_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
+        cadence_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
+        break;
+      case AltitudePlot:
+        altitude_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15, NULL);
+        altitude_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15, NULL);
+        break;
+      case HeartRatePlot:
+        heart_rate_plot_labeler (PL_Y_AXIS, data->pd->y[curr_idx], yval, 15,
+                                 NULL);
+        heart_rate_plot_labeler (PL_X_AXIS, data->pd->x[curr_idx], xval, 15,
+                                 NULL);
+        break;
+      case LapPlot:
+        break;
+      }
+    char *curr_vals;
+    curr_vals = malloc (strlen (data->pd->xaxislabel) + 2 + strlen (xval) + 2 +
+                        strlen (data->pd->yaxislabel) + 2 + strlen (yval) + 1);
+    strcpy (curr_vals, data->pd->xaxislabel);
+    strcat (curr_vals, "= ");
+    strcat (curr_vals, xval);
+    strcat (curr_vals, ", ");
+    strcat (curr_vals, data->pd->yaxislabel);
+    strcat (curr_vals, "= ");
+    strcat (curr_vals, yval);
+    gtk_label_set_text (lbl_val, curr_vals);
+    free (curr_vals);
+  }
 }
 
 /* Call when the main window is closed.*/
