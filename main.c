@@ -1829,8 +1829,11 @@ on_window_show_about_dialog (GtkButton *btn, GtkWindow *window)
   const gchar *artists[] = { "Craig S. Prevallet", "Amos Kofi Commey", NULL };
   const gchar *authors[] = { "Craig S. Prevallet", "John Stowers",
                              "Tormod Erevik Lea", NULL };
+  GdkPixbuf *icon;
+  icon = gdk_pixbuf_new_from_resource ("siliconsneaker.png", NULL);
   gtk_show_about_dialog (
-      GTK_WINDOW (window), "authors", authors, "artists", artists, "version",
+      GTK_WINDOW (window), "logo", icon,
+      "authors", authors, "artists", artists, "version",
       VERSION, "comments", "View your run files.", "website",
       "https://wiki.gnome.org/action/show/Apps/Files", "copyright",
       "© 2021 Craig S. Prevallet", "license-type", GTK_LICENSE_GPL_2_0,
@@ -2067,10 +2070,6 @@ main (int argc, char *argv[])
   sc_IdxPct = GTK_SCALE (gtk_builder_get_object (builder, "sc_IdxPct"));
   lbl_val = GTK_LABEL (gtk_builder_get_object (builder, "lbl_val"));
 
-  /* Set the window icon. */
-//  static GdkPixbuf *icon = NULL;
-//  icon = gdk_pixbuf_new_from_resource ("siliconsneaker.png", NULL);
-//  gtk_window_set_icon (GTK_WINDOW (window), icon);
 
   /* Select a default chart to start. */
   default_chart ();
