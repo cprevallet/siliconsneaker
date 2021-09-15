@@ -1833,7 +1833,7 @@ on_window_show_about_dialog (GtkButton *btn, GtkWindow *window)
       GTK_WINDOW (window), 
       "authors", authors, "artists", artists, "version",
       VERSION, "comments", "View your run files.", "website",
-      "https://wiki.gnome.org/action/show/Apps/Files", "copyright",
+      "https://github.com/cprevallet/siliconsneaker", "copyright",
       "© 2021 Craig S. Prevallet", "license-type", GTK_LICENSE_GPL_2_0,
       "wrap-license", TRUE, NULL);
 }
