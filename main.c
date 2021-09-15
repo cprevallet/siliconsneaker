@@ -2069,7 +2069,7 @@ main (int argc, char *argv[])
   lbl_val = GTK_LABEL (gtk_builder_get_object (builder, "lbl_val"));
 
   GdkPixbuf *icon;
-  icon = gdk_pixbuf_new_from_resource ("siliconsneaker.png", NULL);
+  icon = gdk_pixbuf_new_from_resource ("/ui/siliconsneaker.png", NULL);
   gtk_window_set_default_icon(icon);
 
   /* Select a default chart to start. */
