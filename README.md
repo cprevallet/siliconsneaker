@@ -6,6 +6,11 @@ The program is GPL licensed, open-source, and cross-platform (Windows 10 and Deb
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker.png?raw=true)
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker_windows.png?raw=true)
 
+# Acquiring the program
+Precompiled binaries are available here:
+https://github.com/cprevallet/siliconsneaker/releases/tag/v1.0
+Building from source is described below.
+
 # Running the program
 A Garmin running watch must first be plugged directly into a computer USB port with the appropriate charging/data connector.  
 Fenix: https://buy.garmin.com/en-US/US/p/107531#overview  
