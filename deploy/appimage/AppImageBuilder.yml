@@ -2,7 +2,7 @@
 version: 1
 script: |
   # remove any existent binaries
-  rm AppDir | true
+  rm -rf ./AppDir | true
   make install DESTDIR=AppDir
 AppDir:
   path: /home/osboxes/siliconsneaker/AppDir
@@ -26,25 +26,11 @@ AppDir:
     include:
     - adwaita-icon-theme
     - fonts-dejavu-core
-    - gvfs:amd64
     - hicolor-icon-theme
-    - libcom-err2:amd64
-    - libdbus-1-3:amd64
-    - libexpat1:amd64
-    - libgpg-error0:amd64
     - libgtk-3-0:amd64
-    - libkeyutils1:amd64
-    - liblzma5:amd64
     - libosmgpsmap-1.0-1:amd64
-    - libpcre3:amd64
     - libplplot17:amd64
     - librsvg2-common:amd64
-    - libselinux1:amd64
-    - locales
-    - plplot-driver-qt
-    - plplot-driver-wxwidgets:amd64
-    - xkb-data
-    - zlib1g:amd64
   files:
     include:
     - /home/osboxes/.local/share/recently-used.xbel
