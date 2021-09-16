@@ -49,10 +49,10 @@ clean:
 
 install: all
 	install -D siliconsneaker $(DESTDIR)$(prefix)/bin/siliconsneaker
-	install -m 644 -D ./icons/siliconsneaker.svg $(DESTDIR)$(prefix)/share/pixmaps/siliconsneaker.svg
+	install -m 644 -D ./icons/siliconsneaker.svg $(DESTDIR)$(prefix)/share/icons/hicolor/scalable/apps/siliconsneaker.svg
 	install -m 644 -D siliconsneaker.desktop $(DESTDIR)$(prefix)/share/applications/siliconsneaker.desktop
 
 uninstall: 
 	rm $(DESTDIR)$(prefix)/bin/siliconsneaker
-	rm $(DESTDIR)$(prefix)/share/pixmaps/siliconsneaker.svg
+	rm $(DESTDIR)$(prefix)/share/icons/hicolor/scalable/apps/siliconsneaker.svg
 	rm $(DESTDIR)$(prefix)/share/applications/siliconsneaker.desktop
