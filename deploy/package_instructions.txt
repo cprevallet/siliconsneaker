@@ -60,3 +60,5 @@ Set up MSys2
 Start NSIS
 Drag SiliconSneaker Windows x64 Setup.nsi inside NSIS
 
+#Packaging for AppImage (Other Linux)
+appimage-builder --recipe AppImageBuilder.yml --skip-tests

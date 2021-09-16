@@ -65,11 +65,6 @@ make
 apt install libosmgpsmap-1.0-1 libgtk-3-0 libplplot17 librsvg2-2  
 ```
 
-# Packaging for Windows
-```
-apt install nsis  
-```
-Read: https://www.gtk.org/docs/installations/windows  
-```
-nsis 'SiliconSneaker Windows x64 Setup.nsi'   
-```
+# Packaging
+Instructions on how to package may be found here:
+![PackageInstructions](https://github.com/cprevallet/siliconsneaker/blob/main/deploy/package_instructions.txt?raw=true)
