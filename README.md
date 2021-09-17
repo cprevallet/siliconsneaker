@@ -6,12 +6,28 @@ The program is GPL licensed, open-source, and cross-platform (Windows and multip
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker.png?raw=true)
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker_windows.png?raw=true)
 
-# Acquiring the program
+# Installing
 Download compiled binaries here:
 https://github.com/cprevallet/siliconsneaker/releases/tag/v1.0
-Building from source is described below.
 
-# Running the program
+##Linux
+Download the AppImage file from the website.
+Left-click on the file and select properties. Navigate to permissions and check the box that says Allow executing file as program. Finally, run the file.
+
+For more information see https://discourse.appimage.org/t/how-to-make-an-appimage-executable/80.
+
+##Windows
+Download the .exe file from the website.
+Run the file. A wizard will then guide you through the rest of the installation.
+
+##Debian/Ubuntu Linux
+Download the .deb file from the website
+```
+sudo apt install -f /path/to/package/siliconsneaker_1.0_amd64.deb
+```
+-f switch will install required dependencies.
+
+# Running
 A Garmin running watch must first be plugged directly into a computer USB port with the appropriate charging/data connector.  
 Fenix: https://buy.garmin.com/en-US/US/p/107531#overview  
 Forerunner: https://buy.garmin.com/en-US/US/p/620328#devices  
@@ -41,7 +57,7 @@ Usage: ./siliconsneaker [OPTION]...[FILENAME]
 - Overall summary values are provided. Values are watch dependent.
 - Extensive tooltips are also provided.
 
-# Building from source
+# Building from source on Debian Linux
 ## Install build-time dependencies
 ```
 apt install build-essential debhelper libc6-dev libgtk-3-dev libglib2.0-dev librsvg2-dev libcairo2-dev libplplot-dev libosmgpsmap-1.0-dev golang-1.15-go  
@@ -60,11 +76,12 @@ make clean
 make  
 ```
 
-## Install run-time dependencies
+## Install run-time dependencies and application
 ```
 apt install libosmgpsmap-1.0-1 libgtk-3-0 libplplot17 librsvg2-2  
+make install
 ```
 
-# Packaging
+# How to package for all platforms
 Instructions on how to package may be found here:
 ![PackageInstructions](https://github.com/cprevallet/siliconsneaker/blob/main/deploy/package_instructions.txt?raw=true)
