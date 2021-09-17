@@ -38,12 +38,7 @@ Start from the command line or from your desktop.
 ```
 siliconsneaker
 ```
-
-## Windows
-Click on SiliconSneaker in the start menu.  Menu items are provided for both the English or Metric unit systems.
-
 There are a few command line options available as well.
-
 ```
 siliconsneaker -h
 Usage: ./siliconsneaker [OPTION]...[FILENAME]
@@ -52,6 +47,9 @@ Usage: ./siliconsneaker [OPTION]...[FILENAME]
  -h  print program help
  -v  print program version
 ```
+
+## Windows
+Click on SiliconSneaker in the start menu.  Menu items are provided for both the English or Metric unit systems.
 
 ## Features
 - Pace, cadence, heartrate, altitude, and split graphs are provided. Values provided are watch dependent.
