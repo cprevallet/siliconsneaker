@@ -12,9 +12,9 @@ https://github.com/cprevallet/siliconsneaker/releases/tag/v1.0
 
 ## Linux
 Download the AppImage file from the website.
-Left-click on the file and select properties. Navigate to permissions and check the box that says Allow executing file as program. Finally, run the file.
-
-For more information see https://discourse.appimage.org/t/how-to-make-an-appimage-executable/80.
+```
+sudo chmod +x SiliconSneaker-1.0-x86_64.AppImage
+```
 
 ## Windows
 Download the .exe file from the website.
@@ -32,9 +32,15 @@ A Garmin running watch must first be plugged directly into a computer USB port w
 Fenix: https://buy.garmin.com/en-US/US/p/107531#overview  
 Forerunner: https://buy.garmin.com/en-US/US/p/620328#devices  
 Once plugged in, the Garmin watch should mount itself as a USB device and present a file system to the host PC.  Individual activities (runs) may be viewed when FIT files are opened from within the program.
+
+## Linux
+Start from the command line or from your desktop.
 ```
 siliconsneaker
 ```
+
+## Windows
+Click on SiliconSneaker in the start menu.  Menu items are provided for both the English or Metric unit systems.
 
 There are a few command line options available as well.
 
