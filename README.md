@@ -7,7 +7,7 @@ The program is GPL licensed, open-source, and cross-platform (Windows 10 and Deb
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker_windows.png?raw=true)
 
 # Acquiring the program
-Precompiled binaries are available here:
+Download compiled binaries here:
 https://github.com/cprevallet/siliconsneaker/releases/tag/v1.0
 Building from source is described below.
 
