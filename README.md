@@ -10,17 +10,17 @@ The program is GPL licensed, open-source, and cross-platform (Windows and multip
 Download compiled binaries here:
 https://github.com/cprevallet/siliconsneaker/releases/tag/v1.0
 
-##Linux
+## Linux
 Download the AppImage file from the website.
 Left-click on the file and select properties. Navigate to permissions and check the box that says Allow executing file as program. Finally, run the file.
 
 For more information see https://discourse.appimage.org/t/how-to-make-an-appimage-executable/80.
 
-##Windows
+## Windows
 Download the .exe file from the website.
 Run the file. A wizard will then guide you through the rest of the installation.
 
-##Debian/Ubuntu Linux
+## Debian/Ubuntu Linux
 Download the .deb file from the website
 ```
 sudo apt install -f /path/to/package/siliconsneaker_1.0_amd64.deb
