@@ -1194,6 +1194,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   gtk_widget_get_allocation (widget, alloc);
   width = alloc->width;
   height = alloc->height;
+  // printf("h=%d, w=%d\n", height, width);
   g_free (alloc);
   /* Viewport and window */
   pladv (0);
