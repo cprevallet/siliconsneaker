@@ -1199,6 +1199,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Viewport and window */
   pladv (0);
   plvasp ((float) height / (float) width);
+  //plvsta();
+  //plvpor(0.1, 0.9, 0.1, 0.9);
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons ())
     {
