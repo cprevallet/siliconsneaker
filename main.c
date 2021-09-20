@@ -1223,7 +1223,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Reload svg to cairo context. */
   GError **error = NULL;
   RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
-  RsvgRectangle viewport = { 0, 0, 0, 0 };
+  RsvgRectangle viewport = { 0, 0, width, height };
   rsvg_handle_render_document (handle, cr, &viewport, error);
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame (window, drawingContext);
