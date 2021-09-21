@@ -7,7 +7,7 @@ The program is GPL licensed, open-source, and cross-platform (Windows and multip
 ![Screenshot](https://github.com/cprevallet/siliconsneaker/blob/main/screenshot/siliconsneaker_windows.png?raw=true)
 
 # Why?
-![AdvocacyVideo](https://youtu.be/JY-fb4hMTX8)
+https://youtu.be/JY-fb4hMTX8
 
 # Installing
 Download compiled binaries here:
