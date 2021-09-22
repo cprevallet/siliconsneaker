@@ -12,6 +12,7 @@ https://youtu.be/JY-fb4hMTX8
 # Installing
 Download compiled binaries here:
 https://github.com/cprevallet/siliconsneaker/releases/tag/v1.0
+
 A screenshow demonstrating how to download, install and run SiliconSneaker is available here:
 https://youtu.be/TGTkJU9eLp4 
 
