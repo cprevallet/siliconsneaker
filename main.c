@@ -77,6 +77,15 @@
 #define NSIZE 2880
 // Maximum readable laps from a fit file.
 #define LSIZE 400
+/* Define the amount of "margin" space on the graph as a normalized (0 - 1)
+ * value of the plot width and height. In reality, the margin includes
+ * labels, and titles in addition to blank space.
+ */
+#define NORMXMIN 0.1
+#define NORMYMIN 0.1
+#define NORMXMAX 0.9
+#define NORMYMAX 0.9
+#define ASPECT 0.75
 
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
@@ -119,10 +128,6 @@ typedef struct PlotData
   PLFLT vw_xmax;
   PLFLT vw_ymin;
   PLFLT vw_ymax;
-  PLFLT zm_xmin; // zoom limits, world coordinates
-  PLFLT zm_xmax;
-  PLFLT zm_ymin;
-  PLFLT zm_ymax;
   PLFLT zm_startx; // zoom, world coordinates
   PLFLT zm_starty;
   PLFLT zm_endx;
@@ -207,7 +212,6 @@ GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
 GtkWindow *window;
-
 
 /* Declaration for the fit filename. */
 char *fname = NULL;
@@ -443,6 +447,46 @@ update_summary (SessionData *psd)
 //
 // Plot routines.
 //
+
+/* Get plot sizing values. This assumes width >= height. */
+void
+get_graph_dimensions (int *width,
+                      int *height,
+                      float *left_edge,
+                      float *right_edge,
+                      float *top_edge,
+                      float *bottom_edge)
+{
+  /* Find widget allocated width, height.*/
+  if (height && width)
+    {
+      GtkAllocation *alloc = g_new (GtkAllocation, 1);
+      gtk_widget_get_allocation (GTK_WIDGET (da), alloc);
+      *width = alloc->width;
+      *height = alloc->height;
+      g_free (alloc);
+      float yaxis_length =
+          ((float) *height) * ((float) NORMYMAX - (float) NORMYMIN);
+      float xaxis_length = yaxis_length / ASPECT;
+      /* Calculate the pixel position for the edges of the plot
+       * excluding the margins (e.g. at the axes).
+       */
+      if (left_edge && right_edge)
+        {
+          *left_edge = ((float) *width - xaxis_length) / 2.0;
+          *right_edge = *left_edge + xaxis_length;
+        }
+      if (top_edge && bottom_edge)
+        {
+          *top_edge = ((float) *height - yaxis_length) / 2.0;
+          *bottom_edge = *top_edge + yaxis_length;
+        }
+      else
+        {
+          return;
+        }
+    }
+}
 
 /* Set the view limits to the data extents. */
 void
@@ -987,7 +1031,6 @@ draw_xy (PlotData *pd, int width, int height)
 {
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
-  PLFLT n_xmin, n_xmax, n_ymin, n_ymax;
   PLFLT x_hair = 0;
   PLFLT hairline_x[2], hairline_y[2];
   if ((pd->x != NULL) && (pd->y != NULL))
@@ -1032,15 +1075,6 @@ draw_xy (PlotData *pd, int width, int height)
       /* Plot the data that was loaded. */
       plwidth (2);
       plline (pd->num_pts, pd->x, pd->y);
-      /* Plot symbols for individual data points. */
-      // TODO valgrind reports mem lost on below line...
-      // plstring(pd->num_pts, pd->x, pd->y, pd->symbol);
-      /* Calculate the zoom limits (in pixels) for the graph. */
-      plgvpd (&n_xmin, &n_xmax, &n_ymin, &n_ymax);
-      pd->zm_xmin = width * n_xmin;
-      pd->zm_xmax = width * n_xmax;
-      pd->zm_ymin = height * (n_ymin - 1.0) + height;
-      pd->zm_ymax = height * (n_ymax - 1.0) + height;
       /*  Draw_selection box "rubber-band". */
       PLFLT rb_x[4];
       PLFLT rb_y[4];
@@ -1190,17 +1224,10 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   plinit ();
   pl_cmd (PLESC_DEVINIT, cr);
   /* Find widget allocated width, height.*/
-  GtkAllocation *alloc = g_new (GtkAllocation, 1);
-  gtk_widget_get_allocation (widget, alloc);
-  width = alloc->width;
-  height = alloc->height;
-  // printf("h=%d, w=%d\n", height, width);
-  g_free (alloc);
+  get_graph_dimensions (&width, &height, NULL, NULL, NULL, NULL);
   /* Viewport and window */
   pladv (0);
-  plvasp ((float) height / (float) width);
-  //plvsta();
-  //plvpor(0.1, 0.9, 0.1, 0.9);
+  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, ASPECT);
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons ())
     {
@@ -1236,11 +1263,6 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 
 /* Calculate the graph ("world") x,y coordinates corresponding to the
  * GUI mouse ("device") coordinates.
- *
- * The plot view bounds (vw_xmin, vw_xmax, vw_ymin, vw_ymax) and the plot
- * zoom bounds (zm_xmin, zm_xmax, zm_ymin, zm_ymax) are calculated
- * by the draw routine.
- *
  */
 void
 gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
@@ -1249,8 +1271,22 @@ gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
     {
       return;
     }
-  float fractx = (event->x - pd->zm_xmin) / (pd->zm_xmax - pd->zm_xmin);
-  float fracty = (pd->zm_ymax - event->y) / (pd->zm_ymax - pd->zm_ymin);
+
+  int width, height;
+  float left_edge, right_edge, top_edge, bottom_edge;
+  get_graph_dimensions (&width, &height, &left_edge, &right_edge, &top_edge,
+                        &bottom_edge);
+  float fractx = (event->x - left_edge) / (right_edge - left_edge);
+  float fracty = (bottom_edge - event->y) / (bottom_edge - top_edge);
+  if (event->x < left_edge)
+    fractx = 0.0;
+  if (event->x > right_edge)
+    fractx = 100.0;
+  if (event->y < top_edge)
+    fracty = 0.0;
+  if (event->y > bottom_edge)
+    fracty = 100.0;
+
   if (state == Press)
     {
       pd->zm_startx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
@@ -1833,8 +1869,7 @@ on_window_show_about_dialog (GtkButton *btn, GtkWindow *window)
   const gchar *authors[] = { "Craig S. Prevallet", "John Stowers",
                              "Tormod Erevik Lea", NULL };
   gtk_show_about_dialog (
-      GTK_WINDOW (window), 
-      "authors", authors, "artists", artists, "version",
+      GTK_WINDOW (window), "authors", authors, "artists", artists, "version",
       VERSION, "comments", "View your run files.", "website",
       "https://github.com/cprevallet/siliconsneaker", "copyright",
       "© 2021 Craig S. Prevallet", "license-type", GTK_LICENSE_GPL_2_0,
@@ -1887,10 +1922,6 @@ main (int argc, char *argv[])
   paceplot.vw_ymin = 0;
   paceplot.vw_ymax = 0;
   paceplot.vw_xmin = 0;
-  paceplot.zm_xmin = 0;
-  paceplot.zm_xmax = 0;
-  paceplot.zm_ymin = 0;
-  paceplot.zm_ymax = 0;
   paceplot.zm_startx = 0;
   paceplot.zm_starty = 0;
   paceplot.zm_endx = 0;
@@ -1918,10 +1949,6 @@ main (int argc, char *argv[])
   cadenceplot.vw_ymin = 0;
   cadenceplot.vw_ymax = 0;
   cadenceplot.vw_xmin = 0;
-  cadenceplot.zm_xmin = 0;
-  cadenceplot.zm_xmax = 0;
-  cadenceplot.zm_ymin = 0;
-  cadenceplot.zm_ymax = 0;
   cadenceplot.zm_startx = 0;
   cadenceplot.zm_starty = 0;
   cadenceplot.zm_endx = 0;
@@ -1949,10 +1976,6 @@ main (int argc, char *argv[])
   heartrateplot.vw_ymin = 0;
   heartrateplot.vw_ymax = 0;
   heartrateplot.vw_xmin = 0;
-  heartrateplot.zm_xmin = 0;
-  heartrateplot.zm_xmax = 0;
-  heartrateplot.zm_ymin = 0;
-  heartrateplot.zm_ymax = 0;
   heartrateplot.zm_startx = 0;
   heartrateplot.zm_starty = 0;
   heartrateplot.zm_endx = 0;
@@ -1980,10 +2003,6 @@ main (int argc, char *argv[])
   altitudeplot.vw_ymin = 0;
   altitudeplot.vw_ymax = 0;
   altitudeplot.vw_xmin = 0;
-  altitudeplot.zm_xmin = 0;
-  altitudeplot.zm_xmax = 0;
-  altitudeplot.zm_ymin = 0;
-  altitudeplot.zm_ymax = 0;
   altitudeplot.zm_startx = 0;
   altitudeplot.zm_starty = 0;
   altitudeplot.zm_endx = 0;
@@ -2011,10 +2030,6 @@ main (int argc, char *argv[])
   lapplot.vw_ymin = 0;
   lapplot.vw_ymax = 0;
   lapplot.vw_xmin = 0;
-  lapplot.zm_xmin = 0;
-  lapplot.zm_xmax = 0;
-  lapplot.zm_ymin = 0;
-  lapplot.zm_ymax = 0;
   lapplot.zm_startx = 0;
   lapplot.zm_starty = 0;
   lapplot.zm_endx = 0;
@@ -2073,7 +2088,7 @@ main (int argc, char *argv[])
 
   GdkPixbuf *icon;
   icon = gdk_pixbuf_new_from_resource ("/ui/siliconsneaker.png", NULL);
-  gtk_window_set_default_icon(icon);
+  gtk_window_set_default_icon (icon);
 
   /* Select a default chart to start. */
   default_chart ();
