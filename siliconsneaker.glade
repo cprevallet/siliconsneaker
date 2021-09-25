@@ -314,13 +314,13 @@
                         </child>
                         <child>
                           <object class="GtkViewport">
+                            <property name="width-request">800</property>
+                            <property name="height-request">600</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <child>
                               <object class="GtkDrawingArea" id="da">
                                 <property name="name">da</property>
-                                <property name="width-request">600</property>
-                                <property name="height-request">600</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Right mouse drag to pan.

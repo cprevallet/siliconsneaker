@@ -80,12 +80,14 @@
 /* Define the amount of "margin" space on the graph as a normalized (0 - 1)
  * value of the plot width and height. In reality, the margin includes
  * labels, and titles in addition to blank space.
+ * The values of GRAPH_LENGTH, GRAPH_HEIGHT should match glade settings.
  */
 #define NORMXMIN 0.1
 #define NORMYMIN 0.1
 #define NORMXMAX 0.9
 #define NORMYMAX 0.9
-#define ASPECT 0.75
+#define GRAPH_LENGTH 800  //from glade
+#define GRAPH_HEIGHT 600  //from glade
 
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
@@ -465,20 +467,21 @@ get_graph_dimensions (int *width,
       *width = alloc->width;
       *height = alloc->height;
       g_free (alloc);
-      float yaxis_length =
-          ((float) *height) * ((float) NORMYMAX - (float) NORMYMIN);
-      float xaxis_length = yaxis_length / ASPECT;
+      float aspect = ((float)*height/(float)*width);
+      float xaxis_length = GRAPH_LENGTH * ((float) NORMXMAX - (float) NORMXMIN);
+      float yaxis_length = xaxis_length * aspect;
+ 
       /* Calculate the pixel position for the edges of the plot
        * excluding the margins (e.g. at the axes).
        */
       if (left_edge && right_edge)
         {
-          *left_edge = ((float) *width - xaxis_length) / 2.0;
+          *left_edge = (((float) *width - GRAPH_LENGTH) / 2.0) + ((GRAPH_LENGTH - xaxis_length) / 2.0);
           *right_edge = *left_edge + xaxis_length;
         }
       if (top_edge && bottom_edge)
         {
-          *top_edge = ((float) *height - yaxis_length) / 2.0;
+          *top_edge = (((float) *height - GRAPH_HEIGHT) / 2.0) + ((GRAPH_HEIGHT - yaxis_length) / 2.0);
           *bottom_edge = *top_edge + yaxis_length;
         }
       else
@@ -1227,7 +1230,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   get_graph_dimensions (&width, &height, NULL, NULL, NULL, NULL);
   /* Viewport and window */
   pladv (0);
-  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, ASPECT);
+  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height/(float)width);
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons ())
     {
