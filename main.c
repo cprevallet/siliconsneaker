@@ -2147,31 +2147,21 @@ main (int argc, char *argv[])
   /* Process command line options. */
   int c;
   opterr = 0;
-  while ((c = getopt (argc, argv, "mf:hv")) != -1)
+  while ((c = getopt (argc, argv, "mhv")) != -1)
     switch (c)
       {
       case 'm':
         /* Set combo box to metric */
         gtk_combo_box_set_active (GTK_COMBO_BOX (cb_Units), Metric);
         break;
-      case 'f':
-        fname = optarg;
-        /* This seems sketchy to run before the input event loop
-         * but seems to work.
-         */
-        reload_all (pall);
-        break;
       case '?':
-        if (optopt == 'f')
-          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-        else if (isprint (optopt))
+        if (isprint (optopt))
           fprintf (stderr, "Unknown option `-%c'.\n", optopt);
         else
           fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
         return 1;
       case 'h':
         fprintf (stdout, "Usage: %s [OPTION]...[FILENAME]\n", argv[0]);
-        fprintf (stdout, " -f  open filename\n");
         fprintf (stdout, " -m  use metric units\n");
         fprintf (stdout, " -h  print program help\n");
         fprintf (stdout, " -v  print program version\n");
@@ -2184,9 +2174,16 @@ main (int argc, char *argv[])
       default:
         abort ();
       }
-
   for (int index = optind; index < argc; index++)
-    printf ("Non-option argument %s\n", argv[index]);
+  {
+    if (argv[optind]) {
+          fname = argv[optind];
+          /* This seems sketchy to run before the input event loop
+           * but seems to work.
+           */
+          reload_all (pall);
+    }
+  }
 
   gtk_widget_show (window);
   gtk_main ();

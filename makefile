@@ -51,8 +51,15 @@ install: all
 	install -D siliconsneaker $(DESTDIR)$(prefix)/bin/siliconsneaker
 	install -m 644 -D ./icons/siliconsneaker.svg $(DESTDIR)$(prefix)/share/icons/hicolor/scalable/apps/siliconsneaker.svg
 	install -m 644 -D siliconsneaker.desktop $(DESTDIR)$(prefix)/share/applications/siliconsneaker.desktop
+	install -m 644 -D application-x-siliconsneaker.xml $(DESTDIR)$(prefix)/share/mime/packages/application-x-siliconsneaker.xml
+# These two from desktop-file-utils.
+	update-mime-database $(DESTDIR)$(prefix)/share/mime
+	update-desktop-database $(DESTDIR)$(prefix)/share/applications
 
 uninstall: 
 	rm $(DESTDIR)$(prefix)/bin/siliconsneaker
 	rm $(DESTDIR)$(prefix)/share/icons/hicolor/scalable/apps/siliconsneaker.svg
 	rm $(DESTDIR)$(prefix)/share/applications/siliconsneaker.desktop
+	rm $(DESTDIR)$(prefix)/share/mime/packages/application-x-siliconsneaker.xml
+	update-mime-database $(DESTDIR)$(prefix)/share/mime
+	update-desktop-database $(DESTDIR)$(prefix)/share/applications

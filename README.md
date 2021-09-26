@@ -48,7 +48,6 @@ There are a few command line options available as well.
 ```
 siliconsneaker -h
 Usage: ./siliconsneaker [OPTION]...[FILENAME]
- -f  open filename
  -m  use metric units
  -h  print program help
  -v  print program version
