@@ -111,6 +111,13 @@ Section "Components" Components
   ;Store installation folder
   WriteRegStr HKCU "Software\SiliconSneaker" "" $INSTDIR
   
+  ; Store file association
+  WriteRegStr HKCR ".fit" "" "SiliconSneaker"
+  WriteRegStr HKCR "SiliconSneaker" "" "SiliconSneaker File"
+  WriteRegStr HKCR "SiliconSneaker\DefaultIcon" "" "$INSTDIR\\icons\siliconsneaker.ico,1"
+  WriteRegStr HKCR "SiliconSneaker\shell\view" "" "View with SiliconSneaker"
+  WriteRegStr HKCR "SiliconSneaker\shell\view\command" "" '"$INSTDIR\\bin\siliconsneaker.exe" "%1"'
+
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   
@@ -146,5 +153,10 @@ Section "Uninstall"
   ;nsExec::Exec 'set STATIC_FILES ""'
 
   DeleteRegKey /ifempty HKCU "Software\SiliconSneaker"
+  ReadRegStr $R0 HKCR ".fit" ""
+  StrCmp $R0 "SiliconSneaker" 0 +2
+    DeleteRegKey HKCR ".fit"
+  DeleteRegKey HKCR "SiliconSneaker"
+
 
 SectionEnd
