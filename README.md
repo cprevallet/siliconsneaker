@@ -69,7 +69,7 @@ Click on SiliconSneaker in the start menu.  Menu items are provided for both the
 # Building from source on Debian Linux
 ## Install build-time dependencies
 ```
-apt install build-essential debhelper libc6-dev libgtk-3-dev libglib2.0-dev librsvg2-dev libcairo2-dev libplplot-dev libosmgpsmap-1.0-dev golang-1.15-go  
+apt install build-essential debhelper libc6-dev libgtk-3-dev libglib2.0-dev librsvg2-dev libcairo2-dev libplplot-dev libosmgpsmap-1.0-dev golang-1.15-go desktop-file-utils 
 export GOROOT=/usr/lib/go-1.15/
 export PATH=$PATH:$GOROOT/bin
 ```
