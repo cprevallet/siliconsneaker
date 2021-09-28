@@ -1,5 +1,5 @@
 # appimage-builder recipe see https://appimage-builder.readthedocs.io for details
-version: 1.1
+version: 1
 script: |
   # remove any existent binaries
   rm -rf ./AppDir | true
@@ -10,7 +10,7 @@ AppDir:
     id: siliconsneaker
     name: SiliconSneaker
     icon: siliconsneaker
-    version: '1.0'
+    version: '1.1'
     exec: usr/bin/siliconsneaker
     exec_args: $@
   apt:
