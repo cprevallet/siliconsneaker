@@ -176,7 +176,7 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
+                            <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>
@@ -192,7 +192,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">False</property>
+                    <property name="resize">True</property>
                     <property name="shrink">True</property>
                   </packing>
                 </child>
@@ -313,7 +313,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkViewport">
+                          <object class="GtkViewport" id="da_viewport">
                             <property name="width-request">800</property>
                             <property name="height-request">600</property>
                             <property name="visible">True</property>
@@ -330,7 +330,7 @@ Middle mouse to zoom out full.</property>
                             </child>
                           </object>
                           <packing>
-                            <property name="expand">False</property>
+                            <property name="expand">True</property>
                             <property name="fill">True</property>
                             <property name="position">1</property>
                           </packing>

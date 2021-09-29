@@ -209,6 +209,7 @@ GtkRadioButton *rb_Altitude;
 GtkRadioButton *rb_Splits;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
+GtkFrame *da_viewport;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out, *btn_About;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
@@ -463,7 +464,8 @@ get_graph_dimensions (int *width,
   if (height && width)
     {
       GtkAllocation *alloc = g_new (GtkAllocation, 1);
-      gtk_widget_get_allocation (GTK_WIDGET (da), alloc);
+      //gtk_widget_get_allocation (GTK_WIDGET (da), alloc);
+      gtk_widget_get_allocation (GTK_WIDGET (da_viewport), alloc);
       *width = alloc->width;
       *height = alloc->height;
       g_free (alloc);
@@ -2072,6 +2074,7 @@ main (int argc, char *argv[])
       GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbuffer1"));
   viewport = GTK_FRAME (gtk_builder_get_object (builder, "viewport"));
   da = GTK_DRAWING_AREA (gtk_builder_get_object (builder, "da"));
+  da_viewport = GTK_FRAME (gtk_builder_get_object (builder, "da_viewport"));
   rb_Pace = GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Pace"));
   rb_Cadence =
       GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Cadence"));
