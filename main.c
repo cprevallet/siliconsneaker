@@ -451,70 +451,64 @@ update_summary (SessionData *psd)
 // Plot routines.
 //
 void
-get_graph_dimensions (PlotData *pd,
-                      int *width,
-                      int *height,
-                      float *left_edge,
-                      float *right_edge,
-                      float *top_edge,
-                      float *bottom_edge)
+get_graph_edges (PlotData *pd,
+                 float *left_edge,
+                 float *right_edge,
+                 float *top_edge,
+                 float *bottom_edge)
 {
   /* Find widget allocated width, height.*/
-  if (height && width)
+
+  GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (da));
+  cairo_region_t *cairoRegion = gdk_window_get_visible_region (window);
+  cairo_rectangle_int_t rectangle;
+  cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
+  float h = (float) rectangle.height;
+  float w = (float) rectangle.width;
+  float aspect = h / w;
+  float xaxis_length, yaxis_length, graph_length, graph_height;
+  /* 0.75 comes from the height/width ratio in glade for the viewport.
+     This is an approximation but it works well enough unless the margins
+     are large relative to the graph itself. */
+  float horiz_margin = ((0.75 - aspect) * w) / 2.0;
+  float vert_margin = ((aspect - 0.75) * w) / 2.0;
+  /* Calculating the axis lengths in pixels is tricky because PLPlot generates
+     "the largest viewport with the given aspect ratio that ﬁts
+      within the speciﬁed region."  We store the generated viewport limits
+      (in normalized device coordinates) when we draw the graph
+      in on_da_draw.  Search for plgvpd. */
+  if (horiz_margin > vert_margin)
     {
-      GtkAllocation alloc;
-      gtk_widget_get_allocation (GTK_WIDGET (da), &alloc);
-      *width = alloc.width;
-      *height = alloc.height;
-      float aspect = ((float) *height / (float) *width);
-      float xaxis_length, yaxis_length, graph_length, graph_height;
-      float h = (float) *height;
-      float w = (float) *width;
-      /* 0.75 comes from the height/width ratio in glade for the viewport.
-         This is an approximation but it works well enough unless the margins
-         are large relative to the graph itself. */
-      float horiz_margin = ((0.75 - aspect) * w) / 2.0;
-      float vert_margin = ((aspect - 0.75) * w) / 2.0;
-      /* Calculating the axis lengths is tricky because PLPlot generates
-         "the largest viewport with the given aspect ratio that ﬁts
-          within the speciﬁed region."  We store the generated viewport limits
-          (in normalized device coordinates) when we draw the graph
-          in on_da_draw.  Search for plgvpd. */
-      if (horiz_margin > vert_margin)
-        {
-          graph_length = w - (2.0 * horiz_margin);
-          graph_height = h;
-          vert_margin = 0.0;
-        }
-      else
-        {
-          graph_height = h - (2.0 * vert_margin);
-          graph_length = w;
-          horiz_margin = 0.0;
-        }
-      xaxis_length =
-          graph_length * ((float) pd->vw_pxmax - (float) pd->vw_pxmin);
-      yaxis_length =
-          graph_height * ((float) pd->vw_pymax - (float) pd->vw_pymin);
-      /* Calculate the pixel position for the edges of the plot
-       * excluding the margins (e.g. at the axes).
-       */
-      if (left_edge && right_edge)
-        {
-          *left_edge = (((float) *width - graph_length) / 2.0) +
-                       ((graph_length - xaxis_length) / 2.0);
-          *right_edge = *left_edge + xaxis_length;
-        }
-      if (top_edge && bottom_edge)
-        {
-          *top_edge = (((float) *height - graph_height) / 2.0) +
-                      ((graph_height - yaxis_length) / 2.0);
-          *bottom_edge = *top_edge + yaxis_length;
-        }
-      else
-        {
-          return;
-        }
+      graph_length = w - (2.0 * horiz_margin);
+      graph_height = h;
+      vert_margin = 0.0;
+    }
+  else
+    {
+      graph_height = h - (2.0 * vert_margin);
+      graph_length = w;
+      horiz_margin = 0.0;
+    }
+  xaxis_length = graph_length * ((float) pd->vw_pxmax - (float) pd->vw_pxmin);
+  yaxis_length = graph_height * ((float) pd->vw_pymax - (float) pd->vw_pymin);
+  /* Calculate the pixel position for the edges of the plot
+   * excluding the margins (e.g. at the axes).
+   */
+  if (left_edge && right_edge)
+    {
+      *left_edge = (((float) w - graph_length) / 2.0) +
+                   ((graph_length - xaxis_length) / 2.0) + (float) rectangle.x;
+      *right_edge = *left_edge + xaxis_length;
+    }
+  if (top_edge && bottom_edge)
+    {
+      *top_edge = (((float) h - graph_height) / 2.0) +
+                  ((graph_height - yaxis_length) / 2.0) + (float) rectangle.y;
+      *bottom_edge = *top_edge + yaxis_length;
+    }
+  else
+    {
+      return;
     }
 }
 
@@ -1233,7 +1227,6 @@ G_MODULE_EXPORT
 gboolean
 on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 {
-  PLINT width, height;
   cairo_rectangle_int_t rectangle;
   /* Can't plot uninitialized. */
   if ((data->pd == NULL) || (data->plap == NULL))
@@ -1241,6 +1234,10 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow *window = gtk_widget_get_window (widget);
   cairo_region_t *cairoRegion = gdk_window_get_visible_region (window);
+  /* Need to get clipping rectangle for if/when we shrink the window. */
+  cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
+  int width = rectangle.width;
+  int height = rectangle.height;
   GdkDrawingContext *drawingContext;
   drawingContext = gdk_window_begin_draw_frame (window, cairoRegion);
   /* Say: "I want to start drawing". */
@@ -1254,8 +1251,6 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   plsfile (fp);
   plinit ();
   pl_cmd (PLESC_DEVINIT, cr);
-  /* Find widget allocated width, height.*/
-  get_graph_dimensions (data->pd, &width, &height, NULL, NULL, NULL, NULL);
   /* Viewport and window */
   pladv (0);
   plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX,
@@ -1288,9 +1283,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Reload svg to cairo context. */
   GError **error = NULL;
   RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
-  /* Need to get clipping rectangle. */
-  cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
-  RsvgRectangle viewport = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
+  RsvgRectangle viewport = { rectangle.x, rectangle.y, rectangle.width,
+                             rectangle.height };
   rsvg_handle_render_document (handle, cr, &viewport, error);
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame (window, drawingContext);
@@ -1310,11 +1304,9 @@ gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
       return;
     }
 
-  int width, height;
   float left_edge, right_edge, top_edge, bottom_edge;
-  /* Get the edges in device coordinates (e.g. pixels) */
-  get_graph_dimensions (pd, &width, &height, &left_edge, &right_edge, &top_edge,
-                        &bottom_edge);
+  /* Get the graph edges in device coordinates (e.g. pixels) */
+  get_graph_edges (pd, &left_edge, &right_edge, &top_edge, &bottom_edge);
   float fractx = (event->x - left_edge) / (right_edge - left_edge);
   float fracty = (bottom_edge - event->y) / (bottom_edge - top_edge);
   if (event->x < left_edge)
