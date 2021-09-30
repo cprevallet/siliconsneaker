@@ -85,6 +85,10 @@
 #define NORMYMIN 0.1
 #define NORMXMAX 0.9
 #define NORMYMAX 0.9
+PLFLT p_xmin;
+PLFLT p_xmax;
+PLFLT p_ymin;
+PLFLT p_ymax;
 
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
@@ -447,8 +451,6 @@ update_summary (SessionData *psd)
 //
 // Plot routines.
 //
-
-/* Get plot sizing values. This assumes width >= height. */
 void
 get_graph_dimensions (int *width,
                       int *height,
@@ -468,20 +470,27 @@ get_graph_dimensions (int *width,
       float xaxis_length, yaxis_length, graph_length, graph_height;
       float h = (float) *height;
       float w = (float) *width;
-      /* 0.75 comes from the height/width ratio in glade for the viewport */
+      /* 0.75 comes from the height/width ratio in glade for the viewport.
+         This is an approximation but it works well enough unless the margins
+         are large relative to the graph itself. */
       float horiz_margin = ((0.75 - aspect) * w) / 2.0;
       float vert_margin = ((aspect - 0.75) * w) / 2.0;
+      /* Calculating the axis lengths is tricky because PLPlot generates
+         "the largest viewport with the given aspect ratio that ﬁts
+          within the speciﬁed region."  We store the generated viewport limits 
+          (in normalized device coordinates) when we draw the graph 
+          in on_da_draw.  Search for plgvpd. */
       if (horiz_margin > vert_margin) {
         graph_length = w - (2.0 * horiz_margin);
         graph_height = h;
-        xaxis_length = graph_length * ((float) NORMXMAX - (float) NORMXMIN);
-        yaxis_length = graph_height * ((float) NORMYMAX - (float) NORMYMIN);
+        xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
+        yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
         vert_margin = 0.0;
       } else {
         graph_height = h - (2.0 * vert_margin);
         graph_length = w;
-        xaxis_length = graph_length * ((float) NORMXMAX - (float) NORMXMIN);
-        yaxis_length = graph_height * ((float) NORMYMAX - (float) NORMYMIN);
+        xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
+        yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
         horiz_margin = 0.0;
       }
       /* Calculate the pixel position for the edges of the plot
@@ -1263,6 +1272,9 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
       draw_bar (data->plap, data->ppace, width, height);
       break;
     }
+  /* Now how much margin are we actually generating? Store it in globals 
+     for use in zooming. */
+  plgvpd (&p_xmin, &p_xmax, &p_ymin, &p_ymax);
   /* Close PLplot library */
   plend ();
   /* Reload svg to cairo context. */
