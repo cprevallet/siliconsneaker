@@ -85,10 +85,6 @@
 #define NORMYMIN 0.1
 #define NORMXMAX 0.9
 #define NORMYMAX 0.9
-PLFLT p_xmin;
-PLFLT p_xmax;
-PLFLT p_ymin;
-PLFLT p_ymax;
 
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
@@ -135,6 +131,10 @@ typedef struct PlotData
   PLFLT zm_starty;
   PLFLT zm_endx;
   PLFLT zm_endy;
+  PLFLT vw_pxmin; // viewport limits in normalized device coordinates
+  PLFLT vw_pxmax;
+  PLFLT vw_pymin;
+  PLFLT vw_pymax;
   PLFLT *lat; // activity location, degrees lat,lng
   PLFLT *lng;
   char *start_time; // activity start time
@@ -210,7 +210,6 @@ GtkRadioButton *rb_Altitude;
 GtkRadioButton *rb_Splits;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
-GtkFrame *da_viewport;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out, *btn_About;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
@@ -452,7 +451,8 @@ update_summary (SessionData *psd)
 // Plot routines.
 //
 void
-get_graph_dimensions (int *width,
+get_graph_dimensions (PlotData *pd,
+                      int *width,
                       int *height,
                       float *left_edge,
                       float *right_edge,
@@ -484,18 +484,18 @@ get_graph_dimensions (int *width,
         {
           graph_length = w - (2.0 * horiz_margin);
           graph_height = h;
-          xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
-          yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
           vert_margin = 0.0;
         }
       else
         {
           graph_height = h - (2.0 * vert_margin);
           graph_length = w;
-          xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
-          yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
           horiz_margin = 0.0;
         }
+      xaxis_length =
+          graph_length * ((float) pd->vw_pxmax - (float) pd->vw_pxmin);
+      yaxis_length =
+          graph_height * ((float) pd->vw_pymax - (float) pd->vw_pymin);
       /* Calculate the pixel position for the edges of the plot
        * excluding the margins (e.g. at the axes).
        */
@@ -1254,7 +1254,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   plinit ();
   pl_cmd (PLESC_DEVINIT, cr);
   /* Find widget allocated width, height.*/
-  get_graph_dimensions (&width, &height, NULL, NULL, NULL, NULL);
+  get_graph_dimensions (data->pd, &width, &height, NULL, NULL, NULL, NULL);
   /* Viewport and window */
   pladv (0);
   plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX,
@@ -1278,9 +1278,10 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
       draw_bar (data->plap, data->ppace, width, height);
       break;
     }
-  /* Now how much margin are we actually generating? Store it in globals
+  /* Now how much padding around the plot are we actually generating? Store it
      for use in zooming. */
-  plgvpd (&p_xmin, &p_xmax, &p_ymin, &p_ymax);
+  plgvpd (&data->pd->vw_pxmin, &data->pd->vw_pxmax, &data->pd->vw_pymin,
+          &data->pd->vw_pymax);
   /* Close PLplot library */
   plend ();
   /* Reload svg to cairo context. */
@@ -1308,7 +1309,8 @@ gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
 
   int width, height;
   float left_edge, right_edge, top_edge, bottom_edge;
-  get_graph_dimensions (&width, &height, &left_edge, &right_edge, &top_edge,
+  /* Get the edges in device coordinates (e.g. pixels) */
+  get_graph_dimensions (pd, &width, &height, &left_edge, &right_edge, &top_edge,
                         &bottom_edge);
   float fractx = (event->x - left_edge) / (right_edge - left_edge);
   float fracty = (bottom_edge - event->y) / (bottom_edge - top_edge);
@@ -1320,7 +1322,7 @@ gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
     fracty = 0.0;
   if (event->y > bottom_edge)
     fracty = 100.0;
-
+  /* Calculate the zoom limits in world coordinates. */
   if (state == Press)
     {
       pd->zm_startx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
@@ -1960,6 +1962,10 @@ main (int argc, char *argv[])
   paceplot.zm_starty = 0;
   paceplot.zm_endx = 0;
   paceplot.zm_endy = 0;
+  paceplot.vw_pxmax = 0;
+  paceplot.vw_pymin = 0;
+  paceplot.vw_pymax = 0;
+  paceplot.vw_pxmin = 0;
   paceplot.lat = NULL;
   paceplot.lng = NULL;
   paceplot.xaxislabel = NULL;
@@ -1987,6 +1993,10 @@ main (int argc, char *argv[])
   cadenceplot.zm_starty = 0;
   cadenceplot.zm_endx = 0;
   cadenceplot.zm_endy = 0;
+  cadenceplot.vw_pxmax = 0;
+  cadenceplot.vw_pymin = 0;
+  cadenceplot.vw_pymax = 0;
+  cadenceplot.vw_pxmin = 0;
   cadenceplot.lat = NULL;
   cadenceplot.lng = NULL;
   cadenceplot.xaxislabel = NULL;
@@ -2014,6 +2024,10 @@ main (int argc, char *argv[])
   heartrateplot.zm_starty = 0;
   heartrateplot.zm_endx = 0;
   heartrateplot.zm_endy = 0;
+  heartrateplot.vw_pxmax = 0;
+  heartrateplot.vw_pymin = 0;
+  heartrateplot.vw_pymax = 0;
+  heartrateplot.vw_pxmin = 0;
   heartrateplot.lat = NULL;
   heartrateplot.lng = NULL;
   heartrateplot.xaxislabel = NULL;
@@ -2041,6 +2055,10 @@ main (int argc, char *argv[])
   altitudeplot.zm_starty = 0;
   altitudeplot.zm_endx = 0;
   altitudeplot.zm_endy = 0;
+  altitudeplot.vw_pxmax = 0;
+  altitudeplot.vw_pymin = 0;
+  altitudeplot.vw_pymax = 0;
+  altitudeplot.vw_pxmin = 0;
   altitudeplot.lat = NULL;
   altitudeplot.lng = NULL;
   altitudeplot.xaxislabel = NULL;
@@ -2068,6 +2086,10 @@ main (int argc, char *argv[])
   lapplot.zm_starty = 0;
   lapplot.zm_endx = 0;
   lapplot.zm_endy = 0;
+  lapplot.vw_pxmax = 0;
+  lapplot.vw_pymin = 0;
+  lapplot.vw_pymax = 0;
+  lapplot.vw_pxmin = 0;
   lapplot.lat = NULL;
   lapplot.lng = NULL;
   lapplot.xaxislabel = NULL;
@@ -2103,7 +2125,6 @@ main (int argc, char *argv[])
       GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbuffer1"));
   viewport = GTK_FRAME (gtk_builder_get_object (builder, "viewport"));
   da = GTK_DRAWING_AREA (gtk_builder_get_object (builder, "da"));
-  da_viewport = GTK_FRAME (gtk_builder_get_object (builder, "da_viewport"));
   rb_Pace = GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Pace"));
   rb_Cadence =
       GTK_RADIO_BUTTON (gtk_builder_get_object (builder, "rb_Cadence"));
