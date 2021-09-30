@@ -80,14 +80,11 @@
 /* Define the amount of "margin" space on the graph as a normalized (0 - 1)
  * value of the plot width and height. In reality, the margin includes
  * labels, and titles in addition to blank space.
- * The values of GRAPH_LENGTH, GRAPH_HEIGHT should match glade settings.
  */
 #define NORMXMIN 0.1
 #define NORMYMIN 0.1
 #define NORMXMAX 0.9
 #define NORMYMAX 0.9
-#define GRAPH_LENGTH 800  //from glade
-#define GRAPH_HEIGHT 600  //from glade
 
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
@@ -463,27 +460,41 @@ get_graph_dimensions (int *width,
   /* Find widget allocated width, height.*/
   if (height && width)
     {
-      GtkAllocation *alloc = g_new (GtkAllocation, 1);
-      //gtk_widget_get_allocation (GTK_WIDGET (da), alloc);
-      gtk_widget_get_allocation (GTK_WIDGET (da_viewport), alloc);
-      *width = alloc->width;
-      *height = alloc->height;
-      g_free (alloc);
+      GtkAllocation alloc;
+      gtk_widget_get_allocation (GTK_WIDGET (da), &alloc);
+      *width = alloc.width;
+      *height = alloc.height;
       float aspect = ((float)*height/(float)*width);
-      float xaxis_length = GRAPH_LENGTH * ((float) NORMXMAX - (float) NORMXMIN);
-      float yaxis_length = xaxis_length * aspect;
- 
+      float xaxis_length, yaxis_length, graph_length, graph_height;
+      float h = (float) *height;
+      float w = (float) *width;
+      /* 0.75 comes from the height/width ratio in glade for the viewport */
+      float horiz_margin = ((0.75 - aspect) * w) / 2.0;
+      float vert_margin = ((aspect - 0.75) * w) / 2.0;
+      if (horiz_margin > vert_margin) {
+        graph_length = w - horiz_margin;
+        graph_height = h;
+        xaxis_length = graph_length * ((float) NORMXMAX - (float) NORMXMIN);
+        yaxis_length = graph_height * ((float) NORMYMAX - (float) NORMYMIN);
+        vert_margin = 0.0;
+      } else {
+        graph_height = h - vert_margin;
+        graph_length = w;
+        xaxis_length = graph_length * ((float) NORMXMAX - (float) NORMXMIN);
+        yaxis_length = graph_height * ((float) NORMYMAX - (float) NORMYMIN);
+        horiz_margin = 0.0;
+      }
       /* Calculate the pixel position for the edges of the plot
        * excluding the margins (e.g. at the axes).
        */
       if (left_edge && right_edge)
         {
-          *left_edge = (((float) *width - GRAPH_LENGTH) / 2.0) + ((GRAPH_LENGTH - xaxis_length) / 2.0);
+          *left_edge = (((float) *width - graph_length) / 2.0) + ((graph_length - xaxis_length) / 2.0);
           *right_edge = *left_edge + xaxis_length;
         }
       if (top_edge && bottom_edge)
         {
-          *top_edge = (((float) *height - GRAPH_HEIGHT) / 2.0) + ((GRAPH_HEIGHT - yaxis_length) / 2.0);
+          *top_edge = (((float) *height - graph_height) / 2.0) + ((graph_height - yaxis_length) / 2.0);
           *bottom_edge = *top_edge + yaxis_length;
         }
       else
