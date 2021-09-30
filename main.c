@@ -472,13 +472,13 @@ get_graph_dimensions (int *width,
       float horiz_margin = ((0.75 - aspect) * w) / 2.0;
       float vert_margin = ((aspect - 0.75) * w) / 2.0;
       if (horiz_margin > vert_margin) {
-        graph_length = w - horiz_margin;
+        graph_length = w - (2.0 * horiz_margin);
         graph_height = h;
         xaxis_length = graph_length * ((float) NORMXMAX - (float) NORMXMIN);
         yaxis_length = graph_height * ((float) NORMYMAX - (float) NORMYMIN);
         vert_margin = 0.0;
       } else {
-        graph_height = h - vert_margin;
+        graph_height = h - (2.0 * vert_margin);
         graph_length = w;
         xaxis_length = graph_length * ((float) NORMXMAX - (float) NORMXMIN);
         yaxis_length = graph_height * ((float) NORMYMAX - (float) NORMYMIN);
