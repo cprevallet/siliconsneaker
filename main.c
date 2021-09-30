@@ -466,7 +466,7 @@ get_graph_dimensions (int *width,
       gtk_widget_get_allocation (GTK_WIDGET (da), &alloc);
       *width = alloc.width;
       *height = alloc.height;
-      float aspect = ((float)*height/(float)*width);
+      float aspect = ((float) *height / (float) *width);
       float xaxis_length, yaxis_length, graph_length, graph_height;
       float h = (float) *height;
       float w = (float) *width;
@@ -477,33 +477,38 @@ get_graph_dimensions (int *width,
       float vert_margin = ((aspect - 0.75) * w) / 2.0;
       /* Calculating the axis lengths is tricky because PLPlot generates
          "the largest viewport with the given aspect ratio that ﬁts
-          within the speciﬁed region."  We store the generated viewport limits 
-          (in normalized device coordinates) when we draw the graph 
+          within the speciﬁed region."  We store the generated viewport limits
+          (in normalized device coordinates) when we draw the graph
           in on_da_draw.  Search for plgvpd. */
-      if (horiz_margin > vert_margin) {
-        graph_length = w - (2.0 * horiz_margin);
-        graph_height = h;
-        xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
-        yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
-        vert_margin = 0.0;
-      } else {
-        graph_height = h - (2.0 * vert_margin);
-        graph_length = w;
-        xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
-        yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
-        horiz_margin = 0.0;
-      }
+      if (horiz_margin > vert_margin)
+        {
+          graph_length = w - (2.0 * horiz_margin);
+          graph_height = h;
+          xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
+          yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
+          vert_margin = 0.0;
+        }
+      else
+        {
+          graph_height = h - (2.0 * vert_margin);
+          graph_length = w;
+          xaxis_length = graph_length * ((float) p_xmax - (float) p_xmin);
+          yaxis_length = graph_height * ((float) p_ymax - (float) p_ymin);
+          horiz_margin = 0.0;
+        }
       /* Calculate the pixel position for the edges of the plot
        * excluding the margins (e.g. at the axes).
        */
       if (left_edge && right_edge)
         {
-          *left_edge = (((float) *width - graph_length) / 2.0) + ((graph_length - xaxis_length) / 2.0);
+          *left_edge = (((float) *width - graph_length) / 2.0) +
+                       ((graph_length - xaxis_length) / 2.0);
           *right_edge = *left_edge + xaxis_length;
         }
       if (top_edge && bottom_edge)
         {
-          *top_edge = (((float) *height - graph_height) / 2.0) + ((graph_height - yaxis_length) / 2.0);
+          *top_edge = (((float) *height - graph_height) / 2.0) +
+                      ((graph_height - yaxis_length) / 2.0);
           *bottom_edge = *top_edge + yaxis_length;
         }
       else
@@ -1252,7 +1257,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   get_graph_dimensions (&width, &height, NULL, NULL, NULL, NULL);
   /* Viewport and window */
   pladv (0);
-  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height/(float)width);
+  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX,
+          (float) height / (float) width);
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons ())
     {
@@ -1272,7 +1278,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
       draw_bar (data->plap, data->ppace, width, height);
       break;
     }
-  /* Now how much margin are we actually generating? Store it in globals 
+  /* Now how much margin are we actually generating? Store it in globals
      for use in zooming. */
   plgvpd (&p_xmin, &p_xmax, &p_ymin, &p_ymax);
   /* Close PLplot library */
@@ -2201,15 +2207,16 @@ main (int argc, char *argv[])
         abort ();
       }
   for (int index = optind; index < argc; index++)
-  {
-    if (argv[optind]) {
+    {
+      if (argv[optind])
+        {
           fname = argv[optind];
           /* This seems sketchy to run before the input event loop
            * but seems to work.
            */
           reload_all (pall);
+        }
     }
-  }
 
   gtk_widget_show (window);
   gtk_main ();
