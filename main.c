@@ -1234,12 +1234,13 @@ gboolean
 on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 {
   PLINT width, height;
+  cairo_rectangle_int_t rectangle;
   /* Can't plot uninitialized. */
   if ((data->pd == NULL) || (data->plap == NULL))
     return TRUE;
   /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
   GdkWindow *window = gtk_widget_get_window (widget);
-  cairo_region_t *cairoRegion = cairo_region_create ();
+  cairo_region_t *cairoRegion = gdk_window_get_visible_region (window);
   GdkDrawingContext *drawingContext;
   drawingContext = gdk_window_begin_draw_frame (window, cairoRegion);
   /* Say: "I want to start drawing". */
@@ -1287,7 +1288,9 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Reload svg to cairo context. */
   GError **error = NULL;
   RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
-  RsvgRectangle viewport = { 0, 0, width, height };
+  /* Need to get clipping rectangle. */
+  cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
+  RsvgRectangle viewport = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
   rsvg_handle_render_document (handle, cr, &viewport, error);
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame (window, drawingContext);

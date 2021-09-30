@@ -322,6 +322,7 @@
                               <object class="GtkDrawingArea" id="da">
                                 <property name="name">da</property>
                                 <property name="visible">True</property>
+                                <property name="app-paintable">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="tooltip-text" translatable="yes">Right mouse drag to pan.
 Left mouse click-drag  graph to zoom in.  
