@@ -293,7 +293,10 @@ parse_tcx_file(tcx_t * tcx, char * filename)
         return 1;
     }
     else
-    {
+    {   
+        /*Bug fix CSP* current_activity is static and needs to be reinitialized if this library is not
+          unloaded from memory.*/
+        current_activity = NULL;
         for (int i = 0; i < activities->nodesetval->nodeNr; i++)
         {
             activity_t * activity = calloc(1, sizeof(activity_t));

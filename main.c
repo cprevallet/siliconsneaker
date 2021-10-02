@@ -881,7 +881,7 @@ init_plot_data (AllData *pall)
       pall->pheart->units = Metric;
       pall->paltitude->units = Metric;
       pall->plap->units = Metric;
-      pall->psd->units = Metric;
+//      pall->psd->units = Metric;
     }
   else
     {
@@ -890,7 +890,7 @@ init_plot_data (AllData *pall)
       pall->pheart->units = English;
       pall->paltitude->units = English;
       pall->plap->units = English;
-      pall->psd->units = English;
+//      pall->psd->units = English;
     }
   g_free (user_units);
   /* Parse the data from the fit file in a cGO routine and return the
@@ -980,10 +980,8 @@ init_plot_data (AllData *pall)
   long int nLaps = 0;
   long int sess_start_time = 0;
   long int time_zone_offset = 0;
-
+  
   if (create_arrays_from_tcx_file (fname,
-                                   NSIZE,
-                                   LSIZE,
                                    prec_distance,
                                    prec_speed,
                                    prec_altitude,
@@ -1013,6 +1011,7 @@ init_plot_data (AllData *pall)
 
   for (int i = 0; i < nRecs; i++) {
     printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
+    printf("prec_distance[%d] = %f\n", i, prec_latitude[i]);
   }
  
   /* Convert the raw values to user-facing values. */
