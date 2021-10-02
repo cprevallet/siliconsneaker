@@ -1011,7 +1011,7 @@ init_plot_data (AllData *pall)
 
   for (int i = 0; i < nRecs; i++) {
     printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
-    printf("prec_distance[%d] = %f\n", i, prec_latitude[i]);
+    printf("prec_distance[%d] = %f\n", i, prec_altitude[i]);
   }
  
   /* Convert the raw values to user-facing values. */
