@@ -16,29 +16,33 @@ PTHREAD=-pthread
 
 CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD)
 
-GTKLIB=`pkg-config --cflags --libs gtk+-3.0 plplot osmgpsmap-1.0  librsvg-2.0`
+LIBS=`pkg-config --cflags --libs gtk+-3.0 plplot osmgpsmap-1.0  librsvg-2.0 libxml-2.0`
 
 # linker
 LD=gcc
 ifeq ($(OS),Windows_NT)     # is Windows_NT on XP, 2000, 7, Vista, 10...
-    LDFLAGS=$(PTHREAD) $(GTKLIB) -lm 
+    LDFLAGS=$(PTHREAD) $(LIBS) -lm -lxml2
 else
-    LDFLAGS=$(PTHREAD) $(GTKLIB) -export-dynamic -lm
+    LDFLAGS=$(PTHREAD) $(LIBS) -export-dynamic -lm -lxml2
 endif
 
-OBJS= main.o fitwrapper.a ui.o
+OBJS= main.o fitwrapper.a ui.o tcx.o
 
 all: $(OBJS)	
 	$(LD) -o $(TARGET) $(OBJS) $(LDFLAGS)
     
 main.o: main.c fitwrapper.a
-	$(CC) -c $(CCFLAGS) main.c $(GTKLIB)
+	$(CC) -c $(CCFLAGS) main.c $(LIBS)
     
 fitwrapper.a: fitwrapper.go 
 	go build -buildmode=c-archive fitwrapper.go
 
+
+tcx.o: tcx.c tcxwrapper.h
+	$(CC) -c $(CCFLAGS) tcx.c $(LIBS)
+
 ui.o: ui.c
-	$(CC) -c $(CCFLAGS) ui.c $(GTKLIB)
+	$(CC) -c $(CCFLAGS) ui.c $(LIBS)
 
 # resource compiler
 ui.c: siliconsneaker.glade ui.xml
