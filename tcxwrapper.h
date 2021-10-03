@@ -83,7 +83,6 @@ create_arrays_from_tcx_file (char *fname,
           activity = activity->next;
         }
 
-      printf ("num_pts = %ld\n", *num_pts);
       /* Convert the linked lists to arrays. */
       long int prev_timestamp = 0;
       float prev_distance = 0.0;
@@ -116,8 +115,12 @@ create_arrays_from_tcx_file (char *fname,
                               ((double) timestamp - (double) prev_timestamp);
                         }
                       else
-                        {
-                          prec_speed[j] = NAN;
+                        { 
+                          if (j > 0) {
+                            prec_speed[j] = prec_speed[j-1];
+                          } else {
+                            prec_speed[j] = NAN;
+                          }
                         }
                       prec_altitude[j] = (float) trackpoint->elevation;
                       prec_cadence[j] = (float) trackpoint->cadence;
@@ -146,7 +149,6 @@ create_arrays_from_tcx_file (char *fname,
             }
           activity = activity->next;
         }
-      printf ("success\n");
       /* Successful parse. */
       free (trackpoint);
       free (track);
@@ -158,7 +160,6 @@ create_arrays_from_tcx_file (char *fname,
   else
     {
       /* Failed to parse. */
-      printf("failed\n");
       return 1;
     }
 }
