@@ -1,10 +1,10 @@
 #include "tcx.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <math.h>
 #define ZERO_THRESHOLD 0.1
 
 /*  parses only YYYY-MM-DDTHH:MM:SSZ */
@@ -14,32 +14,24 @@ parseiso8601utc (const char *date)
   struct tm tt = { 0 };
   double seconds;
   if (sscanf (date, "%04d-%02d-%02dT%02d:%02d:%lfZ", &tt.tm_year, &tt.tm_mon,
-              &tt.tm_mday, &tt.tm_hour, &tt.tm_min, &seconds) != 6)
+              &tt.tm_mday, &tt.tm_hour, &tt.tm_min, &seconds)
+      != 6)
     return -1;
-  tt.tm_sec = (int) seconds;
+  tt.tm_sec = (int)seconds;
   tt.tm_mon -= 1;
   tt.tm_year -= 1900;
-  //tt.tm_isdst = -1;
+  // tt.tm_isdst = -1;
   tt.tm_isdst = 0;
   return mktime (&tt) - timezone;
 }
 
 int
-create_arrays_from_tcx_file (char *fname,
-                             float *prec_distance,
-                             float *prec_speed,
-                             float *prec_altitude,
-                             float *prec_cadence,
-                             float *prec_heartrate,
-                             float *prec_lat,
-                             float *prec_long,
-                             long int *num_pts,
-                             float *plap_total_distance,
-                             float *plap_start_position_lat,
-                             float *plap_start_position_long,
-                             float *plap_total_elapsed_time,
-                             long int *num_laps,
-                             time_t *sess_start_time)
+create_arrays_from_tcx_file (
+    char *fname, float *prec_distance, float *prec_speed, float *prec_altitude,
+    float *prec_cadence, float *prec_heartrate, float *prec_lat,
+    float *prec_long, long int *num_pts, float *plap_total_distance,
+    float *plap_start_position_lat, float *plap_start_position_long,
+    float *plap_total_elapsed_time, long int *num_laps, time_t *sess_start_time)
 {
   activity_t *activity = NULL;
   lap_t *lap = NULL;
@@ -48,7 +40,7 @@ create_arrays_from_tcx_file (char *fname,
 
   /* Grab some memory to store the results and generate a pointer. */
   tcx_t *tcx = calloc (1, sizeof (tcx_t));
-  printf("%s", fname);
+  printf ("%s", fname);
   if (parse_tcx_file (tcx, fname) == 0)
     {
       /* Calculate derived values. */
@@ -99,51 +91,58 @@ create_arrays_from_tcx_file (char *fname,
                 {
                   trackpoint = track->trackpoints;
                   while (trackpoint != NULL)
-                    { 
-
-                      /* Check for "bad" GPS readings.  You don't run off the coast of Africa. */
-                      if ( !(trackpoint->latitude >= -ZERO_THRESHOLD && trackpoint->latitude <= ZERO_THRESHOLD) &&
-                           !(trackpoint->longitude >= -ZERO_THRESHOLD && trackpoint->longitude <= ZERO_THRESHOLD) )
-                      {
-                      timestamp = parseiso8601utc (trackpoint->time);
-                      printf("1\n");
-                      *sess_start_time = timestamp;
-                      printf("2\n");
-                      prec_distance[j] = (float) trackpoint->distance;
-                      if (timestamp && prev_timestamp)
+                    {
+                      /* Check for "bad" GPS readings.  You don't run off the
+                       * coast of Africa. */
+                      if (!(trackpoint->latitude >= -ZERO_THRESHOLD
+                            && trackpoint->latitude <= ZERO_THRESHOLD)
+                          && !(trackpoint->longitude >= -ZERO_THRESHOLD
+                               && trackpoint->longitude <= ZERO_THRESHOLD))
                         {
-                          prec_speed[j] =
-                              ((float) trackpoint->distance - prev_distance) /
-                              ((double) timestamp - (double) prev_timestamp);
+                          timestamp = parseiso8601utc (trackpoint->time);
+                          printf ("1\n");
+                          *sess_start_time = timestamp;
+                          printf ("2\n");
+                          prec_distance[j] = (float)trackpoint->distance;
+                          if (timestamp && prev_timestamp)
+                            {
+                              prec_speed[j] = ((float)trackpoint->distance
+                                               - prev_distance)
+                                              / ((double)timestamp
+                                                 - (double)prev_timestamp);
+                            }
+                          else
+                            {
+                              if (j > 0)
+                                {
+                                  prec_speed[j] = prec_speed[j - 1];
+                                }
+                              else
+                                {
+                                  prec_speed[j] = 1.0; // dummy one up?
+                                }
+                            }
+                          prec_altitude[j] = (float)trackpoint->elevation;
+                          prec_cadence[j] = (float)trackpoint->cadence;
+                          prec_heartrate[j] = (float)trackpoint->heart_rate;
+                          prec_lat[j] = (float)trackpoint->latitude;
+                          prec_long[j] = (float)trackpoint->longitude;
+                          prev_timestamp = timestamp;
+                          prev_distance = prec_distance[j];
+                          j++;
                         }
                       else
-                        { 
-                          if (j > 0) {
-                            prec_speed[j] = prec_speed[j-1];
-                          } else {
-                            prec_speed[j] = 1.0;  //dummy one up?
-                          }
+                        {
+                          *num_pts = *num_pts - 1;
                         }
-                      prec_altitude[j] = (float) trackpoint->elevation;
-                      prec_cadence[j] = (float) trackpoint->cadence;
-                      prec_heartrate[j] = (float) trackpoint->heart_rate;
-                      prec_lat[j] = (float) trackpoint->latitude;
-                      prec_long[j] = (float) trackpoint->longitude;
-                      prev_timestamp = timestamp;
-                      prev_distance = prec_distance[j];
-                      j++;
-                      } else {
-                        *num_pts = *num_pts - 1;
-                      }
                       trackpoint = trackpoint->next;
-
                     }
                   track = track->next;
                 }
-              plap_start_position_lat[k] =
-                  lap->tracks[0].trackpoints[0].latitude;
-              plap_start_position_long[k] =
-                  lap->tracks[0].trackpoints[0].longitude;
+              plap_start_position_lat[k]
+                  = lap->tracks[0].trackpoints[0].latitude;
+              plap_start_position_long[k]
+                  = lap->tracks[0].trackpoints[0].longitude;
               plap_total_elapsed_time[k] = lap->total_time;
               plap_total_distance[k] = lap->distance;
               k++;
