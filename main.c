@@ -978,7 +978,7 @@ init_plot_data (AllData *pall)
   float *plap_total_elapsed_time = (float *) malloc (LSIZE * sizeof (float));
   long int nRecs = 0;
   long int nLaps = 0;
-  long int sess_start_time = 0;
+  time_t sess_start_time;
   long int time_zone_offset = 0;
   
   if (create_arrays_from_tcx_file (fname,
@@ -1012,7 +1012,7 @@ init_plot_data (AllData *pall)
   for (int i = 0; i < nRecs; i++) {
 //    printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
 //    printf("prec_altitude[%d] = %f\n", i, prec_altitude[i]);
-    if ((prec_lat[i] == 0.0) || (prec_long[i] == 0.0)) printf("bad lat or lng");
+//    if ((prec_lat[i] == 0.0) || (prec_long[i] == 0.0)) printf("bad lat or lng");
 //    printf("prec_lat[%d] = %f\n", i, prec_lat[i]);
 //    printf("prec_long[%d] = %f\n", i, prec_long[i]);
 //    printf("prec_speed[%d] = %f\n", i, prec_speed[i]);

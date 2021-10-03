@@ -39,7 +39,7 @@ create_arrays_from_tcx_file (char *fname,
                              float *plap_start_position_long,
                              float *plap_total_elapsed_time,
                              long int *num_laps,
-                             long int *sess_start_time)
+                             time_t *sess_start_time)
 {
   activity_t *activity = NULL;
   lap_t *lap = NULL;
@@ -56,7 +56,6 @@ create_arrays_from_tcx_file (char *fname,
 
       /* Calculate the actual size of the results. */
       //*sess_start_time = parseiso8601utc (activity->started_at);
-      sess_start_time = 0;
       *num_pts = 0;
       *num_laps = 0;
       activity = tcx->activities;
@@ -107,6 +106,9 @@ create_arrays_from_tcx_file (char *fname,
                            !(trackpoint->longitude >= -ZERO_THRESHOLD && trackpoint->longitude <= ZERO_THRESHOLD) )
                       {
                       timestamp = parseiso8601utc (trackpoint->time);
+                      printf("1\n");
+                      *sess_start_time = timestamp;
+                      printf("2\n");
                       prec_distance[j] = (float) trackpoint->distance;
                       if (timestamp && prev_timestamp)
                         {
@@ -119,7 +121,7 @@ create_arrays_from_tcx_file (char *fname,
                           if (j > 0) {
                             prec_speed[j] = prec_speed[j-1];
                           } else {
-                            prec_speed[j] = NAN;
+                            prec_speed[j] = 1.0;  //dummy one up?
                           }
                         }
                       prec_altitude[j] = (float) trackpoint->elevation;
@@ -129,11 +131,11 @@ create_arrays_from_tcx_file (char *fname,
                       prec_long[j] = (float) trackpoint->longitude;
                       prev_timestamp = timestamp;
                       prev_distance = prec_distance[j];
+                      j++;
                       } else {
                         *num_pts = *num_pts - 1;
                       }
                       trackpoint = trackpoint->next;
-                      j++;
 
                     }
                   track = track->next;
