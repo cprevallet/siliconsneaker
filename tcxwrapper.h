@@ -5,6 +5,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <math.h>
+#define ZERO_THRESHOLD 0.1
 
 /*  parses only YYYY-MM-DDTHH:MM:SSZ */
 time_t
@@ -59,7 +60,6 @@ create_arrays_from_tcx_file (char *fname,
       *num_pts = 0;
       *num_laps = 0;
       activity = tcx->activities;
-      if (!activity) { printf("noactivity\n"); }
       /* Walk the linked list to get the number of points. */
       while (activity != NULL)
         {
@@ -101,7 +101,12 @@ create_arrays_from_tcx_file (char *fname,
                 {
                   trackpoint = track->trackpoints;
                   while (trackpoint != NULL)
-                    {
+                    { 
+
+                      /* Check for "bad" GPS readings.  You don't run off the coast of Africa. */
+                      if ( !(trackpoint->latitude >= -ZERO_THRESHOLD && trackpoint->latitude <= ZERO_THRESHOLD) &&
+                           !(trackpoint->longitude >= -ZERO_THRESHOLD && trackpoint->longitude <= ZERO_THRESHOLD) )
+                      {
                       timestamp = parseiso8601utc (trackpoint->time);
                       prec_distance[j] = (float) trackpoint->distance;
                       if (timestamp && prev_timestamp)
@@ -119,10 +124,14 @@ create_arrays_from_tcx_file (char *fname,
                       prec_heartrate[j] = (float) trackpoint->heart_rate;
                       prec_lat[j] = (float) trackpoint->latitude;
                       prec_long[j] = (float) trackpoint->longitude;
-                      trackpoint = trackpoint->next;
                       prev_timestamp = timestamp;
                       prev_distance = prec_distance[j];
+                      } else {
+                        *num_pts = *num_pts - 1;
+                      }
+                      trackpoint = trackpoint->next;
                       j++;
+
                     }
                   track = track->next;
                 }
@@ -137,6 +146,7 @@ create_arrays_from_tcx_file (char *fname,
             }
           activity = activity->next;
         }
+      printf ("success\n");
       /* Successful parse. */
       free (trackpoint);
       free (track);
