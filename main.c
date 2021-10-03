@@ -1012,6 +1012,9 @@ init_plot_data (AllData *pall)
   for (int i = 0; i < nRecs; i++) {
     printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
     printf("prec_altitude[%d] = %f\n", i, prec_altitude[i]);
+    printf("prec_lat[%d] = %f\n", i, prec_lat[i]);
+    printf("prec_long[%d] = %f\n", i, prec_long[i]);
+    printf("prec_speed[%d] = %f\n", i, prec_speed[i]);
   }
  
   /* Convert the raw values to user-facing values. */
@@ -1028,7 +1031,7 @@ init_plot_data (AllData *pall)
                      plap_start_position_long, sess_start_time,
                      time_zone_offset);
   
-  /*****ADDED FOR TESTING tcx **** NEED TO REMOVE ***/
+  //TODO*****ADDED FOR TESTING tcx **** NEED TO REMOVE ***/
   pall->psd = NULL;
 
 
@@ -1782,6 +1785,7 @@ reload_all (AllData *pall)
           /* Force a redraw on the drawing area. */
           gtk_widget_queue_draw (GTK_WIDGET (da));
           /* Update the summary table. */
+  //TODO*****ADDED FOR TESTING tcx **** NEED TO UNCOMMENT***/
           //update_summary (pall->psd);
           /* Update the map. */
           update_map (pall);

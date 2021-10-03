@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 
 /*  parses only YYYY-MM-DDTHH:MM:SSZ */
 time_t
@@ -111,7 +112,7 @@ create_arrays_from_tcx_file (char *fname,
                         }
                       else
                         {
-                          prec_speed[j] = 0.0;
+                          prec_speed[j] = NAN;
                         }
                       prec_altitude[j] = (float) trackpoint->elevation;
                       prec_cadence[j] = (float) trackpoint->cadence;
