@@ -372,7 +372,7 @@ create_summary (FILE *fp, SessionData *psd)
         {
           print_float_val (psd->avg_speed, "Average speed", "kilometers/hour",
                            fp);
-          print_float_val (psd->max_speed, "Maxium speed", "kilometers/hour",
+          print_float_val (psd->max_speed, "Maximum speed", "kilometers/hour",
                            fp);
         }
       if (psd->units == English)
@@ -856,7 +856,7 @@ init_plot_data (AllData *pall)
       pall->pheart->units = Metric;
       pall->paltitude->units = Metric;
       pall->plap->units = Metric;
-      //      pall->psd->units = Metric;
+      pall->psd->units = Metric;
     }
   else
     {
@@ -865,7 +865,7 @@ init_plot_data (AllData *pall)
       pall->pheart->units = English;
       pall->paltitude->units = English;
       pall->plap->units = English;
-      //      pall->psd->units = English;
+      pall->psd->units = English;
     }
   g_free (user_units);
   /* Parse the data from the fit file in a cGO routine and return the
@@ -952,11 +952,9 @@ init_plot_data (AllData *pall)
   float *plap_total_elapsed_time = (float *)malloc (LSIZE * sizeof (float));
   long int nRecs = 0;
   long int nLaps = 0;
-  time_t sess_start_time;
   long int time_zone_offset = 0;
-
   time_t sess_timestamp = 0;
-  //long sess_start_time;
+  time_t sess_start_time = 0;
   float sess_start_position_lat = NAN;
   float sess_start_position_long = NAN;
   float sess_total_elapsed_time = NAN;
@@ -990,7 +988,37 @@ init_plot_data (AllData *pall)
           fname, prec_distance, prec_speed, prec_altitude, prec_cadence,
           prec_heartrate, prec_lat, prec_long, &nRecs, plap_total_distance,
           plap_start_position_lat, plap_start_position_long,
-          plap_total_elapsed_time, &nLaps, &sess_start_time)
+          plap_total_elapsed_time, &nLaps, 
+          &sess_start_time,
+          &sess_start_position_lat,
+          &sess_start_position_long,
+          &sess_total_elapsed_time,
+          &sess_total_timer_time,
+          &sess_total_distance,
+          &sess_nec_latitude,
+          &sess_nec_longitude,
+          &sess_swc_latitude,
+          &sess_swc_longitude,
+          &sess_total_work,
+          &sess_total_moving_time,
+          &sess_average_lap_time,
+          &sess_total_calories,
+          &sess_avg_speed,
+          &sess_max_speed,
+          &sess_total_ascent,
+          &sess_total_descent,
+          &sess_avg_altitude,
+          &sess_max_altitude,
+          &sess_min_altitude,
+          &sess_avg_heartrate,
+          &sess_max_heartrate,
+          &sess_min_heartrate,
+          &sess_avg_cadence,
+          &sess_max_cadence,
+          &sess_avg_temperature,
+          &sess_max_temperature,
+          &sess_total_anaerobic_training_effect
+          )
       == 1)
     {
       GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
@@ -1005,15 +1033,15 @@ init_plot_data (AllData *pall)
       return FALSE;
     }
 
-  for (int i = 0; i < nRecs; i++)
-    {
+//  for (int i = 0; i < nRecs; i++)
+//    {
       //    printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
       //    printf("prec_altitude[%d] = %f\n", i, prec_altitude[i]);
       //    if ((prec_lat[i] == 0.0) || (prec_long[i] == 0.0)) printf("bad lat
       //    or lng"); printf("prec_lat[%d] = %f\n", i, prec_lat[i]);
       //    printf("prec_long[%d] = %f\n", i, prec_long[i]);
       //    printf("prec_speed[%d] = %f\n", i, prec_speed[i]);
-    }
+//    }
 
   /* Convert the raw values to user-facing values. */
   raw_to_user_plots (pall->ppace, nRecs, prec_distance, prec_speed, prec_lat,
@@ -1028,9 +1056,6 @@ init_plot_data (AllData *pall)
                      plap_total_elapsed_time, plap_start_position_lat,
                      plap_start_position_long, sess_start_time,
                      time_zone_offset);
-
-  // TODO*****ADDED FOR TESTING tcx **** NEED TO REMOVE ***/
-  // pall->psd = NULL;
 
   free (prec_distance);
   free (prec_speed);
