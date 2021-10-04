@@ -370,7 +370,7 @@ create_summary (FILE *fp, SessionData *psd)
         {
           print_float_val (psd->avg_speed, "Average speed", "kilometers/hour",
                            fp);
-          print_float_val (psd->max_speed, "Maxium speed", "kilometers/hour",
+          print_float_val (psd->max_speed, "Maximum speed", "kilometers/hour",
                            fp);
         }
       if (psd->units == English)
