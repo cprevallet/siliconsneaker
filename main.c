@@ -939,87 +939,9 @@ init_plot_data (AllData *pall)
     long time_zone_offset = result.r67;
   */
 
-  float *prec_distance = (float *)malloc (NSIZE * sizeof (float));
-  float *prec_speed = (float *)malloc (NSIZE * sizeof (float));
-  float *prec_altitude = (float *)malloc (NSIZE * sizeof (float));
-  float *prec_cadence = (float *)malloc (NSIZE * sizeof (float));
-  float *prec_heartrate = (float *)malloc (NSIZE * sizeof (float));
-  float *prec_lat = (float *)malloc (NSIZE * sizeof (float));
-  float *prec_long = (float *)malloc (NSIZE * sizeof (float));
-  float *plap_total_distance = (float *)malloc (LSIZE * sizeof (float));
-  float *plap_start_position_lat = (float *)malloc (LSIZE * sizeof (float));
-  float *plap_start_position_long = (float *)malloc (LSIZE * sizeof (float));
-  float *plap_total_elapsed_time = (float *)malloc (LSIZE * sizeof (float));
-  long int nRecs = 0;
-  long int nLaps = 0;
-  long int time_zone_offset = 0;
-  time_t sess_timestamp = 0;
-  time_t sess_start_time = 0;
-  float sess_start_position_lat = NAN;
-  float sess_start_position_long = NAN;
-  float sess_total_elapsed_time = NAN;
-  float sess_total_timer_time = NAN;
-  float sess_total_distance = NAN;
-  float sess_nec_latitude = NAN;
-  float sess_nec_longitude = NAN;
-  float sess_swc_latitude = NAN;
-  float sess_swc_longitude = NAN;
-  float sess_total_work = NAN;
-  float sess_total_moving_time = NAN;
-  float sess_average_lap_time = NAN;
-  float sess_total_calories = NAN;
-  float sess_avg_speed = NAN;
-  float sess_max_speed = NAN;
-  float sess_total_ascent = NAN;
-  float sess_total_descent = NAN;
-  float sess_avg_altitude = NAN;
-  float sess_max_altitude = NAN;
-  float sess_min_altitude = NAN;
-  float sess_avg_heartrate = NAN;
-  float sess_max_heartrate = NAN;
-  float sess_min_heartrate = NAN;
-  float sess_avg_cadence = NAN;
-  float sess_max_cadence = NAN;
-  float sess_avg_temperature = NAN;
-  float sess_max_temperature = NAN;
-  float sess_total_anaerobic_training_effect = NAN;
- 
-  if (create_arrays_from_tcx_file (
-          fname, prec_distance, prec_speed, prec_altitude, prec_cadence,
-          prec_heartrate, prec_lat, prec_long, &nRecs, plap_total_distance,
-          plap_start_position_lat, plap_start_position_long,
-          plap_total_elapsed_time, &nLaps, 
-          &sess_start_time,
-          &sess_start_position_lat,
-          &sess_start_position_long,
-          &sess_total_elapsed_time,
-          &sess_total_timer_time,
-          &sess_total_distance,
-          &sess_nec_latitude,
-          &sess_nec_longitude,
-          &sess_swc_latitude,
-          &sess_swc_longitude,
-          &sess_total_work,
-          &sess_total_moving_time,
-          &sess_average_lap_time,
-          &sess_total_calories,
-          &sess_avg_speed,
-          &sess_max_speed,
-          &sess_total_ascent,
-          &sess_total_descent,
-          &sess_avg_altitude,
-          &sess_max_altitude,
-          &sess_min_altitude,
-          &sess_avg_heartrate,
-          &sess_max_heartrate,
-          &sess_min_heartrate,
-          &sess_avg_cadence,
-          &sess_max_cadence,
-          &sess_avg_temperature,
-          &sess_max_temperature,
-          &sess_total_anaerobic_training_effect
-          )
-      == 1)
+  result_type *p_tcx = (result_type *)malloc (sizeof (result_type));
+
+  if (create_arrays_from_tcx_file (fname, NSIZE, LSIZE, p_tcx) == 1)
     {
       GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
       GtkWidget *dialog;
@@ -1033,56 +955,66 @@ init_plot_data (AllData *pall)
       return FALSE;
     }
 
-//  for (int i = 0; i < nRecs; i++)
-//    {
-      //    printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
-      //    printf("prec_altitude[%d] = %f\n", i, prec_altitude[i]);
-      //    if ((prec_lat[i] == 0.0) || (prec_long[i] == 0.0)) printf("bad lat
-      //    or lng"); printf("prec_lat[%d] = %f\n", i, prec_lat[i]);
-      //    printf("prec_long[%d] = %f\n", i, prec_long[i]);
-      //    printf("prec_speed[%d] = %f\n", i, prec_speed[i]);
-//    }
+  //  for (int i = 0; i < nRecs; i++)
+  //    {
+  //    printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
+  //    printf("prec_altitude[%d] = %f\n", i, prec_altitude[i]);
+  //    if ((prec_lat[i] == 0.0) || (prec_long[i] == 0.0)) printf("bad lat
+  //    or lng"); printf("prec_lat[%d] = %f\n", i, prec_lat[i]);
+  //    printf("prec_long[%d] = %f\n", i, prec_long[i]);
+  //    printf("prec_speed[%d] = %f\n", i, prec_speed[i]);
+  //    }
 
   /* Convert the raw values to user-facing values. */
-  raw_to_user_plots (pall->ppace, nRecs, prec_distance, prec_speed, prec_lat,
-                     prec_long, sess_start_time, time_zone_offset);
-  raw_to_user_plots (pall->pcadence, nRecs, prec_distance, prec_cadence,
-                     prec_lat, prec_long, sess_start_time, time_zone_offset);
-  raw_to_user_plots (pall->pheart, nRecs, prec_distance, prec_heartrate,
-                     prec_lat, prec_long, sess_start_time, time_zone_offset);
-  raw_to_user_plots (pall->paltitude, nRecs, prec_distance, prec_altitude,
-                     prec_lat, prec_long, sess_start_time, time_zone_offset);
-  raw_to_user_plots (pall->plap, nLaps, plap_total_distance,
-                     plap_total_elapsed_time, plap_start_position_lat,
-                     plap_start_position_long, sess_start_time,
-                     time_zone_offset);
+  raw_to_user_plots (pall->ppace, p_tcx->nRecs, p_tcx->prec_distance,
+                     p_tcx->prec_speed, p_tcx->prec_lat, p_tcx->prec_long,
+                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
+  raw_to_user_plots (pall->pcadence, p_tcx->nRecs, p_tcx->prec_distance,
+                     p_tcx->prec_cadence, p_tcx->prec_lat, p_tcx->prec_long,
+                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
+  raw_to_user_plots (pall->pheart, p_tcx->nRecs, p_tcx->prec_distance,
+                     p_tcx->prec_heartrate, p_tcx->prec_lat, p_tcx->prec_long,
+                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
+  raw_to_user_plots (pall->paltitude, p_tcx->nRecs, p_tcx->prec_distance,
+                     p_tcx->prec_altitude, p_tcx->prec_lat, p_tcx->prec_long,
+                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
+  raw_to_user_plots (pall->plap, p_tcx->nLaps, p_tcx->plap_total_distance,
+                     p_tcx->plap_total_elapsed_time,
+                     p_tcx->plap_start_position_lat,
+                     p_tcx->plap_start_position_long, p_tcx->sess_start_time,
+                     p_tcx->time_zone_offset);
 
-  free (prec_distance);
-  free (prec_speed);
-  free (prec_altitude);
-  free (prec_cadence);
-  free (prec_heartrate);
-  free (prec_lat);
-  free (prec_long);
-  free (plap_total_distance);
-  free (plap_start_position_lat);
-  free (plap_start_position_long);
-  free (plap_total_elapsed_time);
-  
+  free (p_tcx->prec_distance);
+  free (p_tcx->prec_speed);
+  free (p_tcx->prec_altitude);
+  free (p_tcx->prec_cadence);
+  free (p_tcx->prec_heartrate);
+  free (p_tcx->prec_lat);
+  free (p_tcx->prec_long);
+  free (p_tcx->plap_total_distance);
+  free (p_tcx->plap_start_position_lat);
+  free (p_tcx->plap_start_position_long);
+  free (p_tcx->plap_total_elapsed_time);
+
   /* Convert the raw values to user-facing values. */
-    raw_to_user_session (
-        pall->psd, sess_timestamp, sess_start_time, sess_start_position_lat,
-        sess_start_position_long, sess_total_elapsed_time,
-    sess_total_timer_time, sess_total_distance, sess_nec_latitude,
-    sess_nec_longitude, sess_swc_latitude, sess_swc_longitude, sess_total_work,
-        sess_total_moving_time, sess_average_lap_time, sess_total_calories,
-        sess_avg_speed, sess_max_speed, sess_total_ascent, sess_total_descent,
-        sess_avg_altitude, sess_max_altitude, sess_min_altitude,
-        sess_max_heartrate, sess_avg_heartrate, sess_max_cadence,
-        sess_avg_cadence, sess_avg_temperature, sess_max_temperature,
-        sess_min_heartrate, sess_total_anaerobic_training_effect,
-        time_zone_offset);
+  raw_to_user_session (
+      pall->psd, p_tcx->sess_timestamp, p_tcx->sess_start_time,
+      p_tcx->sess_start_position_lat, p_tcx->sess_start_position_long,
+      p_tcx->sess_total_elapsed_time, p_tcx->sess_total_timer_time,
+      p_tcx->sess_total_distance, p_tcx->sess_nec_latitude,
+      p_tcx->sess_nec_longitude, p_tcx->sess_swc_latitude,
+      p_tcx->sess_swc_longitude, p_tcx->sess_total_work,
+      p_tcx->sess_total_moving_time, p_tcx->sess_average_lap_time,
+      p_tcx->sess_total_calories, p_tcx->sess_avg_speed, p_tcx->sess_max_speed,
+      p_tcx->sess_total_ascent, p_tcx->sess_total_descent,
+      p_tcx->sess_avg_altitude, p_tcx->sess_max_altitude,
+      p_tcx->sess_min_altitude, p_tcx->sess_max_heartrate,
+      p_tcx->sess_avg_heartrate, p_tcx->sess_max_cadence,
+      p_tcx->sess_avg_cadence, p_tcx->sess_avg_temperature,
+      p_tcx->sess_max_temperature, p_tcx->sess_min_heartrate,
+      p_tcx->sess_total_anaerobic_training_effect, p_tcx->time_zone_offset);
   return TRUE;
+  free(p_tcx);
 }
 
 /* A custom axis labeling function for a pace plot. */
