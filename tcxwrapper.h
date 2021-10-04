@@ -24,7 +24,7 @@ typedef struct result_type
   float *plap_total_elapsed_time;
   long int nRecs;
   long int nLaps;
-  long int time_zone_offset;
+  time_t time_zone_offset;
   time_t sess_timestamp;
   time_t sess_start_time;
   float sess_start_position_lat;
@@ -137,7 +137,6 @@ create_arrays_from_tcx_file (char *fname, int NSIZE, int LSIZE, result_type *r)
       calculate_summary (tcx);
 
       /* Calculate the actual size of the results. */
-      //*sess_start_time = parseiso8601utc (activity->started_at);
       activity = tcx->activities;
       /* Walk the linked list to get the number of points. */
       while (activity != NULL)
@@ -188,7 +187,7 @@ create_arrays_from_tcx_file (char *fname, int NSIZE, int LSIZE, result_type *r)
                                && trackpoint->longitude <= ZERO_THRESHOLD))
                         {
                           timestamp = parseiso8601utc (trackpoint->time);
-                          r->sess_start_time = timestamp;
+                          //r->sess_start_time = timestamp;
                           r->prec_distance[j] = (float)trackpoint->distance;
                           if (timestamp && prev_timestamp)
                             {
@@ -234,6 +233,8 @@ create_arrays_from_tcx_file (char *fname, int NSIZE, int LSIZE, result_type *r)
               k++;
               lap = lap->next;
             }
+          r->sess_start_time = parseiso8601utc (activity->started_at);
+          r->sess_timestamp = parseiso8601utc(activity->ended_at);
           r->sess_start_position_lat = activity->start_point->latitude;
           r->sess_start_position_long = activity->start_point->longitude;
           r->sess_total_elapsed_time = activity->total_time;

@@ -847,7 +847,6 @@ raw_to_user_plots (PlotData *pdest, int num_recs, float x_raw[NSIZE],
 gboolean
 is_fit_file (char *fname)
 {
-  printf ("called\n");
   char buffer[14];
   FILE *fp = fopen (fname, "r");
   if (!fp)
