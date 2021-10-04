@@ -955,6 +955,37 @@ init_plot_data (AllData *pall)
   time_t sess_start_time;
   long int time_zone_offset = 0;
 
+  time_t sess_timestamp = 0;
+  //long sess_start_time;
+  float sess_start_position_lat = NAN;
+  float sess_start_position_long = NAN;
+  float sess_total_elapsed_time = NAN;
+  float sess_total_timer_time = NAN;
+  float sess_total_distance = NAN;
+  float sess_nec_latitude = NAN;
+  float sess_nec_longitude = NAN;
+  float sess_swc_latitude = NAN;
+  float sess_swc_longitude = NAN;
+  float sess_total_work = NAN;
+  float sess_total_moving_time = NAN;
+  float sess_average_lap_time = NAN;
+  float sess_total_calories = NAN;
+  float sess_avg_speed = NAN;
+  float sess_max_speed = NAN;
+  float sess_total_ascent = NAN;
+  float sess_total_descent = NAN;
+  float sess_avg_altitude = NAN;
+  float sess_max_altitude = NAN;
+  float sess_min_altitude = NAN;
+  float sess_avg_heartrate = NAN;
+  float sess_max_heartrate = NAN;
+  float sess_min_heartrate = NAN;
+  float sess_avg_cadence = NAN;
+  float sess_max_cadence = NAN;
+  float sess_avg_temperature = NAN;
+  float sess_max_temperature = NAN;
+  float sess_total_anaerobic_training_effect = NAN;
+ 
   if (create_arrays_from_tcx_file (
           fname, prec_distance, prec_speed, prec_altitude, prec_cadence,
           prec_heartrate, prec_lat, prec_long, &nRecs, plap_total_distance,
@@ -999,7 +1030,7 @@ init_plot_data (AllData *pall)
                      time_zone_offset);
 
   // TODO*****ADDED FOR TESTING tcx **** NEED TO REMOVE ***/
-  pall->psd = NULL;
+  // pall->psd = NULL;
 
   free (prec_distance);
   free (prec_speed);
@@ -1012,9 +1043,8 @@ init_plot_data (AllData *pall)
   free (plap_start_position_lat);
   free (plap_start_position_long);
   free (plap_total_elapsed_time);
-
+  
   /* Convert the raw values to user-facing values. */
-  /*
     raw_to_user_session (
         pall->psd, sess_timestamp, sess_start_time, sess_start_position_lat,
         sess_start_position_long, sess_total_elapsed_time,
@@ -1027,7 +1057,6 @@ init_plot_data (AllData *pall)
         sess_avg_cadence, sess_avg_temperature, sess_max_temperature,
         sess_min_heartrate, sess_total_anaerobic_training_effect,
         time_zone_offset);
-  */
   return TRUE;
 }
 
@@ -1743,7 +1772,7 @@ reload_all (AllData *pall)
           gtk_widget_queue_draw (GTK_WIDGET (da));
           /* Update the summary table. */
           // TODO*****ADDED FOR TESTING tcx **** NEED TO UNCOMMENT***/
-          // update_summary (pall->psd);
+          update_summary (pall->psd);
           /* Update the map. */
           update_map (pall);
           /* Update the slider and redraw. */

@@ -40,7 +40,6 @@ create_arrays_from_tcx_file (
 
   /* Grab some memory to store the results and generate a pointer. */
   tcx_t *tcx = calloc (1, sizeof (tcx_t));
-  printf ("%s", fname);
   if (parse_tcx_file (tcx, fname) == 0)
     {
       /* Calculate derived values. */
@@ -100,9 +99,7 @@ create_arrays_from_tcx_file (
                                && trackpoint->longitude <= ZERO_THRESHOLD))
                         {
                           timestamp = parseiso8601utc (trackpoint->time);
-                          printf ("1\n");
                           *sess_start_time = timestamp;
-                          printf ("2\n");
                           prec_distance[j] = (float)trackpoint->distance;
                           if (timestamp && prev_timestamp)
                             {
