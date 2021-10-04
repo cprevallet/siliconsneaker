@@ -842,6 +842,35 @@ raw_to_user_plots (PlotData *pdest, int num_recs, float x_raw[NSIZE],
   return;
 }
 
+/* Read the first 14 bytes of the file to see if it is a fit format file. */
+/* https://developer.garmin.com/fit/cookbook/isfit-checkintegrity-read/ */
+gboolean
+is_fit_file (char *fname)
+{
+  printf ("called\n");
+  char buffer[14];
+  FILE *fp = fopen (fname, "r");
+  if (!fp)
+    {
+      return FALSE;
+    }
+  fread (buffer, 1, 14, fp);
+  fclose (fp);
+  char fit_string[3];
+  for (int i = 0; i < 4; i++)
+    {
+      fit_string[i] = buffer[i + 8];
+    }
+  if (!(strncmp (fit_string, ".FIT", 4)))
+    {
+      return TRUE;
+    }
+  else
+    {
+      return FALSE;
+    }
+}
+
 /* Read the raw file data, call helper routines to convert to user-facing
    values. */
 gboolean
@@ -868,153 +897,193 @@ init_plot_data (AllData *pall)
       pall->psd->units = English;
     }
   g_free (user_units);
-  /* Parse the data from the fit file in a cGO routine and return the
-   * result as a structure defined by fitwrapper.go.
-   */
-  //  result = parse_fit_file (fname, NSIZE, LSIZE);
-  // Not a fit file or could not read.
-  //  if (result.r0)
-  //    {
-  //      GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-  //      GtkWidget *dialog;
-  //      dialog = gtk_message_dialog_new (
-  //          NULL, flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-  //          "Error loading“%s”.\n File missing, corrupt, or wrong type.\n Try
-  //          " "another file.", fname);
-  //      gtk_dialog_run (GTK_DIALOG (dialog));
-  //      gtk_widget_destroy (dialog);
-  //      return FALSE;
-  //    }
-  //  long  *pRecTimestamp = result.r2;
 
-  /*
-    float *prec_distance = result.r4;
-    float *prec_speed = result.r6;
-    float *prec_altitude = result.r8;
-    float *prec_cadence = result.r10;
-    float *prec_heartrate = result.r12;
-    float *prec_lat = result.r14;
-    float *prec_long = result.r16;
-    long nRecs = result.r17;
-    //  long  *pLapTimestamp = result.r19;
-    float *plap_total_distance = result.r21;
-    float *plap_start_position_lat = result.r23;
-    float *plap_start_position_long = result.r25;
-    //  float *plap_end_position_lat = result.r27;
-    //  float *plap_end_position_long = result.r29;
-    //  float *plap_total_calories = result.r31;
-    float *plap_total_elapsed_time = result.r33;
-    //  float *pLapTotalTimerTime = result.r35;
-    long nLaps = result.r36;
-    long sess_timestamp = result.r37;
-    long sess_start_time = result.r38;
-    float sess_start_position_lat = result.r39;
-    float sess_start_position_long = result.r40;
-    float sess_total_elapsed_time = result.r41;
-    float sess_total_timer_time = result.r42;
-    float sess_total_distance = result.r43;
-    float sess_nec_latitude = result.r44;
-    float sess_nec_longitude = result.r45;
-    float sess_swc_latitude = result.r46;
-    float sess_swc_longitude = result.r47;
-    float sess_total_work = result.r48;
-    float sess_total_moving_time = result.r49;
-    float sess_average_lap_time = result.r50;
-    float sess_total_calories = result.r51;
-    float sess_avg_speed = result.r52;
-    float sess_max_speed = result.r53;
-    float sess_total_ascent = result.r54;
-    float sess_total_descent = result.r55;
-    float sess_avg_altitude = result.r56;
-    float sess_max_altitude = result.r57;
-    float sess_min_altitude = result.r58;
-    float sess_avg_heartrate = result.r59;
-    float sess_max_heartrate = result.r60;
-    float sess_min_heartrate = result.r61;
-    float sess_avg_cadence = result.r62;
-    float sess_max_cadence = result.r63;
-    float sess_avg_temperature = result.r64;
-    float sess_max_temperature = result.r65;
-    float sess_total_anaerobic_training_effect = result.r66;
-    long time_zone_offset = result.r67;
-  */
+  /* Take one of two paths, parsing the user's file and converting to user-
+     facing values. */
 
-  result_type *p_tcx = (result_type *)malloc (sizeof (result_type));
-
-  if (create_arrays_from_tcx_file (fname, NSIZE, LSIZE, p_tcx) == 1)
+  if (is_fit_file (fname))
     {
-      GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-      GtkWidget *dialog;
-      dialog = gtk_message_dialog_new (
-          NULL, flags, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-          "Error loading“%s”.\n File missing, corrupt, or wrong type.\n Try "
-          "another file.",
-          fname);
-      gtk_dialog_run (GTK_DIALOG (dialog));
-      gtk_widget_destroy (dialog);
-      return FALSE;
+      /* FIT file */
+      /* Parse the data from the fit file in a cGO routine and return the
+       * result as a structure defined by fitwrapper.go.
+       */
+      result = parse_fit_file (fname, NSIZE, LSIZE);
+      // Not a fit file or could not read.
+      if (result.r0)
+        {
+          GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+          GtkWidget *dialog;
+          dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
+                                           GTK_BUTTONS_CLOSE,
+                                           "Error loading“%s”.\n File missing, "
+                                           "corrupt, or wrong type.\n Try "
+                                           "another file.",
+                                           fname);
+          gtk_dialog_run (GTK_DIALOG (dialog));
+          gtk_widget_destroy (dialog);
+          return FALSE;
+        }
+      //  long  *pRecTimestamp = result.r2;
+      float *prec_distance = result.r4;
+      float *prec_speed = result.r6;
+      float *prec_altitude = result.r8;
+      float *prec_cadence = result.r10;
+      float *prec_heartrate = result.r12;
+      float *prec_lat = result.r14;
+      float *prec_long = result.r16;
+      long nRecs = result.r17;
+      //  long  *pLapTimestamp = result.r19;
+      float *plap_total_distance = result.r21;
+      float *plap_start_position_lat = result.r23;
+      float *plap_start_position_long = result.r25;
+      //  float *plap_end_position_lat = result.r27;
+      //  float *plap_end_position_long = result.r29;
+      //  float *plap_total_calories = result.r31;
+      float *plap_total_elapsed_time = result.r33;
+      //  float *pLapTotalTimerTime = result.r35;
+      long nLaps = result.r36;
+      long sess_timestamp = result.r37;
+      long sess_start_time = result.r38;
+      float sess_start_position_lat = result.r39;
+      float sess_start_position_long = result.r40;
+      float sess_total_elapsed_time = result.r41;
+      float sess_total_timer_time = result.r42;
+      float sess_total_distance = result.r43;
+      float sess_nec_latitude = result.r44;
+      float sess_nec_longitude = result.r45;
+      float sess_swc_latitude = result.r46;
+      float sess_swc_longitude = result.r47;
+      float sess_total_work = result.r48;
+      float sess_total_moving_time = result.r49;
+      float sess_average_lap_time = result.r50;
+      float sess_total_calories = result.r51;
+      float sess_avg_speed = result.r52;
+      float sess_max_speed = result.r53;
+      float sess_total_ascent = result.r54;
+      float sess_total_descent = result.r55;
+      float sess_avg_altitude = result.r56;
+      float sess_max_altitude = result.r57;
+      float sess_min_altitude = result.r58;
+      float sess_avg_heartrate = result.r59;
+      float sess_max_heartrate = result.r60;
+      float sess_min_heartrate = result.r61;
+      float sess_avg_cadence = result.r62;
+      float sess_max_cadence = result.r63;
+      float sess_avg_temperature = result.r64;
+      float sess_max_temperature = result.r65;
+      float sess_total_anaerobic_training_effect = result.r66;
+      long time_zone_offset = result.r67;
+
+      /* Convert the raw values to user-facing values. */
+      raw_to_user_plots (pall->ppace, nRecs, prec_distance, prec_speed,
+                         prec_lat, prec_long, sess_start_time,
+                         time_zone_offset);
+      raw_to_user_plots (pall->pcadence, nRecs, prec_distance, prec_cadence,
+                         prec_lat, prec_long, sess_start_time,
+                         time_zone_offset);
+      raw_to_user_plots (pall->pheart, nRecs, prec_distance, prec_heartrate,
+                         prec_lat, prec_long, sess_start_time,
+                         time_zone_offset);
+      raw_to_user_plots (pall->paltitude, nRecs, prec_distance, prec_altitude,
+                         prec_lat, prec_long, sess_start_time,
+                         time_zone_offset);
+      raw_to_user_plots (pall->plap, nLaps, plap_total_distance,
+                         plap_total_elapsed_time, plap_start_position_lat,
+                         plap_start_position_long, sess_start_time,
+                         time_zone_offset);
+
+      /* Convert the raw values to user-facing values. */
+      raw_to_user_session (
+          pall->psd, sess_timestamp, sess_start_time, sess_start_position_lat,
+          sess_start_position_long, sess_total_elapsed_time,
+          sess_total_timer_time, sess_total_distance, sess_nec_latitude,
+          sess_nec_longitude, sess_swc_latitude, sess_swc_longitude,
+          sess_total_work, sess_total_moving_time, sess_average_lap_time,
+          sess_total_calories, sess_avg_speed, sess_max_speed,
+          sess_total_ascent, sess_total_descent, sess_avg_altitude,
+          sess_max_altitude, sess_min_altitude, sess_max_heartrate,
+          sess_avg_heartrate, sess_max_cadence, sess_avg_cadence,
+          sess_avg_temperature, sess_max_temperature, sess_min_heartrate,
+          sess_total_anaerobic_training_effect, time_zone_offset);
+
+      return TRUE;
     }
+  else
+    {
+      /* TCX file */
+      /* Parse the fit file (in a C routine) and return the results. */
+      result_type *p_tcx = (result_type *)malloc (sizeof (result_type));
 
-  //  for (int i = 0; i < nRecs; i++)
-  //    {
-  //    printf("prec_distance[%d] = %f\n", i, prec_distance[i]);
-  //    printf("prec_altitude[%d] = %f\n", i, prec_altitude[i]);
-  //    if ((prec_lat[i] == 0.0) || (prec_long[i] == 0.0)) printf("bad lat
-  //    or lng"); printf("prec_lat[%d] = %f\n", i, prec_lat[i]);
-  //    printf("prec_long[%d] = %f\n", i, prec_long[i]);
-  //    printf("prec_speed[%d] = %f\n", i, prec_speed[i]);
-  //    }
+      if (create_arrays_from_tcx_file (fname, NSIZE, LSIZE, p_tcx) == 1)
+        {
+          GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+          GtkWidget *dialog;
+          dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
+                                           GTK_BUTTONS_CLOSE,
+                                           "Error loading“%s”.\n File missing, "
+                                           "corrupt, or wrong type.\n Try "
+                                           "another file.",
+                                           fname);
+          gtk_dialog_run (GTK_DIALOG (dialog));
+          gtk_widget_destroy (dialog);
+          return FALSE;
+        }
 
-  /* Convert the raw values to user-facing values. */
-  raw_to_user_plots (pall->ppace, p_tcx->nRecs, p_tcx->prec_distance,
-                     p_tcx->prec_speed, p_tcx->prec_lat, p_tcx->prec_long,
-                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
-  raw_to_user_plots (pall->pcadence, p_tcx->nRecs, p_tcx->prec_distance,
-                     p_tcx->prec_cadence, p_tcx->prec_lat, p_tcx->prec_long,
-                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
-  raw_to_user_plots (pall->pheart, p_tcx->nRecs, p_tcx->prec_distance,
-                     p_tcx->prec_heartrate, p_tcx->prec_lat, p_tcx->prec_long,
-                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
-  raw_to_user_plots (pall->paltitude, p_tcx->nRecs, p_tcx->prec_distance,
-                     p_tcx->prec_altitude, p_tcx->prec_lat, p_tcx->prec_long,
-                     p_tcx->sess_start_time, p_tcx->time_zone_offset);
-  raw_to_user_plots (pall->plap, p_tcx->nLaps, p_tcx->plap_total_distance,
-                     p_tcx->plap_total_elapsed_time,
-                     p_tcx->plap_start_position_lat,
-                     p_tcx->plap_start_position_long, p_tcx->sess_start_time,
-                     p_tcx->time_zone_offset);
+      /* Convert the raw values to user-facing values. */
+      raw_to_user_plots (pall->ppace, p_tcx->nRecs, p_tcx->prec_distance,
+                         p_tcx->prec_speed, p_tcx->prec_lat, p_tcx->prec_long,
+                         p_tcx->sess_start_time, p_tcx->time_zone_offset);
+      raw_to_user_plots (pall->pcadence, p_tcx->nRecs, p_tcx->prec_distance,
+                         p_tcx->prec_cadence, p_tcx->prec_lat, p_tcx->prec_long,
+                         p_tcx->sess_start_time, p_tcx->time_zone_offset);
+      raw_to_user_plots (pall->pheart, p_tcx->nRecs, p_tcx->prec_distance,
+                         p_tcx->prec_heartrate, p_tcx->prec_lat,
+                         p_tcx->prec_long, p_tcx->sess_start_time,
+                         p_tcx->time_zone_offset);
+      raw_to_user_plots (pall->paltitude, p_tcx->nRecs, p_tcx->prec_distance,
+                         p_tcx->prec_altitude, p_tcx->prec_lat,
+                         p_tcx->prec_long, p_tcx->sess_start_time,
+                         p_tcx->time_zone_offset);
+      raw_to_user_plots (pall->plap, p_tcx->nLaps, p_tcx->plap_total_distance,
+                         p_tcx->plap_total_elapsed_time,
+                         p_tcx->plap_start_position_lat,
+                         p_tcx->plap_start_position_long,
+                         p_tcx->sess_start_time, p_tcx->time_zone_offset);
 
-  free (p_tcx->prec_distance);
-  free (p_tcx->prec_speed);
-  free (p_tcx->prec_altitude);
-  free (p_tcx->prec_cadence);
-  free (p_tcx->prec_heartrate);
-  free (p_tcx->prec_lat);
-  free (p_tcx->prec_long);
-  free (p_tcx->plap_total_distance);
-  free (p_tcx->plap_start_position_lat);
-  free (p_tcx->plap_start_position_long);
-  free (p_tcx->plap_total_elapsed_time);
+      /* Convert the raw values to user-facing values. */
+      raw_to_user_session (
+          pall->psd, p_tcx->sess_timestamp, p_tcx->sess_start_time,
+          p_tcx->sess_start_position_lat, p_tcx->sess_start_position_long,
+          p_tcx->sess_total_elapsed_time, p_tcx->sess_total_timer_time,
+          p_tcx->sess_total_distance, p_tcx->sess_nec_latitude,
+          p_tcx->sess_nec_longitude, p_tcx->sess_swc_latitude,
+          p_tcx->sess_swc_longitude, p_tcx->sess_total_work,
+          p_tcx->sess_total_moving_time, p_tcx->sess_average_lap_time,
+          p_tcx->sess_total_calories, p_tcx->sess_avg_speed,
+          p_tcx->sess_max_speed, p_tcx->sess_total_ascent,
+          p_tcx->sess_total_descent, p_tcx->sess_avg_altitude,
+          p_tcx->sess_max_altitude, p_tcx->sess_min_altitude,
+          p_tcx->sess_max_heartrate, p_tcx->sess_avg_heartrate,
+          p_tcx->sess_max_cadence, p_tcx->sess_avg_cadence,
+          p_tcx->sess_avg_temperature, p_tcx->sess_max_temperature,
+          p_tcx->sess_min_heartrate,
+          p_tcx->sess_total_anaerobic_training_effect, p_tcx->time_zone_offset);
 
-  /* Convert the raw values to user-facing values. */
-  raw_to_user_session (
-      pall->psd, p_tcx->sess_timestamp, p_tcx->sess_start_time,
-      p_tcx->sess_start_position_lat, p_tcx->sess_start_position_long,
-      p_tcx->sess_total_elapsed_time, p_tcx->sess_total_timer_time,
-      p_tcx->sess_total_distance, p_tcx->sess_nec_latitude,
-      p_tcx->sess_nec_longitude, p_tcx->sess_swc_latitude,
-      p_tcx->sess_swc_longitude, p_tcx->sess_total_work,
-      p_tcx->sess_total_moving_time, p_tcx->sess_average_lap_time,
-      p_tcx->sess_total_calories, p_tcx->sess_avg_speed, p_tcx->sess_max_speed,
-      p_tcx->sess_total_ascent, p_tcx->sess_total_descent,
-      p_tcx->sess_avg_altitude, p_tcx->sess_max_altitude,
-      p_tcx->sess_min_altitude, p_tcx->sess_max_heartrate,
-      p_tcx->sess_avg_heartrate, p_tcx->sess_max_cadence,
-      p_tcx->sess_avg_cadence, p_tcx->sess_avg_temperature,
-      p_tcx->sess_max_temperature, p_tcx->sess_min_heartrate,
-      p_tcx->sess_total_anaerobic_training_effect, p_tcx->time_zone_offset);
-  return TRUE;
-  free(p_tcx);
+      /* Clean-up (for tcx files). */
+      free (p_tcx->prec_distance);
+      free (p_tcx->prec_speed);
+      free (p_tcx->prec_altitude);
+      free (p_tcx->prec_cadence);
+      free (p_tcx->prec_heartrate);
+      free (p_tcx->prec_lat);
+      free (p_tcx->prec_long);
+      free (p_tcx->plap_total_distance);
+      free (p_tcx->plap_start_position_lat);
+      free (p_tcx->plap_start_position_long);
+      free (p_tcx->plap_total_elapsed_time);
+      free (p_tcx);
+      return TRUE;
+    }
 }
 
 /* A custom axis labeling function for a pace plot. */
