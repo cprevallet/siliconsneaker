@@ -39,7 +39,7 @@ Fenix: https://buy.garmin.com/en-US/US/p/107531#overview
 Forerunner: https://buy.garmin.com/en-US/US/p/620328#devices  
 Once plugged in, the Garmin watch should mount itself as a USB device and present a file system to the host PC.  Individual activities (runs) may be viewed when FIT files are opened from within the program.  
 For some watches under Windows 10 it may be necessary to install Garmin Express in order that the watch be recognized as a USB devices.  Details here:
-![Reference](https://docs.microsoft.com/en-us/troubleshoot/windows-client/backup-and-storage/garmin-usb-devices-not-working)
+(https://docs.microsoft.com/en-us/troubleshoot/windows-client/backup-and-storage/garmin-usb-devices-not-working)
 ## Linux
 Start from the command line or from your desktop.
 ```
