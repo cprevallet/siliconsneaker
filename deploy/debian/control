@@ -10,6 +10,7 @@ Build-Depends: debhelper-compat (= 13),
 	       librsvg2-dev,
 	       libcairo2-dev,
 	       libplplot-dev,
+	       libxml2-dev,
 	       libosmgpsmap-1.0-dev,
 	       golang-1.15-go
 Standards-Version: 4.5.0
@@ -25,8 +26,9 @@ Depends: ${shlibs:Depends},
          libosmgpsmap-1.0-1,
          libgtk-3-0,
          libplplot17,
-         librsvg2-2
-Description: View data in Garmin FIT files
+         librsvg2-2,
+         libxml2
+Description: View data in FIT or TCX formatted files
  siliconsneaker is a desktop application for graphically displaying 
  global positioning, pace, heartrate, and elevation 
- data stored within FIT format files.
+ data stored within FIT- or TCX-format files.

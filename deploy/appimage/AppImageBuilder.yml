@@ -31,6 +31,7 @@ AppDir:
     - libosmgpsmap-1.0-1:amd64
     - libplplot17:amd64
     - librsvg2-common:amd64
+    - libxml2:amd64
   files:
     include:
     - /home/osboxes/.local/share/recently-used.xbel

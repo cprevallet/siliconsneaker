@@ -87,7 +87,7 @@ make
 
 ## Install run-time dependencies and application
 ```
-apt install libosmgpsmap-1.0-1 libgtk-3-0 libplplot17 librsvg2-2  
+apt install libosmgpsmap-1.0-1 libgtk-3-0 libplplot17 librsvg2-2 libxml-2.0 
 make install
 ```
 

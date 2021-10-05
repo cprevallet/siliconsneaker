@@ -1,6 +1,14 @@
+siliconsneaker (1.2) UNRELEASED; urgency=medium
+
+  * Add support for TCX formatted files.
+ 
+ -- Craig Prevallet <penguintx@hotmail.com>  Wed, 5 Oct 2021 15:18:46 -0500
+
 siliconsneaker (1.1) UNRELEASED; urgency=medium
 
   * Add resizeable panes and mimetypes.
+ 
+ -- Craig Prevallet <penguintx@hotmail.com>  Wed, 30 Sept 2021 15:30:46 -0500
 
 siliconsneaker (1.0) UNRELEASED; urgency=medium
 

@@ -113,6 +113,7 @@ Section "Components" Components
   
   ; Store file association
   WriteRegStr HKCR ".fit" "" "SiliconSneaker"
+  WriteRegStr HKCR ".tcx" "" "SiliconSneaker"
   WriteRegStr HKCR "SiliconSneaker" "" "SiliconSneaker File"
   WriteRegStr HKCR "SiliconSneaker\DefaultIcon" "" "$INSTDIR\\icons\siliconsneaker.ico,1"
   WriteRegStr HKCR "SiliconSneaker\shell\view" "" "View with SiliconSneaker"
@@ -128,8 +129,6 @@ Section "Components" Components
     CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"  "" "$INSTDIR\\icons\\siliconsneaker.ico" 0
     CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SiliconSneaker.lnk" "$INSTDIR\\bin\\siliconsneaker" "" "$INSTDIR\\icons\\siliconsneaker.ico" 0
     CreateShortCut "$SMPROGRAMS\$StartMenuFolder\SiliconSneaker(metric).lnk" "$INSTDIR\\bin\\siliconsneaker" "-m" "$INSTDIR\\icons\\siliconsneaker.ico" 0
-    ;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\rv_imperial_doc.lnk" "$INSTDIR\\docs\rv_imperial.1.html" "" "" 0
-    ;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\rv_metric_doc.lnk" "$INSTDIR\\docs\rv_metric.1.html" "" "" 0
   
   !insertmacro MUI_STARTMENU_WRITE_END
 
@@ -145,8 +144,6 @@ Section "Uninstall"
     
   Delete "$SMPROGRAMS\$StartMenuFolder\SiliconSneaker.lnk" 
   Delete "$SMPROGRAMS\$StartMenuFolder\SiliconSneaker(metric).lnk" 
-  ;Delete "$SMPROGRAMS\$StartMenuFolder\rv_imperial_doc.lnk" 
-  ;Delete "$SMPROGRAMS\$StartMenuFolder\rv_metric_doc.lnk" 
   Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
   
@@ -156,6 +153,9 @@ Section "Uninstall"
   ReadRegStr $R0 HKCR ".fit" ""
   StrCmp $R0 "SiliconSneaker" 0 +2
     DeleteRegKey HKCR ".fit"
+  ReadRegStr $R0 HKCR ".tcx" ""
+  StrCmp $R0 "SiliconSneaker" 0 +2
+    DeleteRegKey HKCR ".tcx"
   DeleteRegKey HKCR "SiliconSneaker"
 
 
