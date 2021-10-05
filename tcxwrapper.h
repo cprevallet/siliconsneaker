@@ -165,6 +165,7 @@ create_arrays_from_tcx_file (char *fname, int NSIZE, int LSIZE, result_type *r)
       long int prev_timestamp = 0;
       float prev_distance = 0.0;
       time_t timestamp;
+      r->sess_max_speed = 0.0;
       activity = tcx->activities;
       int j = 0;
       int k = 0;
@@ -187,7 +188,6 @@ create_arrays_from_tcx_file (char *fname, int NSIZE, int LSIZE, result_type *r)
                                && trackpoint->longitude <= ZERO_THRESHOLD))
                         {
                           timestamp = parseiso8601utc (trackpoint->time);
-                          //r->sess_start_time = timestamp;
                           r->prec_distance[j] = (float)trackpoint->distance;
                           if (timestamp && prev_timestamp)
                             {
@@ -207,6 +207,9 @@ create_arrays_from_tcx_file (char *fname, int NSIZE, int LSIZE, result_type *r)
                                   r->prec_speed[j] = 1.0; // dummy one up?
                                 }
                             }
+                          if (r->prec_speed[j] > r->sess_max_speed) {
+                            r->sess_max_speed = r->prec_speed[j];
+                          }
                           r->prec_altitude[j] = (float)trackpoint->elevation;
                           r->prec_cadence[j] = (float)trackpoint->cadence;
                           r->prec_heartrate[j] = (float)trackpoint->heart_rate;
@@ -240,8 +243,7 @@ create_arrays_from_tcx_file (char *fname, int NSIZE, int LSIZE, result_type *r)
           r->sess_total_elapsed_time = activity->total_time;
           r->sess_total_distance = activity->total_distance;
           r->sess_total_calories = activity->total_calories;
-          r->sess_avg_speed = activity->speed_average;
-          r->sess_max_speed = activity->speed_maximum;
+          r->sess_avg_speed = r->sess_total_distance / (r->sess_timestamp - r->sess_start_time);
           r->sess_total_ascent = activity->total_elevation_gain;
           r->sess_total_descent = activity->total_elevation_loss;
           r->sess_max_altitude = activity->elevation_maximum;
