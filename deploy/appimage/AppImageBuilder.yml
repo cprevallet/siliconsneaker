@@ -10,7 +10,7 @@ AppDir:
     id: siliconsneaker
     name: SiliconSneaker
     icon: siliconsneaker
-    version: '1.2'
+    version: '1.3'
     exec: usr/bin/siliconsneaker
     exec_args: $@
   apt:

@@ -1,3 +1,10 @@
+siliconsneaker (1.3) UNRELEASED; urgency=medium
+
+  * Make the slider feel smoother by basing it on a per-measurement basis.
+ 
+ -- Craig Prevallet <penguintx@hotmail.com>  Wed, 7 Oct 2021 15:18:46 -0500
+
+
 siliconsneaker (1.2) UNRELEASED; urgency=medium
 
   * Add support for TCX formatted files.
