@@ -1911,11 +1911,11 @@ void
 on_update_index (GtkScale *widget, AllData *data)
 {
   GtkAdjustment *adj;
-  // What's the new value in percent of scale?
+  // Slider from zero to num_pts.
   adj = gtk_range_get_adjustment ((GtkRange *)widget);
+  gtk_adjustment_set_upper (adj, (float)data->pd->num_pts);
   gdouble val = gtk_adjustment_get_value (adj);
-  // Slider from zero to 100 - normalized.  Calculate portion of activity.
-  curr_idx = (int)floor (val / 100.0 * (float)data->ppace->num_pts);
+  curr_idx = (int)floor (val);
   // Redraw graph.
   gtk_widget_queue_draw (GTK_WIDGET (da));
   // Redraw the position marker on the map.
