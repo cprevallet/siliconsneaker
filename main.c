@@ -1233,16 +1233,8 @@ draw_xy (PlotData *pd, int width, int height)
 void
 plfbox (PLFLT x0, PLFLT y0, PLINT color)
 {
-  PLFLT x[4], y[4];
-
-  x[0] = x0;
-  y[0] = 0.;
-  x[1] = x0;
-  y[1] = y0;
-  x[2] = x0 + 1.;
-  y[2] = y0;
-  x[3] = x0 + 1.;
-  y[3] = 0.;
+  PLFLT x[4] = {x0, x0, x0 + 1.0, x0 + 1.0};
+  PLFLT y[4] = {0, y0, y0, 0.0};
   plcol0 (color);
   plfill (4, x, y);
   plcol0 (15);
