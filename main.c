@@ -1559,6 +1559,7 @@ move_marker (gdouble new_lat, gdouble new_lng)
       osm_gps_map_image_remove (map, posn_track_marker);
       posn_track_marker
           = osm_gps_map_image_add (map, new_lat, new_lng, starImage);
+      gtk_widget_queue_draw(GTK_WIDGET(map);
     }
 }
 
