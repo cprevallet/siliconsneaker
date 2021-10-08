@@ -654,7 +654,8 @@ raw_to_user_plots (PlotData *pdest, int num_recs, float x_raw[NSIZE],
                    float lng_raw[NSIZE], time_t sess_start_time,
                    time_t tz_offset)
 {
-  float x_cnv, y_cnv;
+  float x_cnv = 1.0;
+  float y_cnv = 1.0;
   /* Housekeeping. Release any memory previously allocated before
    * reinitializing.
    */
@@ -857,7 +858,7 @@ is_fit_file (char *fname)
     }
   fread (buffer, 1, 14, fp);
   fclose (fp);
-  char fit_string[3];
+  char fit_string[4];
   for (int i = 0; i < 4; i++)
     {
       fit_string[i] = buffer[i + 8];

@@ -8,7 +8,7 @@ CC=gcc
 # debug
 DEBUG=-g
 # optimisation
-OPT=-O0
+OPT=-O2
 # warnings
 WARN=-Wall
 
