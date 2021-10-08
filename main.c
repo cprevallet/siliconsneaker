@@ -1533,9 +1533,9 @@ static int
 init_map ()
 {
   // Load start, stop image for map points of interest.
-  positionImage = gdk_pixbuf_new_from_resource ("/ui/bluedot2.png", NULL);
-  stopImage = gdk_pixbuf_new_from_resource ("/ui/reddot2.png", NULL);
-  startImage = gdk_pixbuf_new_from_resource ("/ui/greendot2.png", NULL);
+  positionImage = gdk_pixbuf_new_from_resource ("/ui/bluedot.png", NULL);
+  stopImage = gdk_pixbuf_new_from_resource ("/ui/reddot.png", NULL);
+  startImage = gdk_pixbuf_new_from_resource ("/ui/greendot.png", NULL);
 
   // Geographical center of contiguous US
   float default_latitude = 39.8355;
@@ -1663,13 +1663,15 @@ GdkRGBA
 pick_color (float average, float stdev, float speed, enum UnitSystem units)
 {
   /* Purple gradients */
-  GdkRGBA slowest, slower, slow, fast, faster, fastest;
+
+  /*
   gdk_rgba_parse(&fastest,  "rgba(145,  0, 63, 1.0)");
   gdk_rgba_parse(&faster,   "rgba(206, 18, 86, 1.0)");
   gdk_rgba_parse(&fast,     "rgba(231, 41,138, 1.0)");
   gdk_rgba_parse(&slow,     "rgba(223,101,176, 1.0)");
   gdk_rgba_parse(&slower,   "rgba(201,148,199, 1.0)");
   gdk_rgba_parse(&slowest,  "rgba(212,185,218, 1.0)");
+  */
 
   /*  Red-orange */
   /*
@@ -1689,6 +1691,17 @@ pick_color (float average, float stdev, float speed, enum UnitSystem units)
   gdk_rgba_parse(&slower,   "rgba(198,219,239, 1.0)");
   gdk_rgba_parse(&slowest,  "rgba(239,243,255, 1.0)");
   */
+
+  GdkRGBA slowest, slower, slow, fast, faster, fastest;
+  /* More blue color gradients */
+  gdk_rgba_parse(&fastest,  "rgba( 8,  69,  146, 0.6)");
+  gdk_rgba_parse(&faster,   "rgba( 33, 113, 181, 0.6)");
+  gdk_rgba_parse(&fast,     "rgba( 66, 146, 198, 0.6)");
+  gdk_rgba_parse(&slow,     "rgba( 107,174, 214, 0.6)");
+  gdk_rgba_parse(&slower,   "rgba( 158,202,225, 0.6)");
+  gdk_rgba_parse(&slowest,  "rgba( 198,219,239, 0.6)");
+
+
   float fastest_limit, faster_limit, fast_limit, slow_limit, slower_limit;
   if (speed <= 0.0)
     return slowest;
