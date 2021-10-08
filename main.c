@@ -1804,7 +1804,6 @@ reload_all (AllData *pall)
           /* Force a redraw on the drawing area. */
           gtk_widget_queue_draw (GTK_WIDGET (da));
           /* Update the summary table. */
-          // TODO*****ADDED FOR TESTING tcx **** NEED TO UNCOMMENT***/
           update_summary (pall->psd);
           /* Update the map. */
           update_map (pall);
