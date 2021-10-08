@@ -2,7 +2,9 @@
 <gresources>
   <gresource prefix="/ui">
     <file preprocess="xml-stripblanks">siliconsneaker.glade</file>
-    <file>poi.png</file>
+    <file>purpledot.png</file>
+    <file>reddot.png</file>
+    <file>greendot.png</file>
     <file>siliconsneaker.png</file>
   </gresource>
 </gresources>

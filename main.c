@@ -228,7 +228,9 @@ char *fname = NULL;
  * structure is intended primarily for data models not UI.
  */
 OsmGpsMap *map;
-static GdkPixbuf *starImage = NULL;
+static GdkPixbuf *purpleImage = NULL;
+static GdkPixbuf *redImage = NULL;
+static GdkPixbuf *greenImage = NULL;
 /* Map marker, start of run. */
 OsmGpsMapImage *start_track_marker = NULL;
 /* Map marker, end of run. */
@@ -1531,7 +1533,9 @@ static int
 init_map ()
 {
   // Load start, stop image for map points of interest.
-  starImage = gdk_pixbuf_new_from_resource ("/ui/poi.png", NULL);
+  purpleImage = gdk_pixbuf_new_from_resource ("/ui/purpledot.png", NULL);
+  redImage = gdk_pixbuf_new_from_resource ("/ui/reddot.png", NULL);
+  greenImage = gdk_pixbuf_new_from_resource ("/ui/greendot.png", NULL);
 
   // Geographical center of contiguous US
   float default_latitude = 39.8355;
@@ -1558,7 +1562,7 @@ move_marker (gdouble new_lat, gdouble new_lng)
     {
       osm_gps_map_image_remove (map, posn_track_marker);
       posn_track_marker
-          = osm_gps_map_image_add (map, new_lat, new_lng, starImage);
+          = osm_gps_map_image_add (map, new_lat, new_lng, purpleImage);
       gtk_widget_queue_draw(GTK_WIDGET(map));
     }
 }
@@ -1658,6 +1662,7 @@ stats (double *arr, int arr_size, float *mean, float *stdev)
 GdkRGBA
 pick_color (float average, float stdev, float speed, enum UnitSystem units)
 {
+  /* Purple gradients */
   GdkRGBA slowest, slower, slow, fast, faster, fastest;
   gdk_rgba_parse(&fastest,  "rgba(145,  0, 63, 1.0)");
   gdk_rgba_parse(&faster,   "rgba(206, 18, 86, 1.0)");
@@ -1666,6 +1671,7 @@ pick_color (float average, float stdev, float speed, enum UnitSystem units)
   gdk_rgba_parse(&slower,   "rgba(201,148,199, 1.0)");
   gdk_rgba_parse(&slowest,  "rgba(212,185,218, 1.0)");
 
+  /*  Red-orange */
   /*
   gdk_rgba_parse (&slowest, "rgba(255,255,212, 1.0)");
   gdk_rgba_parse (&slower, "rgba(254,227,145, 1.0)");
@@ -1673,7 +1679,7 @@ pick_color (float average, float stdev, float speed, enum UnitSystem units)
   gdk_rgba_parse (&fast, "rgba(254,153,41, 1.0)");
   gdk_rgba_parse (&faster, "rgba(217,95,14, 1.0)");
   gdk_rgba_parse (&fastest, "rgba(153,52,4, 1.0)");
-*/
+  */
   /* Blue color gradients */
   /*
   gdk_rgba_parse(&fastest,  "rgba( 8,  81,156, 1.0)");
@@ -1750,13 +1756,13 @@ update_map (AllData *data)
       if (posn_track_marker != NULL)
         osm_gps_map_image_remove (map, posn_track_marker);
       start_track_marker = osm_gps_map_image_add (map, data->pd->lat[0],
-                                                  data->pd->lng[0], starImage);
+                                                  data->pd->lng[0], greenImage);
       end_track_marker = osm_gps_map_image_add (
           map, data->pd->lat[data->pd->num_pts - 1],
-          data->pd->lng[data->pd->num_pts - 1], starImage);
+          data->pd->lng[data->pd->num_pts - 1], redImage);
       /* Add current position marker */
       posn_track_marker = osm_gps_map_image_add (
-          map, data->pd->lat[curr_idx], data->pd->lng[curr_idx], starImage);
+          map, data->pd->lat[curr_idx], data->pd->lng[curr_idx], purpleImage);
     }
   else
     {
