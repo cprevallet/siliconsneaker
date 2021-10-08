@@ -4,6 +4,7 @@ siliconsneaker (1.3) UNRELEASED; urgency=medium
   * Choose a more visible heatmap scheme.
   * New start/end/position markers on map.
   * Make the slider feel smoother by basing it on a per-measurement basis.
+  * Compile with O2 optimization.
  
  -- Craig Prevallet <penguintx@hotmail.com>  Wed, 9 Oct 2021 15:18:46 -0500
 
