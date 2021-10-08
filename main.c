@@ -1659,12 +1659,21 @@ GdkRGBA
 pick_color (float average, float stdev, float speed, enum UnitSystem units)
 {
   GdkRGBA slowest, slower, slow, fast, faster, fastest;
+  gdk_rgba_parse(&fastest,  "rgba(145,  0, 63, 1.0)");
+  gdk_rgba_parse(&faster,   "rgba(206, 18, 86, 1.0)");
+  gdk_rgba_parse(&fast,     "rgba(231, 41,138, 1.0)");
+  gdk_rgba_parse(&slow,     "rgba(223,101,176, 1.0)");
+  gdk_rgba_parse(&slower,   "rgba(201,148,199, 1.0)");
+  gdk_rgba_parse(&slowest,  "rgba(212,185,218, 1.0)");
+
+  /*
   gdk_rgba_parse (&slowest, "rgba(255,255,212, 1.0)");
   gdk_rgba_parse (&slower, "rgba(254,227,145, 1.0)");
   gdk_rgba_parse (&slow, "rgba(254,196,79, 1.0)");
   gdk_rgba_parse (&fast, "rgba(254,153,41, 1.0)");
   gdk_rgba_parse (&faster, "rgba(217,95,14, 1.0)");
   gdk_rgba_parse (&fastest, "rgba(153,52,4, 1.0)");
+*/
   /* Blue color gradients */
   /*
   gdk_rgba_parse(&fastest,  "rgba( 8,  81,156, 1.0)");
@@ -1673,7 +1682,7 @@ pick_color (float average, float stdev, float speed, enum UnitSystem units)
   gdk_rgba_parse(&slow,     "rgba(158,202,225, 1.0)");
   gdk_rgba_parse(&slower,   "rgba(198,219,239, 1.0)");
   gdk_rgba_parse(&slowest,  "rgba(239,243,255, 1.0)");
-*/
+  */
   float fastest_limit, faster_limit, fast_limit, slow_limit, slower_limit;
   if (speed <= 0.0)
     return slowest;
