@@ -227,7 +227,7 @@ char *fname = NULL;
  * AllData, and that doesn't seem appropriate since that
  * structure is intended primarily for data models not UI.
  */
-OsmGpsMap *map;
+static OsmGpsMap *map;
 static GdkPixbuf *positionImage = NULL;
 static GdkPixbuf *stopImage = NULL;
 static GdkPixbuf *startImage = NULL;
@@ -254,7 +254,7 @@ OSM_GPS_MAP_SOURCE_VIRTUAL_EARTH_HYBRID,
 OSM_GPS_MAP_SOURCE_OSMC_TRAILS,
 OSM_GPS_MAP_SOURCE_LAST
 */
-// OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
+//OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_OPENSTREETMAP;
 OsmGpsMapSource_t source = OSM_GPS_MAP_SOURCE_GOOGLE_STREET;
 // if ( !osm_gps_map_source_is_valid(source) )
 //       return 1;
@@ -1541,10 +1541,11 @@ init_map ()
   float default_latitude = 39.8355;
   float default_longitude = -99.0909;
   int defaultzoom = 4;
-
-  GtkWidget *wid = g_object_new (OSM_TYPE_GPS_MAP, NULL);
-  g_object_set (wid, "map-source", source, NULL);
-  g_object_set (wid, "tile-cache", "/tmp/", NULL);
+  char *tmpdir = path_to_temp_dir();
+  GtkWidget *wid = g_object_new (OSM_TYPE_GPS_MAP,
+                     "map-source", source,
+                     "tile-cache", tmpdir,
+                      NULL);
   map = OSM_GPS_MAP (wid);
   osm_gps_map_set_center_and_zoom (OSM_GPS_MAP (map), default_latitude,
                                    default_longitude, defaultzoom);
