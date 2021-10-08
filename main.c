@@ -228,9 +228,9 @@ char *fname = NULL;
  * structure is intended primarily for data models not UI.
  */
 OsmGpsMap *map;
-static GdkPixbuf *purpleImage = NULL;
-static GdkPixbuf *redImage = NULL;
-static GdkPixbuf *greenImage = NULL;
+static GdkPixbuf *positionImage = NULL;
+static GdkPixbuf *stopImage = NULL;
+static GdkPixbuf *startImage = NULL;
 /* Map marker, start of run. */
 OsmGpsMapImage *start_track_marker = NULL;
 /* Map marker, end of run. */
@@ -1533,9 +1533,9 @@ static int
 init_map ()
 {
   // Load start, stop image for map points of interest.
-  purpleImage = gdk_pixbuf_new_from_resource ("/ui/purpledot.png", NULL);
-  redImage = gdk_pixbuf_new_from_resource ("/ui/reddot.png", NULL);
-  greenImage = gdk_pixbuf_new_from_resource ("/ui/greendot.png", NULL);
+  positionImage = gdk_pixbuf_new_from_resource ("/ui/bluedot2.png", NULL);
+  stopImage = gdk_pixbuf_new_from_resource ("/ui/reddot2.png", NULL);
+  startImage = gdk_pixbuf_new_from_resource ("/ui/greendot2.png", NULL);
 
   // Geographical center of contiguous US
   float default_latitude = 39.8355;
@@ -1562,7 +1562,7 @@ move_marker (gdouble new_lat, gdouble new_lng)
     {
       osm_gps_map_image_remove (map, posn_track_marker);
       posn_track_marker
-          = osm_gps_map_image_add (map, new_lat, new_lng, purpleImage);
+          = osm_gps_map_image_add (map, new_lat, new_lng, positionImage);
       gtk_widget_queue_draw(GTK_WIDGET(map));
     }
 }
@@ -1756,13 +1756,13 @@ update_map (AllData *data)
       if (posn_track_marker != NULL)
         osm_gps_map_image_remove (map, posn_track_marker);
       start_track_marker = osm_gps_map_image_add (map, data->pd->lat[0],
-                                                  data->pd->lng[0], greenImage);
+                                                  data->pd->lng[0], startImage);
       end_track_marker = osm_gps_map_image_add (
           map, data->pd->lat[data->pd->num_pts - 1],
-          data->pd->lng[data->pd->num_pts - 1], redImage);
+          data->pd->lng[data->pd->num_pts - 1], stopImage);
       /* Add current position marker */
       posn_track_marker = osm_gps_map_image_add (
-          map, data->pd->lat[curr_idx], data->pd->lng[curr_idx], purpleImage);
+          map, data->pd->lat[curr_idx], data->pd->lng[curr_idx], positionImage);
     }
   else
     {
