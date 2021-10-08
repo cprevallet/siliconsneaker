@@ -347,6 +347,8 @@ Middle mouse to zoom out full.</property>
                                 <property name="can-focus">True</property>
                                 <property name="tooltip-text" translatable="yes">Slide to step through activity.  Left-most is start of activity, right-most is end of activity. Arrow keys = small step.  Page up/down = larger step.</property>
                                 <property name="adjustment">adjustment1</property>
+                                <property name="lower-stepper-sensitivity">on</property>
+                                <property name="upper-stepper-sensitivity">on</property>
                                 <property name="draw-value">False</property>
                               </object>
                               <packing>
