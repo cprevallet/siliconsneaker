@@ -1339,7 +1339,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 //  strcat (tmpfile, "siliconsneaker.svg");
 //  FILE *fp = fopen (tmpfile, "w");
 //  plsfile (fp);
-  char* memptr = malloc (sizeof (char) * height * width * 3);
+  guchar* memptr = malloc (sizeof (guchar) * height * width * 3);
   plsmem(width, height, memptr);
   plinit ();
   //pl_cmd (PLESC_DEVINIT, cr);
@@ -1373,12 +1373,30 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   plend ();
 
   /* Reload svg to cairo context. */
-  GError **error = NULL;
+//  GError **error = NULL;
 //  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
-  RsvgRectangle viewport
-      = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
+//  RsvgRectangle viewport
+//      = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
 //  rsvg_handle_render_document (handle, cr, &viewport, error);
   /* Say: "I'm finished drawing. */
+
+  GdkPixbuf *pixbuf;
+  pixbuf =  gdk_pixbuf_new_from_data (memptr,
+                                      GDK_COLORSPACE_RGB,
+                                      FALSE,
+                                      8,
+                                      width,
+                                      height,
+                                      width,
+                                      NULL,
+                                      NULL);
+
+
+  /* Draw the pixbuf */
+  gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
+  cairo_paint (cr);
+
+
   gdk_window_end_draw_frame (window, drawingContext);
   /* Cleanup */
   cairo_region_destroy (cairoRegion);
