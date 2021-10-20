@@ -1333,14 +1333,16 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Say: "I want to start drawing". */
   cairo_t *cr = gdk_drawing_context_get_cairo_context (drawingContext);
   /* Initialize plplot using the svg backend. */
-  plsdev ("svg");
+  plsdev ("mem");
   /* Device attributes */
-  char *tmpfile = path_to_temp_dir ();
-  strcat (tmpfile, "siliconsneaker.svg");
-  FILE *fp = fopen (tmpfile, "w");
-  plsfile (fp);
+//  char *tmpfile = path_to_temp_dir ();
+//  strcat (tmpfile, "siliconsneaker.svg");
+//  FILE *fp = fopen (tmpfile, "w");
+//  plsfile (fp);
+  char* memptr = malloc (sizeof (char) * height * width * 3);
+  plsmem(width, height, memptr);
   plinit ();
-  pl_cmd (PLESC_DEVINIT, cr);
+  //pl_cmd (PLESC_DEVINIT, cr);
   /* Viewport and window */
   pladv (0);
   plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
@@ -1369,16 +1371,18 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
           &data->pd->vw_pymax);
   /* Close PLplot library */
   plend ();
+
   /* Reload svg to cairo context. */
   GError **error = NULL;
-  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
+//  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
   RsvgRectangle viewport
       = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
-  rsvg_handle_render_document (handle, cr, &viewport, error);
+//  rsvg_handle_render_document (handle, cr, &viewport, error);
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame (window, drawingContext);
   /* Cleanup */
   cairo_region_destroy (cairoRegion);
+  free(memptr);
   return FALSE;
 }
 
