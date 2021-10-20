@@ -1339,7 +1339,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 //  strcat (tmpfile, "siliconsneaker.svg");
 //  FILE *fp = fopen (tmpfile, "w");
 //  plsfile (fp);
-  guchar* memptr = malloc (sizeof (guchar) * height * width * 3);
+  //guchar* memptr = malloc (sizeof (guchar) * height * width * 3);
+  guchar* memptr = calloc (height * width * 3, sizeof(guchar));
   plsmem(width, height, memptr);
   plinit ();
   //pl_cmd (PLESC_DEVINIT, cr);
@@ -1387,7 +1388,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
                                       8,
                                       width,
                                       height,
-                                      width,
+                                      width * 3,
                                       NULL,
                                       NULL);
 
