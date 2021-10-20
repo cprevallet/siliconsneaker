@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 
 /*
  * GUI
@@ -1148,9 +1149,11 @@ altitude_plot_labeler (PLINT axis, PLFLT value, char *label, PLINT length,
 
 /* Draw an xy plot. */
 
-void
-draw_xy (PlotData *pd, int width, int height)
+void *
+//draw_xy (PlotData *pd)
+draw_xy( void *args)
 {
+  PlotData* pd = (PlotData*) args;
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT x_hair = 0;
@@ -1230,6 +1233,7 @@ draw_xy (PlotData *pd, int width, int height)
           pllsty (1);
         }
     }
+    return 0;
 }
 
 /* Draw a filled box. */
@@ -1303,6 +1307,62 @@ checkRadioButtons ()
   return LapPlot;
 }
 
+
+void 
+generate_plot( AllData *data, int height, int width ) {
+
+  /* Initialize plplot using the svg backend. */
+  plsdev ("svg");
+  /* Device attributes */
+  char *tmpfile = path_to_temp_dir ();
+  strcat (tmpfile, "siliconsneaker.svg");
+  FILE *fp = fopen (tmpfile, "w");
+  plsfile (fp);
+  plinit ();
+  //pl_cmd (PLESC_DEVINIT, cr);
+
+
+  /* Viewport and window */
+  pladv (0);
+  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
+
+  static pthread_t thread_info;
+
+
+  /* Draw an xy plot or a bar chart. */
+  switch (checkRadioButtons ())
+    {
+    case PacePlot:
+      //draw_xy (data->pd);
+
+      pthread_create( &thread_info, NULL, draw_xy, (void*)data->pd);
+      pthread_join(thread_info, NULL);
+
+      break;
+    case CadencePlot:
+      draw_xy (data->pd);
+      break;
+    case HeartRatePlot:
+      draw_xy (data->pd);
+      break;
+    case AltitudePlot:
+      draw_xy (data->pd);
+      break;
+    case LapPlot:
+      draw_bar (data->plap, data->ppace, width, height);
+      break;
+    }
+  /* Now how much padding around the plot are we actually generating? Store it
+     for use in zooming. */
+  plgvpd (&data->pd->vw_pxmin, &data->pd->vw_pxmax, &data->pd->vw_pymin,
+          &data->pd->vw_pymax);
+  /* Close PLplot library */
+  plend ();
+
+}
+
+
+
 /* Drawing area callback.
  *
  * The GUI definition wraps a GTKDrawing area inside a GTK widget.
@@ -1330,55 +1390,33 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   int height = rectangle.height;
   GdkDrawingContext *drawingContext;
   drawingContext = gdk_window_begin_draw_frame (window, cairoRegion);
+  
+
   /* Say: "I want to start drawing". */
   cairo_t *cr = gdk_drawing_context_get_cairo_context (drawingContext);
-  /* Initialize plplot using the svg backend. */
-  plsdev ("svg");
-  /* Device attributes */
+
+
+  generate_plot(data, height, width);
+
+
   char *tmpfile = path_to_temp_dir ();
   strcat (tmpfile, "siliconsneaker.svg");
-  FILE *fp = fopen (tmpfile, "w");
-  plsfile (fp);
-  plinit ();
-  pl_cmd (PLESC_DEVINIT, cr);
-  /* Viewport and window */
-  pladv (0);
-  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
-  /* Draw an xy plot or a bar chart. */
-  switch (checkRadioButtons ())
-    {
-    case PacePlot:
-      draw_xy (data->pd, width, height);
-      break;
-    case CadencePlot:
-      draw_xy (data->pd, width, height);
-      break;
-    case HeartRatePlot:
-      draw_xy (data->pd, width, height);
-      break;
-    case AltitudePlot:
-      draw_xy (data->pd, width, height);
-      break;
-    case LapPlot:
-      draw_bar (data->plap, data->ppace, width, height);
-      break;
-    }
-  /* Now how much padding around the plot are we actually generating? Store it
-     for use in zooming. */
-  plgvpd (&data->pd->vw_pxmin, &data->pd->vw_pxmax, &data->pd->vw_pymin,
-          &data->pd->vw_pymax);
-  /* Close PLplot library */
-  plend ();
   /* Reload svg to cairo context. */
   GError **error = NULL;
   RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
   RsvgRectangle viewport
       = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
   rsvg_handle_render_document (handle, cr, &viewport, error);
+
+
+
+
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame (window, drawingContext);
   /* Cleanup */
   cairo_region_destroy (cairoRegion);
+
+
   return FALSE;
 }
 
