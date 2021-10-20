@@ -203,6 +203,15 @@ typedef struct AllData
   struct SessionData *psd;
 } AllData;
 
+typedef struct GenPlotData
+{
+  struct AllData *data;
+  int height;
+  int width;
+} GenPlotData;
+
+
+
 /* Declarations for the GUI widgets. */
 GtkTextBuffer *textbuffer1;
 GtkDrawingArea *da;
@@ -1148,12 +1157,9 @@ altitude_plot_labeler (PLINT axis, PLFLT value, char *label, PLINT length,
 }
 
 /* Draw an xy plot. */
-
-void *
-//draw_xy (PlotData *pd)
-draw_xy( void *args)
+int
+draw_xy (PlotData *pd)
 {
-  PlotData* pd = (PlotData*) args;
   float ch_size = 4.0; // mm
   float scf = 1.0;     // dimensionless
   PLFLT x_hair = 0;
@@ -1307,9 +1313,14 @@ checkRadioButtons ()
   return LapPlot;
 }
 
-
-void 
-generate_plot( AllData *data, int height, int width ) {
+void *
+generate_plot( void *args)
+{
+  /* Unpack the arguments. */
+  GenPlotData* gpd = (GenPlotData*) args;
+  AllData * data = gpd->data;
+  int height = gpd->height;
+  int width = gpd->width;
 
   /* Initialize plplot using the svg backend. */
   plsdev ("svg");
@@ -1326,18 +1337,12 @@ generate_plot( AllData *data, int height, int width ) {
   pladv (0);
   plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
 
-  static pthread_t thread_info;
-
 
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons ())
     {
     case PacePlot:
-      //draw_xy (data->pd);
-
-      pthread_create( &thread_info, NULL, draw_xy, (void*)data->pd);
-      pthread_join(thread_info, NULL);
-
+      draw_xy (data->pd);
       break;
     case CadencePlot:
       draw_xy (data->pd);
@@ -1358,7 +1363,7 @@ generate_plot( AllData *data, int height, int width ) {
           &data->pd->vw_pymax);
   /* Close PLplot library */
   plend ();
-
+  return 0;
 }
 
 
@@ -1395,8 +1400,16 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Say: "I want to start drawing". */
   cairo_t *cr = gdk_drawing_context_get_cairo_context (drawingContext);
 
+  static pthread_t thread_info;
+  static GenPlotData gpd;
+  gpd.data = data;
+  gpd.width = width;
+  gpd.height = height;
+  pthread_create( &thread_info, NULL, generate_plot, (void*)&gpd);
+  pthread_join(thread_info, NULL);
 
-  generate_plot(data, height, width);
+
+  //generate_plot(data, height, width);
 
 
   char *tmpfile = path_to_temp_dir ();
