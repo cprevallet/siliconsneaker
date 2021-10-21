@@ -1952,8 +1952,7 @@ on_update_index (GtkScale *widget, AllData *data)
   // Redraw the position marker on the map.
   if ((map != NULL) && (posn_track_marker != NULL))
     move_marker (data->pd->lat[curr_idx], data->pd->lng[curr_idx]);
- // run the main iteration to update the GUI,
-  // you need to call these functions even if the GUI wasn't modified,
+  // run the main iteration to update the GUI,
   // in order to get it responsive and treat events from it:
   while(gtk_events_pending()) gtk_main_iteration();
   // Update the label below the graph.
