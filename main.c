@@ -1390,6 +1390,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   gdk_window_end_draw_frame (window, drawingContext);
   /* Cleanup */
   cairo_region_destroy (cairoRegion);
+  free(buf_ptr);
   return FALSE;
 }
 
