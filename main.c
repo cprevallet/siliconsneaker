@@ -1335,10 +1335,16 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Initialize plplot using the svg backend. */
   plsdev ("svg");
   /* Device attributes */
-  char *tmpfile = path_to_temp_dir ();
-  strcat (tmpfile, "siliconsneaker.svg");
-  FILE *fp = fopen (tmpfile, "w");
-  plsfile (fp);
+  //char *tmpfile = path_to_temp_dir ();
+  //strcat (tmpfile, "siliconsneaker.svg");
+  //FILE *fp = fopen (tmpfile, "w");
+  
+  //FILE *fp = fmemopen(NULL, 1000000, "w");
+
+  char* buf_ptr;
+  size_t sizeloc;
+  FILE * svg_stream = open_memstream (&buf_ptr, &sizeloc);
+  plsfile (svg_stream);
   plinit ();
   pl_cmd (PLESC_DEVINIT, cr);
   /* Viewport and window */
@@ -1370,11 +1376,16 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   /* Close PLplot library */
   plend ();
   /* Reload svg to cairo context. */
-  GError **error = NULL;
-  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
+  GError *error = NULL;
+//  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
+
+  GInputStream * stream;
+  stream = g_memory_input_stream_new_from_data (buf_ptr, sizeloc, NULL);
+  //RsvgHandle *handle = rsvg_handle_new_from_stream_sync (stream, NULL, RSVG_HANDLE_FLAGS_NONE, NULL, &error);
+  RsvgHandle *handle = rsvg_handle_new_from_stream_sync (stream, NULL, RSVG_HANDLE_FLAGS_NONE, NULL, NULL);
   RsvgRectangle viewport
       = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
-  rsvg_handle_render_document (handle, cr, &viewport, error);
+  rsvg_handle_render_document (handle, cr, &viewport, &error);
   /* Say: "I'm finished drawing. */
   gdk_window_end_draw_frame (window, drawingContext);
   /* Cleanup */
