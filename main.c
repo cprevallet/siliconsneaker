@@ -72,7 +72,7 @@
 //
 // Declarations section
 //
-#define VERSION "1.3"
+#define VERSION "1.4"
 // Maximum readable records from a fit file.
 // 2880 is large enough for 4 hour marathon at 5 sec intervals
 //#define NSIZE 2880
