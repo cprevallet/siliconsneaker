@@ -1343,6 +1343,7 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
 
   char* buf_ptr;
   size_t sizeloc;
+  //TODO THIS NOT AVAILABLE ON WINDOWS!!!!
   FILE * svg_stream = open_memstream (&buf_ptr, &sizeloc);
   plsfile (svg_stream);
   plinit ();
