@@ -1,6 +1,6 @@
 siliconsneaker (1.5) UNRELEASED; urgency=medium
 
-  * Make the summary report widget resizable. 
+  * Make the summary report frame/scrolled window resizable. 
   * Corrected graph tool-tip. LMB vs. RMB switched.
  
  -- Craig Prevallet <penguintx@hotmail.com>  Fri, 22 Oct 2021 15:18:46 -0500
