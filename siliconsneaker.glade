@@ -324,9 +324,11 @@
                                 <property name="visible">True</property>
                                 <property name="app-paintable">True</property>
                                 <property name="can-focus">False</property>
-                                <property name="tooltip-text" translatable="yes">Left mouse drag to pan.
+                                <property name="tooltip-text" translatable="yes">Mouse-wheel to zoom in/out.
+Left mouse drag to pan.
 Right mouse click-drag  graph to zoom in.  
-Middle mouse to zoom out full.</property>
+Middle mouse click to zoom out full.
+</property>
                               </object>
                             </child>
                           </object>

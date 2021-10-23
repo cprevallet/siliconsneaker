@@ -1532,12 +1532,23 @@ gboolean mouse_scroll (GtkWidget *widget,
                GdkEventScroll  *event,
                AllData *data)
                {
-
+  PLFLT zoomin_pct = 0.1;  //this is arbitrary between 0 and 1, could #define
+  PLFLT zoomout_pct = -zoomin_pct;
+  PLFLT x_span = data->pd->vw_xmax - data->pd->vw_xmin;
+  PLFLT y_span = data->pd->vw_ymax - data->pd->vw_ymin;
   if (event->direction == GDK_SCROLL_UP) {
-    printf("scrolled up! \n");
+    data->pd->vw_xmin = zoomin_pct * x_span + data->pd->vw_xmin;
+    data->pd->vw_ymin = zoomin_pct * y_span + data->pd->vw_ymin; 
+    data->pd->vw_xmax = -zoomin_pct * x_span + data->pd->vw_xmax;
+    data->pd->vw_ymax = -zoomin_pct * y_span + data->pd->vw_ymax;
+    gtk_widget_queue_draw (GTK_WIDGET (da));
   } 
   if (event->direction == GDK_SCROLL_DOWN) {
-    printf("scrolled down! \n");
+    data->pd->vw_xmin = zoomout_pct * x_span + data->pd->vw_xmin;
+    data->pd->vw_ymin = zoomout_pct * y_span + data->pd->vw_ymin; 
+    data->pd->vw_xmax = -zoomout_pct * x_span + data->pd->vw_xmax;
+    data->pd->vw_ymax = -zoomout_pct * y_span + data->pd->vw_ymax;
+    gtk_widget_queue_draw (GTK_WIDGET (da));
   }
   return TRUE;  
 }
