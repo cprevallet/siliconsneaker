@@ -1334,6 +1334,10 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   cairo_t *cr = gdk_drawing_context_get_cairo_context (drawingContext);
   /* Initialize plplot using the svg backend. */
   plsdev ("svg");
+  /* Must set the background color before initializing. 
+   * Value currently set to match Google maps land.
+   */
+  plscolbga ( 232 , 232 , 232, 1.0 ); 
   /* Device attributes */
   char *tmpfile = path_to_temp_dir ();
   strcat (tmpfile, "siliconsneaker.svg");
@@ -2170,9 +2174,9 @@ main (int argc, char *argv[])
   heartrateplot.lng = NULL;
   heartrateplot.xaxislabel = NULL;
   heartrateplot.yaxislabel = NULL;
-  heartrateplot.linecolor[0] = 247;
-  heartrateplot.linecolor[1] = 250;
-  heartrateplot.linecolor[2] = 191;
+  heartrateplot.linecolor[0] = 255;
+  heartrateplot.linecolor[1] = 127;
+  heartrateplot.linecolor[2] = 14;
   heartrateplot.units = English;
   heartrateplot.start_time = NULL;
 
