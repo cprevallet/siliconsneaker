@@ -1,3 +1,9 @@
+siliconsneaker (1.6) UNRELEASED; urgency=medium
+
+  * Zoom graph using scroll wheel. 
+ 
+ -- Craig Prevallet <penguintx@hotmail.com>  Sat, 23 Oct 2021 15:18:46 -0500
+
 siliconsneaker (1.5) UNRELEASED; urgency=medium
 
   * Make the summary report frame/scrolled window expand to fill. 
