@@ -2112,9 +2112,9 @@ main (int argc, char *argv[])
   paceplot.lng = NULL;
   paceplot.xaxislabel = NULL;
   paceplot.yaxislabel = NULL;
-  paceplot.linecolor[0] = 156;
-  paceplot.linecolor[1] = 100;
-  paceplot.linecolor[2] = 134;
+  paceplot.linecolor[0] = 215;
+  paceplot.linecolor[1] = 95;
+  paceplot.linecolor[2] = 95;
   paceplot.units = English;
   paceplot.start_time = NULL;
 
@@ -2143,9 +2143,9 @@ main (int argc, char *argv[])
   cadenceplot.lng = NULL;
   cadenceplot.xaxislabel = NULL;
   cadenceplot.yaxislabel = NULL;
-  cadenceplot.linecolor[0] = 31;
-  cadenceplot.linecolor[1] = 119;
-  cadenceplot.linecolor[2] = 180;
+  cadenceplot.linecolor[0] = 89;
+  cadenceplot.linecolor[1] = 123;
+  cadenceplot.linecolor[2] = 195;
   cadenceplot.units = English;
   cadenceplot.start_time = NULL;
 
@@ -2174,9 +2174,9 @@ main (int argc, char *argv[])
   heartrateplot.lng = NULL;
   heartrateplot.xaxislabel = NULL;
   heartrateplot.yaxislabel = NULL;
-  heartrateplot.linecolor[0] = 255;
-  heartrateplot.linecolor[1] = 127;
-  heartrateplot.linecolor[2] = 14;
+  heartrateplot.linecolor[0] = 216;
+  heartrateplot.linecolor[1] = 173;
+  heartrateplot.linecolor[2] = 76;
   heartrateplot.units = English;
   heartrateplot.start_time = NULL;
 
@@ -2205,9 +2205,9 @@ main (int argc, char *argv[])
   altitudeplot.lng = NULL;
   altitudeplot.xaxislabel = NULL;
   altitudeplot.yaxislabel = NULL;
-  altitudeplot.linecolor[0] = 77;
-  altitudeplot.linecolor[1] = 175;
-  altitudeplot.linecolor[2] = 74;
+  altitudeplot.linecolor[0] = 114;
+  altitudeplot.linecolor[1] = 162;
+  altitudeplot.linecolor[2] = 90;
   altitudeplot.units = English;
   altitudeplot.start_time = NULL;
 
