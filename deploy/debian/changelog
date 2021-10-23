@@ -1,6 +1,7 @@
 siliconsneaker (1.6) UNRELEASED; urgency=medium
 
   * Zoom graph using scroll wheel. 
+  * Move controls to bottom of map, graph panes to avoid occlusion.
  
  -- Craig Prevallet <penguintx@hotmail.com>  Sat, 23 Oct 2021 15:18:46 -0500
 
