@@ -1523,6 +1523,36 @@ on_motion_notify (GtkWidget *widget, GdkEventButton *event, AllData *data)
   return TRUE;
 }
 
+
+/* Handle mouse scroll event by zooming. */
+#ifdef _WIN32
+G_MODULE_EXPORT
+#endif
+gboolean mouse_scroll (GtkWidget *widget,
+               GdkEventScroll  *event,
+               AllData *data)
+               {
+  PLFLT zoomin_pct = 0.1;  //this is arbitrary between 0 and 1, could #define
+  PLFLT zoomout_pct = -zoomin_pct;
+  PLFLT x_span = data->pd->vw_xmax - data->pd->vw_xmin;
+  PLFLT y_span = data->pd->vw_ymax - data->pd->vw_ymin;
+  if (event->direction == GDK_SCROLL_UP) {
+    data->pd->vw_xmin = zoomin_pct * x_span + data->pd->vw_xmin;
+    data->pd->vw_ymin = zoomin_pct * y_span + data->pd->vw_ymin; 
+    data->pd->vw_xmax = -zoomin_pct * x_span + data->pd->vw_xmax;
+    data->pd->vw_ymax = -zoomin_pct * y_span + data->pd->vw_ymax;
+    gtk_widget_queue_draw (GTK_WIDGET (da));
+  } 
+  if (event->direction == GDK_SCROLL_DOWN) {
+    data->pd->vw_xmin = zoomout_pct * x_span + data->pd->vw_xmin;
+    data->pd->vw_ymin = zoomout_pct * y_span + data->pd->vw_ymin; 
+    data->pd->vw_xmax = -zoomout_pct * x_span + data->pd->vw_xmax;
+    data->pd->vw_ymax = -zoomout_pct * y_span + data->pd->vw_ymax;
+    gtk_widget_queue_draw (GTK_WIDGET (da));
+  }
+  return TRUE;  
+}
+
 //
 // Map Stuff
 //
@@ -2268,6 +2298,7 @@ main (int argc, char *argv[])
   gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_PRESS_MASK);
   gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_RELEASE_MASK);
   gtk_widget_add_events (GTK_WIDGET (da), GDK_POINTER_MOTION_MASK);
+  gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_MASK);
   g_signal_connect (GTK_DRAWING_AREA (da), "button-press-event",
                     G_CALLBACK (on_button_press), pall);
   g_signal_connect (GTK_DRAWING_AREA (da), "button-release-event",
@@ -2276,6 +2307,8 @@ main (int argc, char *argv[])
                     G_CALLBACK (on_motion_notify), pall);
   g_signal_connect (GTK_DRAWING_AREA (da), "draw", G_CALLBACK (on_da_draw),
                     pall);
+  g_signal_connect(GTK_DRAWING_AREA (da),"scroll-event", 
+		    G_CALLBACK(mouse_scroll), pall);
   g_signal_connect (GTK_RADIO_BUTTON (rb_Pace), "toggled",
                     G_CALLBACK (on_rb_pace), pall);
   g_signal_connect (GTK_RADIO_BUTTON (rb_Cadence), "toggled",
