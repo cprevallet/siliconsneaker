@@ -218,6 +218,21 @@ GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
 GtkWindow *window;
 
+void
+enable_widgets(gboolean sensitive) 
+{
+  gtk_widget_set_sensitive(GTK_WIDGET(rb_Pace), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(rb_Cadence), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(rb_HeartRate), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(rb_Altitude), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(rb_Splits), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(sc_IdxPct), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(btn_Zoom_In), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(btn_Zoom_Out), sensitive);
+  gtk_widget_set_sensitive(GTK_WIDGET(da), sensitive);
+}
+
+
 /* Declaration for the fit filename. */
 char *fname = NULL;
 
@@ -1958,6 +1973,7 @@ on_btnFileOpen_file_set (GtkFileChooserButton *btnFileOpen, AllData *pall)
   fname = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (btnFileOpen));
   if (pall != NULL)
     reload_all (pall);
+    enable_widgets(TRUE); 
 }
 
 //
@@ -2337,6 +2353,9 @@ main (int argc, char *argv[])
 
   /* Release the builder memory. */
   g_object_unref (builder);
+
+  /* Prevent the widgets from being used before a file is open. */
+  enable_widgets(FALSE); 
 
   /* Process command line options. */
   int c;
