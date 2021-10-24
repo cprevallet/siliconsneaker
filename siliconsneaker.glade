@@ -79,7 +79,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">0</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
@@ -91,7 +91,7 @@
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">1</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                   </object>
@@ -210,10 +210,11 @@ Left mouse drag to pan.</property>
                             <property name="can-focus">False</property>
                             <child>
                               <object class="GtkButton" id="btn_Zoom_In">
-                                <property name="label" translatable="yes">ZoomIn</property>
+                                <property name="label" translatable="yes">Nearer</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <property name="tooltip-text" translatable="yes">Zoom in/expand.</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
@@ -223,10 +224,11 @@ Left mouse drag to pan.</property>
                             </child>
                             <child>
                               <object class="GtkButton" id="btn_Zoom_Out">
-                                <property name="label" translatable="yes">ZoomOut</property>
+                                <property name="label" translatable="yes">Farther</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">True</property>
+                                <property name="tooltip-text" translatable="yes">Zoom out/contract</property>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
