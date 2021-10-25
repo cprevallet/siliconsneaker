@@ -792,48 +792,48 @@ raw_to_user_plots (PlotData *pdest, int num_recs, float x_raw[NSIZE],
     case PacePlot:
       if (pdest->units == English)
         {
-          pdest->xaxislabel = "Distance(miles)";
-          pdest->yaxislabel = "Pace(min/mile)";
+          pdest->xaxislabel = "Distance (miles)";
+          pdest->yaxislabel = "Pace (min/mile)";
         }
       else
         {
-          pdest->xaxislabel = "Distance(km)";
-          pdest->yaxislabel = "Pace(min/km)";
+          pdest->xaxislabel = "Distance (km)";
+          pdest->yaxislabel = "Pace (min/km)";
         }
       break;
     case CadencePlot:
       if (pdest->units == English)
         {
-          pdest->xaxislabel = "Distance(miles)";
-          pdest->yaxislabel = "Cadence(steps/min)";
+          pdest->xaxislabel = "Distance (miles)";
+          pdest->yaxislabel = "Cadence (steps/min)";
         }
       else
         {
-          pdest->xaxislabel = "Distance(km)";
-          pdest->yaxislabel = "Cadence(steps/min)";
+          pdest->xaxislabel = "Distance (km)";
+          pdest->yaxislabel = "Cadence (steps/min)";
         }
       break;
     case AltitudePlot:
       if (pdest->units == English)
         {
-          pdest->xaxislabel = "Distance(miles)";
+          pdest->xaxislabel = "Distance (miles)";
           pdest->yaxislabel = "Altitude (feet)";
         }
       else
         {
-          pdest->xaxislabel = "Distance(km)";
-          pdest->yaxislabel = "Altitude(meters)";
+          pdest->xaxislabel = "Distance (km)";
+          pdest->yaxislabel = "Altitude (meters)";
         }
       break;
     case HeartRatePlot:
       if (pdest->units == English)
         {
-          pdest->xaxislabel = "Distance(miles)";
+          pdest->xaxislabel = "Distance (miles)";
           pdest->yaxislabel = "Heart rate (bpm)";
         }
       else
         {
-          pdest->xaxislabel = "Distance(km)";
+          pdest->xaxislabel = "Distance (km)";
           pdest->yaxislabel = "Heart rate (bpm)";
         }
       break;
@@ -841,12 +841,12 @@ raw_to_user_plots (PlotData *pdest, int num_recs, float x_raw[NSIZE],
       if (pdest->units == English)
         {
           pdest->xaxislabel = "Lap";
-          pdest->yaxislabel = "Elapsed Split Time(min)";
+          pdest->yaxislabel = "Elapsed Split Time (min)";
         }
       else
         {
           pdest->xaxislabel = "Lap";
-          pdest->yaxislabel = "Elapsed Split Time(min)";
+          pdest->yaxislabel = "Elapsed Split Time (min)";
         }
     }
   /* Set the view to the data extents. */
@@ -2036,14 +2036,14 @@ on_update_index (GtkScale *widget, AllData *data)
         }
       char *curr_vals;
       curr_vals
-          = malloc (strlen (data->pd->xaxislabel) + 2 + strlen (xval) + 2
-                    + strlen (data->pd->yaxislabel) + 2 + strlen (yval) + 1);
+          = malloc (strlen (data->pd->xaxislabel) + 3 + strlen (xval) + 2
+                    + strlen (data->pd->yaxislabel) + 3 + strlen (yval) + 1);
       strcpy (curr_vals, data->pd->xaxislabel);
-      strcat (curr_vals, "= ");
+      strcat (curr_vals, " = ");
       strcat (curr_vals, xval);
       strcat (curr_vals, ", ");
       strcat (curr_vals, data->pd->yaxislabel);
-      strcat (curr_vals, "= ");
+      strcat (curr_vals, " = ");
       strcat (curr_vals, yval);
       gtk_label_set_text (lbl_val, curr_vals);
       free (curr_vals);
