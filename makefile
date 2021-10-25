@@ -31,9 +31,12 @@ OBJS= main.o fitwrapper.a ui.o tcx.o
 all: $(OBJS)	
 	$(LD) -o $(TARGET) $(OBJS) $(LDFLAGS)
     
-main.o: main.c fitwrapper.a
+main.o: main.c fitwrapper.a fitwrapper.h
 	$(CC) -c $(CCFLAGS) main.c $(LIBS)
     
+fitwrapper.h: fitwrapper.go 
+	go build -buildmode=c-archive fitwrapper.go
+
 fitwrapper.a: fitwrapper.go 
 	go build -buildmode=c-archive fitwrapper.go
 
@@ -50,6 +53,7 @@ ui.c: siliconsneaker.glade ui.xml
 
 clean:
 	rm -f *.o *.a ui.c $(TARGET)
+	rm fitwrapper.h
 
 install: all
 	install -D siliconsneaker $(DESTDIR)$(prefix)/bin/siliconsneaker
