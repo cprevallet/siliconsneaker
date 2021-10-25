@@ -248,7 +248,7 @@
                     <property name="margin-top">5</property>
                     <property name="margin-bottom">5</property>
                     <property name="label-xalign">0</property>
-                    <property name="shadow-type">out</property>
+                    <property name="shadow-type">none</property>
                     <child>
                       <object class="GtkBox">
                         <property name="visible">True</property>
@@ -339,7 +339,7 @@ Left mouse drag to pan.</property>
                     <property name="margin-top">5</property>
                     <property name="margin-bottom">5</property>
                     <property name="label-xalign">0</property>
-                    <property name="shadow-type">out</property>
+                    <property name="shadow-type">none</property>
                     <child>
                       <object class="GtkBox">
                         <property name="visible">True</property>
@@ -351,6 +351,7 @@ Left mouse drag to pan.</property>
                             <property name="height-request">600</property>
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="shadow-type">none</property>
                             <child>
                               <object class="GtkDrawingArea" id="da">
                                 <property name="name">da</property>
@@ -504,7 +505,7 @@ Middle mouse click to zoom out full.
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
                 <property name="label-xalign">0</property>
-                <property name="shadow-type">out</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
@@ -519,6 +520,7 @@ Middle mouse click to zoom out full.
                       <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="shadow-type">none</property>
                         <child>
                           <object class="GtkTextView">
                             <property name="visible">True</property>
