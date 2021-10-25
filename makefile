@@ -34,12 +34,8 @@ all: $(OBJS)
 main.o: main.c fitwrapper.a fitwrapper.h
 	$(CC) -c $(CCFLAGS) main.c $(LIBS)
     
-fitwrapper.h: fitwrapper.go 
-	go build -buildmode=c-archive fitwrapper.go
-
 fitwrapper.a: fitwrapper.go 
 	go build -buildmode=c-archive fitwrapper.go
-
 
 tcx.o: tcx.c tcxwrapper.h
 	$(CC) -c $(CCFLAGS) tcx.c $(LIBS)
@@ -53,7 +49,7 @@ ui.c: siliconsneaker.glade ui.xml
 
 clean:
 	rm -f *.o *.a ui.c $(TARGET)
-	rm fitwrapper.h
+	rm -f fitwrapper.h
 
 install: all
 	install -D siliconsneaker $(DESTDIR)$(prefix)/bin/siliconsneaker
