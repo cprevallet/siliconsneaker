@@ -1990,7 +1990,7 @@ on_update_index (GtkScale *widget, AllData *data)
   GtkAdjustment *adj;
   // Slider from zero to num_pts.
   adj = gtk_range_get_adjustment ((GtkRange *)widget);
-  gtk_adjustment_set_upper (adj, (float)data->pd->num_pts);
+  gtk_adjustment_set_upper (adj, (float)data->pd->num_pts - 1.0);
   gdouble val = gtk_adjustment_get_value (adj);
   curr_idx = (int)floor (val);
   // Redraw graph.

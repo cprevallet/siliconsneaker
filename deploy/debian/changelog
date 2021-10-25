@@ -1,5 +1,6 @@
 siliconsneaker (1.6) UNRELEASED; urgency=medium
 
+  * Bug fix, off by one error on slider (end of run).
   * Zoom graph using scroll wheel.
   * Add tooltip to graph. 
   * Move controls to bottom of map, graph panes to avoid occlusion.
