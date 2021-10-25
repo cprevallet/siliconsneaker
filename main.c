@@ -216,20 +216,21 @@ GtkButton *btn_Zoom_In, *btn_Zoom_Out, *btn_About;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
 GtkLabel *lbl_val;
+GtkPaned *pane_Content;
 GtkWindow *window;
 
 void
-enable_widgets(gboolean sensitive) 
+show_widgets(gboolean show) 
 {
-  gtk_widget_set_sensitive(GTK_WIDGET(rb_Pace), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(rb_Cadence), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(rb_HeartRate), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(rb_Altitude), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(rb_Splits), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(sc_IdxPct), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(btn_Zoom_In), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(btn_Zoom_Out), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(da), sensitive);
+  if (show) {
+	  gtk_widget_show(GTK_WIDGET(pane_Content));
+    gtk_widget_show(GTK_WIDGET(sc_IdxPct)); 
+    gtk_widget_show(GTK_WIDGET(lbl_val));
+  } else {
+	  gtk_widget_hide(GTK_WIDGET(pane_Content));
+    gtk_widget_hide(GTK_WIDGET(sc_IdxPct)); 
+    gtk_widget_hide(GTK_WIDGET(lbl_val));
+  }
 }
 
 
@@ -1973,7 +1974,7 @@ on_btnFileOpen_file_set (GtkFileChooserButton *btnFileOpen, AllData *pall)
   fname = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (btnFileOpen));
   if (pall != NULL)
     reload_all (pall);
-    enable_widgets(TRUE); 
+  show_widgets(TRUE); 
 }
 
 //
@@ -2275,6 +2276,7 @@ main (int argc, char *argv[])
   builder = gtk_builder_new_from_resource ("/ui/siliconsneaker.glade");
 
   window = GTK_WIDGET (gtk_builder_get_object (builder, "window"));
+  pane_Content = GTK_PANED (gtk_builder_get_object (builder, "pane_Content"));
   textbuffer1
       = GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbuffer1"));
   viewport = GTK_FRAME (gtk_builder_get_object (builder, "viewport"));
@@ -2307,7 +2309,6 @@ main (int argc, char *argv[])
    */
   if (init_map () != 0)
     return 1;
-  gtk_widget_show_all (window);
 
   /* Signals and events */
   gtk_builder_connect_signals (builder, NULL);
@@ -2354,8 +2355,9 @@ main (int argc, char *argv[])
   /* Release the builder memory. */
   g_object_unref (builder);
 
-  /* Prevent the widgets from being used before a file is open. */
-  enable_widgets(FALSE); 
+  /* Show only the header bar before a file is open. */
+  gtk_widget_show_all (window);
+  show_widgets(FALSE); 
 
   /* Process command line options. */
   int c;
@@ -2396,6 +2398,7 @@ main (int argc, char *argv[])
            * but seems to work.
            */
           reload_all (pall);
+          show_widgets(TRUE); 
         }
     }
 

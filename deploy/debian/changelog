@@ -4,6 +4,7 @@ siliconsneaker (1.6) UNRELEASED; urgency=medium
   * Add tooltip to graph. 
   * Move controls to bottom of map, graph panes to avoid occlusion.
   * Disable (most) UI widgets prior to file open.
+  * Various GUI improvements.
  
  -- Craig Prevallet <penguintx@hotmail.com>  Sat, 23 Oct 2021 15:18:46 -0500
 

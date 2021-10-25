@@ -39,7 +39,7 @@
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkFrame" id="frame4">
+          <object class="GtkFrame" id="frame_Headerbar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label-xalign">0</property>
@@ -226,10 +226,7 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
-          <object class="GtkPaned">
+          <object class="GtkPaned" id="pane_Content">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="orientation">vertical</property>
@@ -345,9 +342,6 @@ Left mouse drag to pan.</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="orientation">vertical</property>
-                        <child>
-                          <placeholder/>
-                        </child>
                         <child>
                           <object class="GtkViewport" id="da_viewport">
                             <property name="width-request">800</property>
@@ -477,9 +471,6 @@ Middle mouse click to zoom out full.
                             <property name="position">3</property>
                           </packing>
                         </child>
-                        <child>
-                          <placeholder/>
-                        </child>
                       </object>
                     </child>
                     <child type="label_item">
@@ -562,9 +553,6 @@ Middle mouse click to zoom out full.
             <property name="fill">True</property>
             <property name="position">2</property>
           </packing>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>
