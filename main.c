@@ -2385,6 +2385,23 @@ main (int argc, char *argv[])
         }
     }
 
+  GdkRectangle r;
+  GdkGeometry hints;
+  GdkDisplay* const d = gdk_display_get_default();
+  GdkMonitor* const m = gdk_display_get_primary_monitor(d);
+  gdk_monitor_get_geometry(m, &r);
+  //hints.max_width = r.width;
+  //hints.max_height = r.height;
+  hints.min_width = 0.25 * hints.max_width;
+  hints.min_height = 0.25 * hints.min_width;
+
+  gtk_window_set_geometry_hints(
+      GTK_WINDOW(window),
+      window,
+      &hints,
+//      (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE));
+      (GdkWindowHints)(GDK_HINT_MIN_SIZE));
+
   gtk_widget_show (window);
   gtk_main ();
 
