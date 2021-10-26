@@ -1949,6 +1949,16 @@ on_rb_splits (GtkToggleButton *togglebutton, AllData *data)
     }
 }
 
+void
+show_widgets(gboolean show) 
+{
+  if (show) {
+	  gtk_widget_show(GTK_WIDGET(pane_Content));
+  } else {
+	  gtk_widget_hide(GTK_WIDGET(pane_Content));
+  }
+}
+
 /* User has pressed open a new file. */
 #ifdef _WIN32
 G_MODULE_EXPORT
@@ -1960,6 +1970,7 @@ on_btnFileOpen_file_set (GtkFileChooserButton *btnFileOpen, AllData *pall)
   fname = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (btnFileOpen));
   if (pall != NULL)
     reload_all (pall);
+  show_widgets(TRUE); 
 }
 
 //
@@ -2342,6 +2353,7 @@ main (int argc, char *argv[])
 
   /* Show only the header bar before a file is open. */
   gtk_widget_show_all (window);
+  show_widgets(FALSE); 
 
   /* Process command line options. */
   int c;
@@ -2382,26 +2394,9 @@ main (int argc, char *argv[])
            * but seems to work.
            */
           reload_all (pall);
+				  show_widgets(TRUE); 
         }
     }
-/*
-  GdkRectangle r;
-  GdkGeometry hints;
-  GdkDisplay* const d = gdk_display_get_default();
-  GdkMonitor* const m = gdk_display_get_primary_monitor(d);
-  gdk_monitor_get_geometry(m, &r);
-  //hints.max_width = r.width;
-  //hints.max_height = r.height;
-  hints.min_width = 0.25 * hints.max_width;
-  hints.min_height = 0.25 * hints.min_width;
-
-  gtk_window_set_geometry_hints(
-      GTK_WINDOW(window),
-      window,
-      &hints,
-//      (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE));
-      (GdkWindowHints)(GDK_HINT_MIN_SIZE));
-*/
   gtk_widget_show (window);
   gtk_main ();
 
