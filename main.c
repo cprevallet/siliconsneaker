@@ -219,21 +219,6 @@ GtkLabel *lbl_val;
 GtkPaned *pane_Content;
 GtkWindow *window;
 
-void
-show_widgets(gboolean show) 
-{
-  if (show) {
-	  gtk_widget_show(GTK_WIDGET(pane_Content));
-    gtk_widget_show(GTK_WIDGET(sc_IdxPct)); 
-    gtk_widget_show(GTK_WIDGET(lbl_val));
-  } else {
-	  gtk_widget_hide(GTK_WIDGET(pane_Content));
-    gtk_widget_hide(GTK_WIDGET(sc_IdxPct)); 
-    gtk_widget_hide(GTK_WIDGET(lbl_val));
-  }
-}
-
-
 /* Declaration for the fit filename. */
 char *fname = NULL;
 
@@ -1359,7 +1344,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   pl_cmd (PLESC_DEVINIT, cr);
   /* Viewport and window */
   pladv (0);
-  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
+  //plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
+  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, 1.0);
   /* Draw an xy plot or a bar chart. */
   switch (checkRadioButtons ())
     {
@@ -1974,7 +1960,6 @@ on_btnFileOpen_file_set (GtkFileChooserButton *btnFileOpen, AllData *pall)
   fname = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (btnFileOpen));
   if (pall != NULL)
     reload_all (pall);
-  show_widgets(TRUE); 
 }
 
 //
@@ -2357,7 +2342,6 @@ main (int argc, char *argv[])
 
   /* Show only the header bar before a file is open. */
   gtk_widget_show_all (window);
-  show_widgets(FALSE); 
 
   /* Process command line options. */
   int c;
@@ -2398,7 +2382,6 @@ main (int argc, char *argv[])
            * but seems to work.
            */
           reload_all (pall);
-          show_widgets(TRUE); 
         }
     }
 
