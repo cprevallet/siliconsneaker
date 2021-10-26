@@ -127,6 +127,7 @@
           <object class="GtkNotebook">
             <property name="visible">True</property>
             <property name="can-focus">True</property>
+            <property name="tab-pos">left</property>
             <child>
               <object class="GtkFrame" id="frame_Summary">
                 <property name="width-request">300</property>
