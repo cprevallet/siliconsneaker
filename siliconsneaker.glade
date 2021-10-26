@@ -31,7 +31,7 @@
   <object class="GtkTextBuffer" id="textbuffer1"/>
   <object class="GtkWindow" id="window">
     <property name="can-focus">False</property>
-    <property name="hide-titlebar-when-maximized">True</property>
+    <property name="title" translatable="yes">SiliconSneaker</property>
     <property name="icon">siliconsneaker.png</property>
     <child>
       <object class="GtkBox">
