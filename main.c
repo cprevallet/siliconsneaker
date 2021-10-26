@@ -212,6 +212,7 @@ GtkRadioButton *rb_Altitude;
 GtkRadioButton *rb_Splits;
 GtkFileChooserButton *btnFileOpen;
 GtkFrame *viewport;
+GtkFrame *frame_Summary;
 GtkButton *btn_Zoom_In, *btn_Zoom_Out, *btn_About;
 GtkComboBoxText *cb_Units;
 GtkScale *sc_IdxPct;
@@ -1953,8 +1954,10 @@ void
 show_widgets(gboolean show) 
 {
   if (show) {
+	  gtk_widget_show(GTK_WIDGET(frame_Summary));
 	  gtk_widget_show(GTK_WIDGET(pane_Content));
   } else {
+	  gtk_widget_hide(GTK_WIDGET(frame_Summary));
 	  gtk_widget_hide(GTK_WIDGET(pane_Content));
   }
 }
@@ -2273,6 +2276,7 @@ main (int argc, char *argv[])
 
   window = GTK_WIDGET (gtk_builder_get_object (builder, "window"));
   pane_Content = GTK_PANED (gtk_builder_get_object (builder, "pane_Content"));
+  frame_Summary = GTK_FRAME (gtk_builder_get_object (builder, "frame_Summary"));
   textbuffer1
       = GTK_TEXT_BUFFER (gtk_builder_get_object (builder, "textbuffer1"));
   viewport = GTK_FRAME (gtk_builder_get_object (builder, "viewport"));
