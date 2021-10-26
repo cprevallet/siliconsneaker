@@ -48,7 +48,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label-xalign">0</property>
-                <property name="shadow-type">out</property>
+                <property name="shadow-type">none</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
