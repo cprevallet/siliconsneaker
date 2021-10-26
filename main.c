@@ -2384,7 +2384,7 @@ main (int argc, char *argv[])
           reload_all (pall);
         }
     }
-
+/*
   GdkRectangle r;
   GdkGeometry hints;
   GdkDisplay* const d = gdk_display_get_default();
@@ -2401,7 +2401,7 @@ main (int argc, char *argv[])
       &hints,
 //      (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE));
       (GdkWindowHints)(GDK_HINT_MIN_SIZE));
-
+*/
   gtk_widget_show (window);
   gtk_main ();
 
