@@ -1,3 +1,10 @@
+siliconsneaker (1.7) UNRELEASED; urgency=medium
+
+  * Remove the radiobutton draw indicator.
+ 
+ -- Craig Prevallet <penguintx@hotmail.com>  Tue, 26 Oct 2021 15:18:46 -0500
+
+
 siliconsneaker (1.6) UNRELEASED; urgency=medium
 
   * Bug fix, off by one error on slider (end of run).
