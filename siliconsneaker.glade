@@ -341,25 +341,13 @@ Middle mouse click to zoom out full.
                             <property name="halign">start</property>
                             <property name="hexpand">False</property>
                             <child>
-                              <object class="GtkLabel">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="label" translatable="yes">Display:</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkRadioButton" id="rb_Pace">
                                 <property name="label" translatable="yes">Pace</property>
                                 <property name="visible">True</property>
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
                                 <property name="tooltip-text" translatable="yes">Pace vs. Distance</property>
-                                <property name="draw-indicator">True</property>
+                                <property name="draw-indicator">False</property>
                                 <property name="group">radiobutton1</property>
                               </object>
                               <packing>
@@ -375,7 +363,7 @@ Middle mouse click to zoom out full.
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
                                 <property name="tooltip-text" translatable="yes">Cadence vs. Distance</property>
-                                <property name="draw-indicator">True</property>
+                                <property name="draw-indicator">False</property>
                                 <property name="group">radiobutton1</property>
                               </object>
                               <packing>
@@ -391,7 +379,7 @@ Middle mouse click to zoom out full.
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
                                 <property name="tooltip-text" translatable="yes">Heart rate vs. Distance</property>
-                                <property name="draw-indicator">True</property>
+                                <property name="draw-indicator">False</property>
                                 <property name="group">radiobutton1</property>
                               </object>
                               <packing>
@@ -407,7 +395,7 @@ Middle mouse click to zoom out full.
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
                                 <property name="tooltip-text" translatable="yes">Altitude vs. Distance</property>
-                                <property name="draw-indicator">True</property>
+                                <property name="draw-indicator">False</property>
                                 <property name="group">radiobutton1</property>
                               </object>
                               <packing>
@@ -423,7 +411,7 @@ Middle mouse click to zoom out full.
                                 <property name="can-focus">True</property>
                                 <property name="receives-default">False</property>
                                 <property name="tooltip-text" translatable="yes">Lap Splits</property>
-                                <property name="draw-indicator">True</property>
+                                <property name="draw-indicator">False</property>
                                 <property name="group">radiobutton1</property>
                               </object>
                               <packing>
