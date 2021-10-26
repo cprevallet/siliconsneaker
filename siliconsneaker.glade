@@ -31,7 +31,7 @@
   <object class="GtkTextBuffer" id="textbuffer1"/>
   <object class="GtkWindow" id="window">
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">SiliconSneaker</property>
+    <property name="hide-titlebar-when-maximized">True</property>
     <property name="icon">siliconsneaker.png</property>
     <child>
       <object class="GtkBox">
@@ -39,83 +39,81 @@
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkFrame" id="frame_Headerbar">
+          <object class="GtkHeaderBar">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label-xalign">0</property>
-            <property name="shadow-type">out</property>
+            <property name="has-subtitle">False</property>
             <child>
-              <object class="GtkBox">
+              <object class="GtkFrame" id="frame_Headerbar">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="label-xalign">0</property>
+                <property name="shadow-type">out</property>
                 <child>
-                  <object class="GtkFileChooserButton" id="btnFileOpen">
-                    <property name="name">btnFileOpen</property>
+                  <object class="GtkBox">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Open a running watch file.</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="local-only">False</property>
-                    <property name="title" translatable="yes">Open Watch File (*.FIT, *.TCX)</property>
-                    <signal name="file-set" handler="on_btnFileOpen_file_set" swapped="no"/>
+                    <child>
+                      <object class="GtkFileChooserButton" id="btnFileOpen">
+                        <property name="name">btnFileOpen</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Open a running watch file.</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="title" translatable="yes">Open Watch File (*.FIT, *.TCX)</property>
+                        <signal name="file-set" handler="on_btnFileOpen_file_set" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBoxText" id="cb_Units">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="tooltip-text" translatable="yes">Select unit system to display.</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="active">0</property>
+                        <items>
+                          <item id="0" translatable="yes">English</item>
+                          <item id="1" translatable="yes">Metric</item>
+                        </items>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="btn_About">
+                        <property name="label" translatable="yes">About</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Show credits</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-end">5</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
-                <child>
-                  <object class="GtkComboBoxText" id="cb_Units">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Select unit system to display.</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                    <property name="active">0</property>
-                    <items>
-                      <item id="0" translatable="yes">English</item>
-                      <item id="1" translatable="yes">Metric</item>
-                    </items>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLayout">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="btn_About">
-                    <property name="label" translatable="yes">About</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">True</property>
-                    <property name="tooltip-text" translatable="yes">Show credits</property>
-                    <property name="margin-start">5</property>
-                    <property name="margin-end">5</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">10</property>
-                  </packing>
+                <child type="label_item">
+                  <placeholder/>
                 </child>
               </object>
-            </child>
-            <child type="label_item">
-              <placeholder/>
             </child>
           </object>
           <packing>
@@ -548,6 +546,9 @@ Middle mouse click to zoom out full.
             <property name="fill">True</property>
             <property name="position">1</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
