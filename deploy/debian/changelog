@@ -1,6 +1,7 @@
 siliconsneaker (1.7) UNRELEASED; urgency=medium
 
   * Remove the radiobutton draw indicator.
+  * Add a tabbed notebook interface.
  
  -- Craig Prevallet <penguintx@hotmail.com>  Tue, 26 Oct 2021 15:18:46 -0500
 
