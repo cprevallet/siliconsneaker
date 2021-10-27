@@ -2356,14 +2356,23 @@ main (int argc, char *argv[])
 
   /* Custom styling on the slider because it's hard to read in Windows. */
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(sc_IdxPct));
+  GtkStyleContext *context2 = gtk_widget_get_style_context(GTK_WIDGET(lbl_val));
   GtkCssProvider *provider = gtk_css_provider_new();
+  GtkCssProvider *provider2 = gtk_css_provider_new();
   gtk_css_provider_load_from_data(provider,
                                       "scale {\n"
-                                      "background-color: rgba(0.3, 0.3, 0.3, 0.3);\n"
+                                      "background-color: rgba(0.3, 0.3, 0.3, 0.1);\n"
+                                      "}\n", -1, NULL);
+  gtk_css_provider_load_from_data(provider2,
+                                      "label {\n"
+                                      "background-color: rgba(0.3, 0.3, 0.3, 0.1);\n"
                                       "}\n", -1, NULL);
   gtk_style_context_add_provider(context,
                                  GTK_STYLE_PROVIDER(provider),
                                  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+//  gtk_style_context_add_provider(context2,
+//                                 GTK_STYLE_PROVIDER(provider2),
+//                                 GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
   /* Release the builder memory. */
   g_object_unref (builder);
