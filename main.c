@@ -2361,7 +2361,7 @@ main (int argc, char *argv[])
   GtkCssProvider *provider2 = gtk_css_provider_new();
   gtk_css_provider_load_from_data(provider,
                                       "scale {\n"
-                                      "background-color: rgba(0.3, 0.3, 0.3, 0.1);\n"
+                                      "background-color: rgba(0.3, 0.3, 0.3, 0.25);\n"
                                       "}\n", -1, NULL);
   gtk_css_provider_load_from_data(provider2,
                                       "label {\n"
