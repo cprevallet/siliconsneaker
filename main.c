@@ -73,6 +73,8 @@
 // Declarations section
 //
 #define VERSION "1.7"
+// How big should the initial window be?
+#define FRACT_OF_SCRN 0.85
 // Maximum readable records from a fit file.
 // 2880 is large enough for 4 hour marathon at 5 sec intervals
 //#define NSIZE 2880
@@ -2355,7 +2357,24 @@ main (int argc, char *argv[])
   /* Release the builder memory. */
   g_object_unref (builder);
 
-  /* Show only the header bar before a file is open. */
+  /* Size the top-level window and display. */
+  GdkWindow *win = gdk_screen_get_root_window (gtk_window_get_screen (GTK_WINDOW(window)));
+  GdkMonitor *mon = gdk_display_get_monitor_at_window (
+		gtk_widget_get_display (GTK_WIDGET(window)), win);
+  GdkRectangle monitor_size;
+  gdk_monitor_get_geometry (mon, &monitor_size);
+  //int screen_width = monitor_size.width;
+  //int screen_height = monitor_size.height;
+	int w_width = (int) (FRACT_OF_SCRN * (float)(monitor_size.width));
+	int w_height = (int) (FRACT_OF_SCRN * (float)(monitor_size.height));
+  //printf("w=%d, h=%d\n", monitor_size.width, monitor_size.height);
+  gtk_window_set_default_size(GTK_WINDOW(window), w_width, w_height);
+  /* Ask the window manager to place the window in the upper-left. This may
+   * be ignored depending on the wm. */
+  gtk_window_set_gravity (GTK_WINDOW(window), GDK_GRAVITY_NORTH_WEST);
+  gtk_window_move (GTK_WINDOW(window), 0, 0);
+
+  /* Display the window but show only the header bar before a file is open. */
   gtk_widget_show_all (window);
   show_widgets(FALSE); 
 
@@ -2401,7 +2420,8 @@ main (int argc, char *argv[])
 				  show_widgets(TRUE); 
         }
     }
-  gtk_widget_show (window);
+
+
   gtk_main ();
 
   return 0;
