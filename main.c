@@ -2354,6 +2354,17 @@ main (int argc, char *argv[])
   g_signal_connect (GTK_WIDGET (window), "destroy",
                     G_CALLBACK (on_window_destroy), pall);
 
+  /* Custom styling on the slider because it's hard to read in Windows. */
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(sc_IdxPct));
+  GtkCssProvider *provider = gtk_css_provider_new();
+  gtk_css_provider_load_from_data(provider,
+                                      "scale {\n"
+                                      "background-color: rgba(0.3, 0.3, 0.3, 0.3);\n"
+                                      "}\n", -1, NULL);
+  gtk_style_context_add_provider(context,
+                                 GTK_STYLE_PROVIDER(provider),
+                                 GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
   /* Release the builder memory. */
   g_object_unref (builder);
 
