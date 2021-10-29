@@ -4,7 +4,7 @@ siliconsneaker (1.72) UNRELEASED; urgency=medium
   * Correct uninitialized value when panning graph.
   * Correct zoom when right mouse button is released beyond plot bounds.
  
- -- Craig Prevallet <penguintx@hotmail.com>  Tue, 26 Oct 2021 15:18:46 -0500
+ -- Craig Prevallet <penguintx@hotmail.com>  Tue, 29 Oct 2021 15:18:46 -0500
 
 
 siliconsneaker (1.71) UNRELEASED; urgency=medium
