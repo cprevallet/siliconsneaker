@@ -72,7 +72,7 @@
 //
 // Declarations section
 //
-#define VERSION "1.71"
+#define VERSION "1.72"
 // How big should the initial window be?
 #define FRACT_OF_SCRN 0.85
 // Maximum readable records from a fit file.
