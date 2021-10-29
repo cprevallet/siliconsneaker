@@ -1,6 +1,7 @@
 siliconsneaker (1.72) UNRELEASED; urgency=medium
 
   * Correct 60 second rollover error on pace plot Y axis labels.
+  * Correct uninitialized value when panning graph.
  
  -- Craig Prevallet <penguintx@hotmail.com>  Tue, 26 Oct 2021 15:18:46 -0500
 

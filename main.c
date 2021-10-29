@@ -1414,6 +1414,8 @@ gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
     {
       pd->zm_startx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
       pd->zm_starty = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
+      pd->zm_endx = pd->zm_startx;
+      pd->zm_endy = pd->zm_starty;
     }
   if (state == Release || state == Move)
     {
