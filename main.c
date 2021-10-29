@@ -1097,19 +1097,17 @@ void
 pace_plot_labeler (PLINT axis, PLFLT value, char *label, PLINT length,
                    PLPointer label_data)
 {
-  PLFLT label_val = 0.0;
   PLFLT pace_units = 0.0;
-  label_val = value;
-
   if (axis == PL_Y_AXIS)
     {
-      if (label_val > 0)
-        pace_units = 1 / label_val;
+      if (value > 0)
+        pace_units = 1 / value;
       else
-        pace_units = 999.0;
+        pace_units = 99.0;
       double secs, mins;
       secs = modf (pace_units, &mins);
       secs *= 60.0;
+      if (secs >= 59.5) {secs = 0.0; mins += 1.0;}
       snprintf (label, (size_t)length, "%02.0f:%02.0f", mins, secs);
     }
 
