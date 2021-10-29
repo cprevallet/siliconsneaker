@@ -1404,11 +1404,11 @@ gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
   if (event->x < left_edge)
     fractx = 0.0;
   if (event->x > right_edge)
-    fractx = 100.0;
+    fractx = 1.0;
   if (event->y < top_edge)
-    fracty = 0.0;
+    fracty = 1.0;
   if (event->y > bottom_edge)
-    fracty = 100.0;
+    fracty = 0.0;
   /* Calculate the zoom limits in world coordinates. */
   if (state == Press)
     {
