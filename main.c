@@ -2198,9 +2198,9 @@ main (int argc, char *argv[])
   heartrateplot.lng = NULL;
   heartrateplot.xaxislabel = NULL;
   heartrateplot.yaxislabel = NULL;
-  heartrateplot.linecolor[0] = 247;
-  heartrateplot.linecolor[1] = 250;
-  heartrateplot.linecolor[2] = 191;
+  heartrateplot.linecolor[0] = 255;
+  heartrateplot.linecolor[1] = 167;
+  heartrateplot.linecolor[2] = 89;
   heartrateplot.units = English;
   heartrateplot.start_time = NULL;
 
