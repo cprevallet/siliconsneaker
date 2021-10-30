@@ -1,3 +1,11 @@
+siliconsneaker (1.8) UNRELEASED; urgency=medium
+
+  * Single background color for graph, now light.
+  * Adjust graph foreground colors for better legibility.
+ 
+ -- Craig Prevallet <penguintx@hotmail.com>  Sun, 31 Oct 2021 15:18:46 -0500
+
+
 siliconsneaker (1.72) UNRELEASED; urgency=medium
 
   * Correct 60 second rollover error on pace plot Y axis labels.
