@@ -1162,7 +1162,8 @@ draw_xy (PlotData *pd, int width, int height)
       /* Do your drawing. */
       /* Color */
       plscol0a (1, 65, 209, 65, 0.25);   // light green for selector
-      plscol0a (15, 128, 128, 128, 0.9); // light gray for background
+      plscol0a (15, 92, 92, 92, 1.0); // light gray for foreground
+      plscol0a (10, 92, 92, 92, 0.5); // lighter gray for hairline
       plscol0a (2, pd->linecolor[0], pd->linecolor[1], pd->linecolor[2], 0.8);
       plwind (pd->vw_xmin, pd->vw_xmax, pd->vw_ymin, pd->vw_ymax);
       /* Adjust character size. */
@@ -1216,7 +1217,7 @@ draw_xy (PlotData *pd, int width, int height)
           plfill (4, rb_x, rb_y);
         }
       /* Add a hairline */
-      plcol0 (15);
+      plcol0 (10);
       /* If we are between the view limits, draw a line from the
        * current index on the x scale from the bottom to the top
        * of the view. */
@@ -1255,7 +1256,7 @@ draw_bar (PlotData *plap, PlotData *ppace, int width, int height)
   if (plap->num_pts > 0)
     {
       plwind (0.0, (float)plap->num_pts - 1.0, plap->ymin, plap->ymax);
-      plscol0a (15, 128, 128, 128, 0.9); // light gray for background
+      plscol0a (15, 92, 92, 92, 1.0); // light gray for foreground
       plcol0 (15);
       plbox ("bc", 1.0, 0, "bcnv", 1.0, 0);
       pllab (plap->xaxislabel, plap->yaxislabel, plap->start_time);
