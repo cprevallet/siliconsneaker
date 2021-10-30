@@ -2,6 +2,7 @@ siliconsneaker (1.8) UNRELEASED; urgency=medium
 
   * Single background color for graph, now light.
   * Adjust graph foreground colors for better legibility.
+  * Bigger route markers (aka heatmap dots).
  
  -- Craig Prevallet <penguintx@hotmail.com>  Sun, 31 Oct 2021 15:18:46 -0500
 
