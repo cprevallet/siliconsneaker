@@ -89,7 +89,8 @@
 #define NORMYMIN 0.1
 #define NORMXMAX 0.9
 #define NORMYMAX 0.9
-
+/* The linewidth of the individual tracks. */
+#define TRACKWIDTH 9.0 
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
 
@@ -1802,6 +1803,8 @@ update_map (AllData *data)
             {
               route_track = osm_gps_map_track_new ();
               osm_gps_map_track_set_color (route_track, &track_color);
+              /* for my elderly friend, Jacob */
+              g_object_set (route_track, "line-width", TRACKWIDTH, NULL);
               osm_gps_map_track_add (OSM_GPS_MAP (map), route_track);
             }
           prev_track_color = track_color;
