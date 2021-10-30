@@ -1334,6 +1334,14 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   drawingContext = gdk_window_begin_draw_frame (window, cairoRegion);
   /* Say: "I want to start drawing". */
   cairo_t *cr = gdk_drawing_context_get_cairo_context (drawingContext);
+  /* Generate a colored background. */
+  cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,width,height);
+  cairo_create(surface);
+  // Draw a white colored background
+  cairo_save(cr);
+  cairo_set_source_rgb(cr, 128, 128, 128);
+  cairo_paint(cr);
+  cairo_restore(cr);
   /* Initialize plplot using the svg backend. */
   plsdev ("svg");
   /* Device attributes */
@@ -1341,6 +1349,8 @@ on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
   strcat (tmpfile, "siliconsneaker.svg");
   FILE *fp = fopen (tmpfile, "w");
   plsfile (fp);
+  /* Plot background color transparent, alpha=0 */
+  plscolbga ( 0 , 0, 0, 0 );
   plinit ();
   pl_cmd (PLESC_DEVINIT, cr);
   /* Viewport and window */
