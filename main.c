@@ -2417,26 +2417,30 @@ main (int argc, char *argv[])
   /* Release the builder memory. */
   g_object_unref (builder);
 
-  /* Size the top-level window and display it. */
-  /* On Windows 10, GDK throws a warning about this next line.
-   * "GetClientRect failed with code 1400" but it seems to do the right
-   * thing. */
-//  GdkWindow *win = gdk_screen_get_root_window (gtk_window_get_screen (GTK_WINDOW(window)));
-//  GdkMonitor *mon = gdk_display_get_monitor_at_window (
-//		gtk_widget_get_display (GTK_WIDGET(window)), win);
-//  GdkRectangle monitor_size;
-//  gdk_monitor_get_geometry (mon, &monitor_size);
-//	int w_width = (int) (FRACT_OF_SCRN * (float)(monitor_size.width));
-//	int w_height = (int) (FRACT_OF_SCRN * (float)(monitor_size.height));
-//  gtk_window_set_default_size(GTK_WINDOW(window), w_width, w_height);
-//  /* Ask the window manager to place the window in the upper-left. This may
-//   * be ignored depending on the wm. */
-//  gtk_window_set_gravity (GTK_WINDOW(window), GDK_GRAVITY_NORTH_WEST);
-//  gtk_window_move (GTK_WINDOW(window), 0, 0);
+  /* Ask the window manager to place the window in the upper-left. This may
+   * be ignored depending on the wm. */
+  //gtk_window_set_gravity (GTK_WINDOW(window), GDK_GRAVITY_NORTH_WEST);
+  //gtk_window_move (GTK_WINDOW(window), 0, 0);
 
   /* Display the window but show only the header bar before a file is open. */
   gtk_widget_show (window);
   show_widgets(FALSE); 
+
+  /* Size the top-level window and display it. */
+  /* On Windows 10, GDK throws a warning about this next line.
+   * "GetClientRect failed with code 1400" but it seems to do the right
+   * thing. */
+
+	GdkSurface* surface = gtk_native_get_surface (GTK_NATIVE(window));
+  GdkDisplay* display = gdk_surface_get_display (surface);
+  GdkMonitor* mon = gdk_display_get_monitor_at_surface (display, surface);
+  GdkRectangle monitor_size;
+  gdk_monitor_get_geometry (mon, &monitor_size);
+	int w_width = (int) (FRACT_OF_SCRN * (float)(monitor_size.width));
+	int w_height = (int) (FRACT_OF_SCRN * (float)(monitor_size.height));
+  if ((w_width > 0) && (w_height > 0)) {
+    gtk_window_set_default_size(GTK_WINDOW(window), w_width, w_height);
+	}
 
   /* Process command line options. */
   int c;
