@@ -918,17 +918,19 @@ init_plot_data (AllData *pall)
       result = parse_fit_file (fname, NSIZE, LSIZE);
       // Not a fit file or could not read.
       if (result.r0)
-        {
+        { 
           GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-          GtkWidget *dialog;
-          dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
+          GtkWidget* dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
                                            GTK_BUTTONS_CLOSE,
                                            "Error loading“%s”.\n File missing, "
                                            "corrupt, or wrong type.\n Try "
                                            "another file.",
                                            fname);
-          //gtk_dialog_run (GTK_DIALOG (dialog));
-          //gtk_window_destroy (dialog);
+					g_signal_connect_swapped (dialog,
+                           "response",
+                           G_CALLBACK (gtk_window_destroy),
+                           dialog);
+          gtk_widget_show(dialog);
           return FALSE;
         }
       //  long  *pRecTimestamp = result.r2;
@@ -1025,15 +1027,20 @@ init_plot_data (AllData *pall)
       if (create_arrays_from_tcx_file (fname, NSIZE, LSIZE, p_tcx) == 1)
         {
           GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-          GtkWidget *dialog;
-          dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
+          GtkWidget* dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
                                            GTK_BUTTONS_CLOSE,
                                            "Error loading“%s”.\n File missing, "
                                            "corrupt, or wrong type.\n Try "
                                            "another file.",
                                            fname);
-          //gtk_dialog_run (GTK_DIALOG (dialog));
-          //gtk_window_destroy (dialog);
+					g_signal_connect_swapped (dialog,
+                           "response",
+                           G_CALLBACK (gtk_window_destroy),
+                           dialog);
+          gtk_widget_show(dialog);
+
+
+
           return FALSE;
         }
 
@@ -1979,9 +1986,6 @@ show_widgets(gboolean show)
   }
 }
 
-
-
-
 static void
 on_response (GtkNativeDialog *native, int response, AllData *pall)
 {
@@ -1991,11 +1995,9 @@ on_response (GtkNativeDialog *native, int response, AllData *pall)
       GFile *file = gtk_file_chooser_get_file (chooser);
       /* fname is a global */
       fname = g_file_get_path (file);
-//      fname = gtk_file_chooser_get_filename (GTK_BUTTON(btnFileOpen));
       if (pall != NULL)
         reload_all (pall);
       show_widgets(TRUE); 
-
       g_object_unref (file);
     }
 

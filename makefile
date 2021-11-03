@@ -10,8 +10,7 @@ DEBUG=-g
 # optimisation
 OPT=-O2
 # warnings
-#WARN=-Wall
-WARN=-Wdeprecated-declarations
+WARN=-Wall
 #gtk4
 GTKFLAGS=`pkg-config --libs gtk4`
 
@@ -35,7 +34,7 @@ all: $(OBJS)
 	$(LD) -o $(TARGET) $(OBJS) $(LDFLAGS)
     
 main.o: main.c fitwrapper.a fitwrapper.h
-	$(CC) -c $(CCFLAGS) main.c -DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_4_0 $(LIBS)
+	$(CC) -c $(CCFLAGS) main.c $(LIBS)
     
 fitwrapper.a: fitwrapper.go 
 	go build -buildmode=c-archive fitwrapper.go
