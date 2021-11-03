@@ -920,7 +920,7 @@ init_plot_data (AllData *pall)
       if (result.r0)
         { 
           GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-          GtkWidget* dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
+          GtkWidget* dialog = gtk_message_dialog_new (window, flags, GTK_MESSAGE_ERROR,
                                            GTK_BUTTONS_CLOSE,
                                            "Error loading“%s”.\n File missing, "
                                            "corrupt, or wrong type.\n Try "
@@ -1027,7 +1027,7 @@ init_plot_data (AllData *pall)
       if (create_arrays_from_tcx_file (fname, NSIZE, LSIZE, p_tcx) == 1)
         {
           GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
-          GtkWidget* dialog = gtk_message_dialog_new (NULL, flags, GTK_MESSAGE_ERROR,
+          GtkWidget* dialog = gtk_message_dialog_new (window, flags, GTK_MESSAGE_ERROR,
                                            GTK_BUTTONS_CLOSE,
                                            "Error loading“%s”.\n File missing, "
                                            "corrupt, or wrong type.\n Try "
