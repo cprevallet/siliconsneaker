@@ -483,7 +483,7 @@ update_summary (SessionData *psd)
 //     "the largest viewport with the given aspect ratio that ﬁts
 //      within the speciﬁed region."  We store the generated viewport limits
 //      (in normalized device coordinates) when we draw the graph
-//      in on_da_draw.  Search for plgvpd. */
+//      in da_draw.  Search for plgvpd. */
 //  if (horiz_margin > vert_margin)
 //    {
 //      graph_length = w - (2.0 * horiz_margin);
@@ -1318,93 +1318,81 @@ checkRadioButtons ()
 /* Drawing area callback.
  *
  * The GUI definition wraps a GTKDrawing area inside a GTK widget.
- * This routine recasts the widget as a GDKWindow which is then used
- * with a device-independent vector-graphics based API (Cairo) and a
- * plotting library API (PLPlot) that supports Cairo to generate the
+ * A device-independent vector-graphics based API (Cairo) and a
+ * plotting library API (PLPlot) that supports Cairo generate the
  * user's plots.
  */
-//#ifdef _WIN32
-//G_MODULE_EXPORT
-//#endif
-//gboolean
-//on_da_draw (GtkWidget *widget, GdkEventExpose *event, AllData *data)
-//{
-//  cairo_rectangle_int_t rectangle;
-//  /* Can't plot uninitialized. */
-//  if ((data->pd == NULL) || (data->plap == NULL))
-//    return TRUE;
-//  /* "Convert" the G*t*kWidget to G*d*kWindow (no, it's not a GtkWindow!) */
-//  GdkWindow *window = gtk_widget_get_window (widget);
-//  cairo_region_t *cairoRegion = gdk_window_get_visible_region (window);
-//  /* Need to get clipping rectangle for if/when we shrink the window. */
-//  cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
-//  int width = rectangle.width;
-//  int height = rectangle.height;
-//  GdkDrawingContext *drawingContext;
-//  drawingContext = gdk_window_begin_draw_frame (window, cairoRegion);
-//  /* Say: "I want to start drawing". */
-//  cairo_t *cr = gdk_drawing_context_get_cairo_context (drawingContext);
-//  /* Generate a colored background. */
-//  cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,width,height);
-//  cairo_create(surface);
-//  // Draw a white colored background
-//  cairo_save(cr);
-//  cairo_set_source_rgb(cr, 128, 128, 128);
-//  cairo_paint(cr);
-//  cairo_restore(cr);
-//  /* Initialize plplot using the svg backend. */
-//  plsdev ("svg");
-//  /* Device attributes */
-//  char *tmpfile = path_to_temp_dir ();
-//  strcat (tmpfile, "siliconsneaker.svg");
-//  FILE *fp = fopen (tmpfile, "w");
-//  plsfile (fp);
-//  /* Plot background color transparent, alpha=0 */
-//  plscolbga ( 0 , 0, 0, 0 );
-//  plinit ();
-//  pl_cmd (PLESC_DEVINIT, cr);
-//  /* Viewport and window */
-//  pladv (0);
-//  //plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
-//  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, 1.0);
-//  /* Draw an xy plot or a bar chart. */
-//  switch (checkRadioButtons ())
-//    {
-//    case PacePlot:
-//      draw_xy (data->pd, width, height);
-//      break;
-//    case CadencePlot:
-//      draw_xy (data->pd, width, height);
-//      break;
-//    case HeartRatePlot:
-//      draw_xy (data->pd, width, height);
-//      break;
-//    case AltitudePlot:
-//      draw_xy (data->pd, width, height);
-//      break;
-//    case LapPlot:
-//      draw_bar (data->plap, data->ppace, width, height);
-//      break;
-//    }
-//  /* Now how much padding around the plot are we actually generating? Store it
-//     for use in zooming. */
-//  plgvpd (&data->pd->vw_pxmin, &data->pd->vw_pxmax, &data->pd->vw_pymin,
-//          &data->pd->vw_pymax);
-//  /* Close PLplot library */
-//  plend ();
-//  /* Reload svg to cairo context. */
-//  GError **error = NULL;
-//  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
+void
+da_draw (GtkDrawingArea* da,
+  cairo_t* cr,
+  int width,
+  int height,
+  gpointer user_data
+)
+{
+
+ AllData * data = user_data;
+  /* Generate a colored background. */
+  cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,width,height);
+  cairo_create(surface);
+  // Draw a white colored background
+  cairo_save(cr);
+  cairo_set_source_rgb(cr, 128, 128, 128);
+  cairo_paint(cr);
+  cairo_restore(cr);
+
+
+  /* Initialize plplot using the svg backend. */
+  plsdev ("svg");
+  /* Device attributes */
+  char *tmpfile = path_to_temp_dir ();
+  strcat (tmpfile, "siliconsneaker.svg");
+  FILE *fp = fopen (tmpfile, "w");
+  plsfile (fp);
+  /* Plot background color transparent, alpha=0 */
+  plscolbga ( 0 , 0, 0, 0 );
+  plinit ();
+  pl_cmd (PLESC_DEVINIT, cr);
+  /* Viewport and window */
+  pladv (0);
+  //plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, (float)height / (float)width);
+  plvpas (NORMXMIN, NORMXMAX, NORMYMIN, NORMYMAX, 1.0);
+  /* Draw an xy plot or a bar chart. */
+  switch (checkRadioButtons ())
+    {
+    case PacePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case CadencePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case HeartRatePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case AltitudePlot:
+      draw_xy (data->pd, width, height);
+      break;
+    case LapPlot:
+      draw_bar (data->plap, data->ppace, width, height);
+      break;
+    }
+  /* Now how much padding around the plot are we actually generating? Store it
+     for use in zooming. */
+  plgvpd (&data->pd->vw_pxmin, &data->pd->vw_pxmax, &data->pd->vw_pymin,
+          &data->pd->vw_pymax);
+  /* Close PLplot library */
+  plend ();
+
+  /* Reload svg to cairo context. */
+  GError **error = NULL;
+  RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
 //  RsvgRectangle viewport
 //      = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
-//  rsvg_handle_render_document (handle, cr, &viewport, error);
-//  /* Say: "I'm finished drawing. */
-//  gdk_window_end_draw_frame (window, drawingContext);
-//  /* Cleanup */
-//  cairo_region_destroy (cairoRegion);
-//  return FALSE;
-//}
-//
+  RsvgRectangle viewport
+      = { 0, 0, width, height };
+  rsvg_handle_render_document (handle, cr, &viewport, error);
+}
+
 /* Calculate the graph ("world") x,y coordinates corresponding to the
  * GUI mouse ("device") coordinates.
  */
@@ -2372,10 +2360,8 @@ main (int argc, char *argv[])
 //                    G_CALLBACK (on_button_release), pall);
 //  g_signal_connect (GTK_DRAWING_AREA (da), "motion-notify-event",
 //                    G_CALLBACK (on_motion_notify), pall);
-  //g_signal_connect (GTK_DRAWING_AREA (da), "draw", G_CALLBACK (on_da_draw),
-  //                  pall);
-  //gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (da), (on_da_draw),
-  //                  pall, NULL);
+    gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (da), da_draw,
+                      pall, NULL);
 //  g_signal_connect(GTK_DRAWING_AREA (da),"scroll-event", 
 //		    G_CALLBACK(mouse_scroll), pall);
   g_signal_connect (GTK_TOGGLE_BUTTON (rb_Pace), "toggled",
@@ -2402,7 +2388,7 @@ main (int argc, char *argv[])
   g_signal_connect (GTK_SCALE (sc_IdxPct), "value-changed",
                     G_CALLBACK (on_update_index), pall);
   g_signal_connect (GTK_WIDGET (window), "destroy",
-                    G_CALLBACK (on_window_destroy), pall);
+                    G_CALLBACK (on_window_destroy), NULL);
 
   /* Custom styling on the slider because it's hard to read in Windows. */
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(sc_IdxPct));
