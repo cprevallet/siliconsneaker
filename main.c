@@ -2119,10 +2119,11 @@ on_window_show_about_dialog (GtkButton *btn, GtkWindow *window)
 #ifdef _WIN32
 G_MODULE_EXPORT
 #endif
-void
-on_window_destroy (AllData *data)
+int
+on_window_destroy ()
 {
   //g_main_quit ();
+  exit(0);
 }
 
 //
@@ -2488,8 +2489,6 @@ main (int argc, char *argv[])
   // Enter the main event loop, and wait for user interaction
   while (TRUE)
     g_main_context_iteration (NULL, TRUE);
-
-  //gtk_main ();
 
   return 0;
 }
