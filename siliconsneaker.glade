@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
-  <!-- interface-local-resource-path ./icons -->
+  <requires lib="gtk" version="4.0"/>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">100</property>
     <property name="step-increment">1</property>
@@ -20,60 +18,36 @@
     <property name="step-increment">1</property>
     <property name="page-increment">5</property>
   </object>
-  <object class="GtkRadioButton" id="radiobutton1">
+  <object class="GtkCheckButton" id="radiobutton1">
     <property name="label" translatable="yes">radiobutton</property>
-    <property name="visible">True</property>
-    <property name="can-focus">True</property>
-    <property name="receives-default">False</property>
-    <property name="active">True</property>
-    <property name="draw-indicator">True</property>
+    <property name="active">1</property>
   </object>
   <object class="GtkTextBuffer" id="textbuffer1"/>
   <object class="GtkWindow" id="window">
-    <property name="can-focus">False</property>
     <property name="title" translatable="yes">SiliconSneaker</property>
-    <property name="icon">siliconsneaker.png</property>
-    <child>
+    <property name="child">
       <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkHeaderBar">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="has-subtitle">False</property>
             <child>
               <object class="GtkFrame" id="frame_Headerbar">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label-xalign">0</property>
-                <property name="shadow-type">none</property>
-                <child>
+                <property name="child">
                   <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkFileChooserButton" id="btnFileOpen">
+                      <object class="GtkButton" id="btnFileOpen">
                         <property name="name">btnFileOpen</property>
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
                         <property name="tooltip-text" translatable="yes">Open a running watch file.</property>
                         <property name="margin-start">5</property>
                         <property name="margin-end">5</property>
-                        <property name="title" translatable="yes">Open Watch File (*.FIT, *.TCX)</property>
-                        <signal name="file-set" handler="on_btnFileOpen_file_set" swapped="no"/>
+                        <property name="label" translatable="yes">Open Watch File (*.FIT, *.TCX)</property>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkComboBoxText" id="cb_Units">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
+                        <property name="halign">center</property>
                         <property name="tooltip-text" translatable="yes">Select unit system to display.</property>
                         <property name="margin-start">5</property>
                         <property name="margin-end">5</property>
@@ -83,11 +57,6 @@
                           <item id="1" translatable="yes">Metric</item>
                         </items>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
                     </child>
                     <child>
                       <placeholder/>
@@ -95,457 +64,281 @@
                     <child>
                       <object class="GtkButton" id="btn_About">
                         <property name="label" translatable="yes">About</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
+                        <property name="focusable">1</property>
+                        <property name="receives-default">1</property>
                         <property name="tooltip-text" translatable="yes">Show credits</property>
                         <property name="margin-start">5</property>
                         <property name="margin-end">5</property>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">3</property>
-                      </packing>
                     </child>
                   </object>
-                </child>
+                </property>
                 <child type="label_item">
                   <placeholder/>
                 </child>
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkNotebook">
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
+            <property name="focusable">1</property>
             <property name="tab-pos">left</property>
             <child>
-              <object class="GtkFrame" id="frame_Summary">
-                <property name="width-request">300</property>
-                <property name="height-request">445</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="margin-left">5</property>
-                <property name="margin-right">5</property>
-                <property name="margin-start">5</property>
-                <property name="margin-end">5</property>
-                <property name="margin-top">5</property>
-                <property name="margin-bottom">5</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <property name="label-xalign">0</property>
-                <property name="shadow-type">none</property>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="shadow-type">in</property>
-                    <property name="min-content-height">150</property>
-                    <property name="propagate-natural-width">True</property>
-                    <property name="propagate-natural-height">True</property>
-                    <child>
-                      <object class="GtkViewport">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="shadow-type">none</property>
-                        <child>
-                          <object class="GtkTextView">
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="pixels-below-lines">3</property>
-                            <property name="left-margin">5</property>
-                            <property name="right-margin">5</property>
-                            <property name="top-margin">5</property>
-                            <property name="bottom-margin">5</property>
-                            <property name="indent">5</property>
-                            <property name="buffer">textbuffer1</property>
-                            <property name="monospace">True</property>
+              <object class="GtkNotebookPage">
+                <property name="child">
+                  <object class="GtkFrame" id="frame_Summary">
+                    <property name="width-request">300</property>
+                    <property name="height-request">445</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-start">5</property>
+                    <property name="margin-end">5</property>
+                    <property name="margin-top">5</property>
+                    <property name="margin-bottom">5</property>
+                    <property name="hexpand">1</property>
+                    <property name="vexpand">1</property>
+                    <property name="child">
+                      <object class="GtkScrolledWindow">
+                        <property name="focusable">1</property>
+                        <property name="hexpand">1</property>
+                        <property name="vexpand">1</property>
+                        <property name="min-content-height">150</property>
+                        <property name="propagate-natural-width">1</property>
+                        <property name="propagate-natural-height">1</property>
+                        <property name="child">
+                          <object class="GtkViewport">
+                            <property name="child">
+                              <object class="GtkTextView">
+                                <property name="focusable">1</property>
+                                <property name="pixels-below-lines">3</property>
+                                <property name="left-margin">5</property>
+                                <property name="right-margin">5</property>
+                                <property name="top-margin">5</property>
+                                <property name="bottom-margin">5</property>
+                                <property name="indent">5</property>
+                                <property name="buffer">textbuffer1</property>
+                                <property name="monospace">1</property>
+                              </object>
+                            </property>
                           </object>
-                        </child>
+                        </property>
                       </object>
+                    </property>
+                    <child type="label_item">
+                      <placeholder/>
                     </child>
                   </object>
-                </child>
-                <child type="label_item">
-                  <placeholder/>
-                </child>
+                </property>
+                <property name="tab">
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Summary</property>
+                  </object>
+                </property>
               </object>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Summary</property>
-              </object>
-              <packing>
-                <property name="tab-fill">False</property>
-              </packing>
             </child>
             <child>
-              <object class="GtkPaned" id="pane_Content">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkBox">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+              <object class="GtkNotebookPage">
+                <property name="position">1</property>
+                <property name="child">
+                  <object class="GtkPaned" id="pane_Content">
+                    <property name="resize-start-child">0</property>
+                    <property name="focusable">1</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkPaned">
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkFrame" id="map_frame">
-                            <property name="width-request">300</property>
-                            <property name="height-request">445</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-left">5</property>
-                            <property name="margin-right">5</property>
-                            <property name="margin-start">5</property>
-                            <property name="margin-end">5</property>
-                            <property name="margin-top">5</property>
-                            <property name="margin-bottom">5</property>
-                            <property name="label-xalign">0</property>
-                            <property name="shadow-type">none</property>
+                          <object class="GtkPaned">
+                            <property name="focusable">1</property>
                             <child>
-                              <object class="GtkBox">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkFrame" id="viewport">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="tooltip-text" translatable="yes">Mouse-wheel to zoom in/out.
-Left mouse drag to pan.</property>
-                                    <property name="label-xalign">0</property>
-                                    <property name="shadow-type">none</property>
-                                    <child>
-                                      <placeholder/>
-                                    </child>
-                                    <child type="label_item">
-                                      <placeholder/>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
+                              <object class="GtkFrame" id="map_frame">
+                                <property name="width-request">300</property>
+                                <property name="height-request">445</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-top">5</property>
+                                <property name="margin-bottom">5</property>
+                                <property name="child">
                                   <object class="GtkBox">
-                                    <property name="width-request">-1</property>
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">end</property>
-                                    <property name="hexpand">True</property>
+                                    <property name="orientation">vertical</property>
                                     <child>
-                                      <object class="GtkButton" id="btn_Zoom_In">
-                                        <property name="label" translatable="yes">Nearer</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">True</property>
-                                        <property name="tooltip-text" translatable="yes">Zoom in/expand.</property>
+                                      <object class="GtkFrame" id="viewport">
+                                        <property name="vexpand">1</property>
+                                        <property name="tooltip-text" translatable="yes">Mouse-wheel to zoom in/out.
+Left mouse drag to pan.</property>
+                                        <child>
+                                          <placeholder/>
+                                        </child>
+                                        <child type="label_item">
+                                          <placeholder/>
+                                        </child>
                                       </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">0</property>
-                                      </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkButton" id="btn_Zoom_Out">
-                                        <property name="label" translatable="yes">Farther</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">True</property>
-                                        <property name="tooltip-text" translatable="yes">Zoom out/contract</property>
+                                      <object class="GtkBox">
+                                        <property name="halign">end</property>
+                                        <property name="hexpand">1</property>
+                                        <child>
+                                          <object class="GtkButton" id="btn_Zoom_In">
+                                            <property name="label" translatable="yes">Nearer</property>
+                                            <property name="focusable">1</property>
+                                            <property name="receives-default">1</property>
+                                            <property name="tooltip-text" translatable="yes">Zoom in/expand.</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkButton" id="btn_Zoom_Out">
+                                            <property name="label" translatable="yes">Farther</property>
+                                            <property name="focusable">1</property>
+                                            <property name="receives-default">1</property>
+                                            <property name="tooltip-text" translatable="yes">Zoom out/contract</property>
+                                          </object>
+                                        </child>
                                       </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">True</property>
-                                        <property name="position">1</property>
-                                      </packing>
                                     </child>
                                   </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">2</property>
-                                  </packing>
+                                </property>
+                                <child type="label_item">
+                                  <placeholder/>
                                 </child>
                               </object>
                             </child>
-                            <child type="label_item">
-                              <placeholder/>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="resize">True</property>
-                            <property name="shrink">True</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkFrame" id="graph_frame">
-                            <property name="width-request">300</property>
-                            <property name="height-request">445</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-left">5</property>
-                            <property name="margin-right">5</property>
-                            <property name="margin-start">5</property>
-                            <property name="margin-end">5</property>
-                            <property name="margin-top">5</property>
-                            <property name="margin-bottom">5</property>
-                            <property name="label-xalign">0</property>
-                            <property name="shadow-type">none</property>
                             <child>
-                              <object class="GtkBox">
-                                <property name="visible">True</property>
-                                <property name="can-focus">False</property>
-                                <property name="hexpand">True</property>
-                                <property name="vexpand">True</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkViewport" id="da_viewport">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="hexpand">False</property>
-                                    <property name="vexpand">False</property>
-                                    <property name="shadow-type">none</property>
+                              <object class="GtkFrame" id="graph_frame">
+                                <property name="width-request">300</property>
+                                <property name="height-request">445</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-top">5</property>
+                                <property name="margin-bottom">5</property>
+                                <property name="child">
+                                  <object class="GtkBox">
+                                    <property name="hexpand">1</property>
+                                    <property name="vexpand">1</property>
+                                    <property name="orientation">vertical</property>
                                     <child>
-                                      <object class="GtkDrawingArea" id="da">
-                                        <property name="name">da</property>
-                                        <property name="visible">True</property>
-                                        <property name="app-paintable">True</property>
-                                        <property name="can-focus">False</property>
-                                        <property name="tooltip-text" translatable="yes">Mouse-wheel to zoom in/out.
+                                      <object class="GtkViewport" id="da_viewport">
+                                        <property name="hexpand">0</property>
+                                        <property name="vexpand">1</property>
+                                        <property name="child">
+                                          <object class="GtkDrawingArea" id="da">
+                                            <property name="name">da</property>
+                                            <property name="tooltip-text" translatable="yes">Mouse-wheel to zoom in/out.
 Left mouse drag to pan.
 Right mouse click-drag  graph to zoom in.  
 Middle mouse click to zoom out full.
 </property>
-                                        <property name="hexpand">True</property>
-                                        <property name="vexpand">True</property>
+                                            <property name="hexpand">1</property>
+                                            <property name="vexpand">1</property>
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="halign">start</property>
+                                        <property name="hexpand">0</property>
+                                        <child>
+                                          <object class="GtkToggleButton" id="rb_Pace">
+                                            <property name="halign">center</property>
+                                            <property name="label" translatable="yes">Pace</property>
+                                            <property name="tooltip-text" translatable="yes">Pace vs. Distance</property>
+                                            <property name="group">radiobutton1</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkToggleButton" id="rb_Cadence">
+                                            <property name="halign">center</property>
+                                            <property name="label" translatable="yes">Cadence</property>
+                                            <property name="tooltip-text" translatable="yes">Cadence vs. Distance</property>
+                                            <property name="group">radiobutton1</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkToggleButton" id="rb_HeartRate">
+                                            <property name="halign">center</property>
+                                            <property name="label" translatable="yes">Heart Rate</property>
+                                            <property name="tooltip-text" translatable="yes">Heart rate vs. Distance</property>
+                                            <property name="group">radiobutton1</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkToggleButton" id="rb_Altitude">
+                                            <property name="halign">center</property>
+                                            <property name="label" translatable="yes">Altitude</property>
+                                            <property name="tooltip-text" translatable="yes">Altitude vs. Distance</property>
+                                            <property name="group">radiobutton1</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkToggleButton" id="rb_Splits">
+                                            <property name="halign">center</property>
+                                            <property name="label" translatable="yes">Splits</property>
+                                            <property name="tooltip-text" translatable="yes">Lap Splits</property>
+                                            <property name="group">radiobutton1</property>
+                                          </object>
+                                        </child>
                                       </object>
                                     </child>
                                   </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkBox">
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">False</property>
-                                    <property name="halign">start</property>
-                                    <property name="hexpand">False</property>
-                                    <child>
-                                      <object class="GtkRadioButton" id="rb_Pace">
-                                        <property name="label" translatable="yes">Pace</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">False</property>
-                                        <property name="tooltip-text" translatable="yes">Pace vs. Distance</property>
-                                        <property name="draw-indicator">False</property>
-                                        <property name="group">radiobutton1</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">1</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkRadioButton" id="rb_Cadence">
-                                        <property name="label" translatable="yes">Cadence</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">False</property>
-                                        <property name="tooltip-text" translatable="yes">Cadence vs. Distance</property>
-                                        <property name="draw-indicator">False</property>
-                                        <property name="group">radiobutton1</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">2</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkRadioButton" id="rb_HeartRate">
-                                        <property name="label" translatable="yes">Heart Rate</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">False</property>
-                                        <property name="tooltip-text" translatable="yes">Heart rate vs. Distance</property>
-                                        <property name="draw-indicator">False</property>
-                                        <property name="group">radiobutton1</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">3</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkRadioButton" id="rb_Altitude">
-                                        <property name="label" translatable="yes">Altitude</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">False</property>
-                                        <property name="tooltip-text" translatable="yes">Altitude vs. Distance</property>
-                                        <property name="draw-indicator">False</property>
-                                        <property name="group">radiobutton1</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">4</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkRadioButton" id="rb_Splits">
-                                        <property name="label" translatable="yes">Splits</property>
-                                        <property name="visible">True</property>
-                                        <property name="can-focus">True</property>
-                                        <property name="receives-default">False</property>
-                                        <property name="tooltip-text" translatable="yes">Lap Splits</property>
-                                        <property name="draw-indicator">False</property>
-                                        <property name="group">radiobutton1</property>
-                                      </object>
-                                      <packing>
-                                        <property name="expand">False</property>
-                                        <property name="fill">False</property>
-                                        <property name="position">5</property>
-                                      </packing>
-                                    </child>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">3</property>
-                                  </packing>
+                                </property>
+                                <child type="label_item">
+                                  <placeholder/>
                                 </child>
                               </object>
                             </child>
-                            <child type="label_item">
-                              <placeholder/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox">
+                            <property name="halign">center</property>
+                            <child>
+                              <object class="GtkScale" id="sc_IdxPct">
+                                <property name="width-request">300</property>
+                                <property name="focusable">1</property>
+                                <property name="tooltip-text" translatable="yes">Slide to step through activity.  Left-most is start of activity, right-most is end of activity. Arrow keys = small step.  Page up/down = larger step.</property>
+                                <property name="halign">center</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="adjustment">adjustment1</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkLabel" id="lbl_val">
+                                <property name="width-request">300</property>
+                                <property name="halign">center</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-start">5</property>
+                                <property name="hexpand">1</property>
+                              </object>
                             </child>
                           </object>
-                          <packing>
-                            <property name="resize">True</property>
-                            <property name="shrink">True</property>
-                          </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
-                      <object class="GtkBox">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="halign">center</property>
-                        <child>
-                          <object class="GtkScale" id="sc_IdxPct">
-                            <property name="width-request">300</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">True</property>
-                            <property name="tooltip-text" translatable="yes">Slide to step through activity.  Left-most is start of activity, right-most is end of activity. Arrow keys = small step.  Page up/down = larger step.</property>
-                            <property name="halign">start</property>
-                            <property name="margin-right">5</property>
-                            <property name="margin-start">5</property>
-                            <property name="margin-end">5</property>
-                            <property name="adjustment">adjustment1</property>
-                            <property name="lower-stepper-sensitivity">on</property>
-                            <property name="upper-stepper-sensitivity">on</property>
-                            <property name="draw-value">False</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="lbl_val">
-                            <property name="width-request">300</property>
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="halign">center</property>
-                            <property name="margin-left">5</property>
-                            <property name="margin-right">5</property>
-                            <property name="margin-start">5</property>
-                            <property name="hexpand">True</property>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                   </object>
-                  <packing>
-                    <property name="resize">False</property>
-                    <property name="shrink">True</property>
-                  </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
+                </property>
+                <property name="tab">
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Views</property>
+                  </object>
+                </property>
               </object>
-              <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child type="tab">
-              <object class="GtkLabel">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Views</property>
-              </object>
-              <packing>
-                <property name="position">1</property>
-                <property name="tab-fill">False</property>
-              </packing>
             </child>
             <child>
               <placeholder/>
             </child>
-            <child type="tab">
-              <placeholder/>
-            </child>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
         </child>
         <child>
           <placeholder/>
@@ -554,6 +347,6 @@ Middle mouse click to zoom out full.
           <placeholder/>
         </child>
       </object>
-    </child>
+    </property>
   </object>
 </interface>
