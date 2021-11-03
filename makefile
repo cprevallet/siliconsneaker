@@ -11,12 +11,14 @@ DEBUG=-g
 OPT=-O2
 # warnings
 WARN=-Wall
+#gtk4
+GTKFLAGS=`pkg-config --libs gtk4`
 
 PTHREAD=-pthread
 
-CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD)
+CCFLAGS=$(DEBUG) $(OPT) $(WARN) $(PTHREAD) $(GTKFLAGS)
 
-LIBS=`pkg-config --cflags --libs gtk+-3.0 plplot osmgpsmap-1.0  librsvg-2.0 libxml-2.0`
+LIBS=`pkg-config --cflags --libs gtk4 plplot osmgpsmap-1.0  librsvg-2.0 libxml-2.0`
 
 # linker
 LD=gcc
