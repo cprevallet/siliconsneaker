@@ -1983,19 +1983,17 @@ show_widgets(gboolean show)
 
 
 static void
-on_response (GtkNativeDialog *native,
-             int              response)
+on_response (GtkNativeDialog *native, int response, AllData *pall)
 {
   if (response == GTK_RESPONSE_ACCEPT)
     {
       GtkFileChooser *chooser = GTK_FILE_CHOOSER (native);
       GFile *file = gtk_file_chooser_get_file (chooser);
-
-// TODO NEED TO FIGURE OUT HOW GFILE interface works to get filename.
       /* fname is a global */
+      fname = g_file_get_path (file);
 //      fname = gtk_file_chooser_get_filename (GTK_BUTTON(btnFileOpen));
-//      if (pall != NULL)
-//        reload_all (pall);
+      if (pall != NULL)
+        reload_all (pall);
       show_widgets(TRUE); 
 
       g_object_unref (file);
@@ -2014,14 +2012,14 @@ on_btnFileOpen_clicked (GtkButton *btnFileOpen, AllData *pall)
   GtkFileChooserNative *native;
   GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
 
-//  native = gtk_file_chooser_native_new ("Open File",
-//                                        parent_window,
-//                                        action,
-//                                        "_Open",
-//                                        "_Cancel");
-//
-//  g_signal_connect (native, "response", G_CALLBACK (on_response), NULL);
-//  gtk_native_dialog_show (GTK_NATIVE_DIALOG (native));
+  native = gtk_file_chooser_native_new ("Open File",
+                                        window,
+                                        action,
+                                        "_Open",
+                                        "_Cancel");
+
+  g_signal_connect (native, "response", G_CALLBACK (on_response), pall);
+  gtk_native_dialog_show (GTK_NATIVE_DIALOG (native));
 
 }
 
