@@ -1565,128 +1565,31 @@ on_da_middle_btn_pressed (GtkGestureClick *gesture,
   reset_zoom (data->pd);
 }
 
-/* Handle mouse button press. */
-//#ifdef _WIN32
-//G_MODULE_EXPORT
-//#endif
-//gboolean
-//on_button_press (GtkWidget *widget, GdkEvent *event, AllData *data)
-//{
-//  guint buttonnum;
-//  if (data->pd == NULL)
-//    return FALSE;
-//  gdk_event_get_button (event, &buttonnum);
-//  if (buttonnum == 3)
-//    change_cursor (widget, "crosshair");
-//  if (buttonnum == 1)
-//    change_cursor (widget, "hand1");
-//  /* Set user selected starting x, y in world coordinates. */
-//  gui_to_world (data->pd, (GdkEventButton *)event, Press);
-//  return TRUE;
-//}
-//
-///* Handle mouse button release. */
-//#ifdef _WIN32
-//G_MODULE_EXPORT
-//#endif
-//gboolean
-//on_button_release (GtkWidget *widget, GdkEvent *event, AllData *data)
-//{
-//  guint buttonnum;
-//  if (data->pd == NULL)
-//    return FALSE;
-//  change_cursor (widget, "default");
-//  gdk_event_get_button (event, &buttonnum);
-//  /* Zoom out if right mouse button release. */
-//  if (buttonnum == 2)
-//    {
-//      reset_view_limits (data->pd);
-//      gtk_widget_queue_draw (GTK_WIDGET (da));
-//      reset_zoom (data->pd);
-//      return TRUE;
-//    }
-//  /* Zoom in if left mouse button release. */
-//  /* Set user selected ending x, y in world coordinates. */
-//  gui_to_world (data->pd, (GdkEventButton *)event, Release);
-//  if ((data->pd->zm_startx != data->pd->zm_endx)
-//      && (data->pd->zm_starty != data->pd->zm_endy))
-//    {
-//      /* Zoom */
-//      if (buttonnum == 3)
-//        {
-//          data->pd->vw_xmin = fmin (data->pd->zm_startx, data->pd->zm_endx);
-//          data->pd->vw_ymin = fmin (data->pd->zm_starty, data->pd->zm_endy);
-//          data->pd->vw_xmax = fmax (data->pd->zm_startx, data->pd->zm_endx);
-//          data->pd->vw_ymax = fmax (data->pd->zm_starty, data->pd->zm_endy);
-//        }
-//      /* Pan */
-//      if (buttonnum == 1)
-//        {
-//          data->pd->vw_xmin
-//              = data->pd->vw_xmin + (data->pd->zm_startx - data->pd->zm_endx);
-//          data->pd->vw_xmax
-//              = data->pd->vw_xmax + (data->pd->zm_startx - data->pd->zm_endx);
-//          data->pd->vw_ymin
-//              = data->pd->vw_ymin + (data->pd->zm_starty - data->pd->zm_endy);
-//          data->pd->vw_ymax
-//              = data->pd->vw_ymax + (data->pd->zm_starty - data->pd->zm_endy);
-//        }
-//      gtk_widget_queue_draw (GTK_WIDGET (da));
-//      reset_zoom (data->pd);
-//    }
-//  return TRUE;
-//}
-//
-///* Handle mouse motion event by drawing a filled
-// * polygon.
-// */
-//#ifdef _WIN32
-//G_MODULE_EXPORT
-//#endif
-//gboolean
-//on_motion_notify (GtkWidget *widget, GdkEventButton *event, AllData *data)
-//{
-//
-//  if (data->pd == NULL)
-//    return FALSE;
-//  if (event->state & GDK_BUTTON3_MASK)
-//    {
-//      gui_to_world (data->pd, event, Move);
-//      gtk_widget_queue_draw (GTK_WIDGET (da));
-//    }
-//  return TRUE;
-//}
-//
-//
-///* Handle mouse scroll event by zooming. */
-//#ifdef _WIN32
-//G_MODULE_EXPORT
-//#endif
-//gboolean mouse_scroll (GtkWidget *widget,
-//               GdkEventScroll  *event,
-//               AllData *data)
-//               {
-//  PLFLT zoomin_pct = 0.1;  //this is arbitrary between 0 and 1, could #define
-//  PLFLT zoomout_pct = -zoomin_pct;
-//  PLFLT x_span = data->pd->vw_xmax - data->pd->vw_xmin;
-//  PLFLT y_span = data->pd->vw_ymax - data->pd->vw_ymin;
-//  if (event->direction == GDK_SCROLL_UP) {
-//    data->pd->vw_xmin = zoomin_pct * x_span + data->pd->vw_xmin;
-//    data->pd->vw_ymin = zoomin_pct * y_span + data->pd->vw_ymin; 
-//    data->pd->vw_xmax = -zoomin_pct * x_span + data->pd->vw_xmax;
-//    data->pd->vw_ymax = -zoomin_pct * y_span + data->pd->vw_ymax;
-//    gtk_widget_queue_draw (GTK_WIDGET (da));
-//  } 
-//  if (event->direction == GDK_SCROLL_DOWN) {
-//    data->pd->vw_xmin = zoomout_pct * x_span + data->pd->vw_xmin;
-//    data->pd->vw_ymin = zoomout_pct * y_span + data->pd->vw_ymin; 
-//    data->pd->vw_xmax = -zoomout_pct * x_span + data->pd->vw_xmax;
-//    data->pd->vw_ymax = -zoomout_pct * y_span + data->pd->vw_ymax;
-//    gtk_widget_queue_draw (GTK_WIDGET (da));
-//  }
-//  return TRUE;  
-//}
-//
+static void
+on_da_middle_btn_scrolled (GtkEventController *controller, AllData* data ) 
+{
+  PLFLT zoomin_pct = 0.1;  //this is arbitrary between 0 and 1, could #define
+  PLFLT zoomout_pct = -zoomin_pct;
+  PLFLT x_span = data->pd->vw_xmax - data->pd->vw_xmin;
+  PLFLT y_span = data->pd->vw_ymax - data->pd->vw_ymin;
+  GdkEvent* event = gtk_event_controller_get_current_event (controller);
+  GdkScrollDirection dir = gdk_scroll_event_get_direction (event);
+  if ( dir == GDK_SCROLL_UP) {
+    data->pd->vw_xmin = zoomin_pct * x_span + data->pd->vw_xmin;
+    data->pd->vw_ymin = zoomin_pct * y_span + data->pd->vw_ymin; 
+    data->pd->vw_xmax = -zoomin_pct * x_span + data->pd->vw_xmax;
+    data->pd->vw_ymax = -zoomin_pct * y_span + data->pd->vw_ymax;
+    gtk_widget_queue_draw (GTK_WIDGET (da));
+  }
+  if ( dir == GDK_SCROLL_DOWN) {
+    data->pd->vw_xmin = zoomout_pct * x_span + data->pd->vw_xmin;
+    data->pd->vw_ymin = zoomout_pct * y_span + data->pd->vw_ymin; 
+    data->pd->vw_xmax = -zoomout_pct * x_span + data->pd->vw_xmax;
+    data->pd->vw_ymax = -zoomout_pct * y_span + data->pd->vw_ymax;
+    gtk_widget_queue_draw (GTK_WIDGET (da));
+  }
+}
+
 //
 // Map Stuff
 //
@@ -2473,8 +2376,6 @@ main (int argc, char *argv[])
   //gtk_builder_connect_signals (builder, NULL);
 //  gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_PRESS_MASK);
 //  gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_RELEASE_MASK);
-//  gtk_widget_add_events (GTK_WIDGET (da), GDK_POINTER_MOTION_MASK);
-//  gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_MASK);
 //  g_signal_connect (GTK_DRAWING_AREA (da), "button-press-event",
 //                    G_CALLBACK (on_button_press), pall);
 
@@ -2501,15 +2402,24 @@ main (int argc, char *argv[])
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (press_middle));
   g_signal_connect (press_middle, "pressed", G_CALLBACK (on_da_middle_btn_pressed), pall);
 
+  GtkEventController * scroll_middle;
+  scroll_middle = gtk_event_controller_scroll_new (GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (scroll_middle));
+  g_signal_connect (scroll_middle, "scroll", G_CALLBACK (on_da_middle_btn_scrolled), pall);
+   
+  //gtk_widget_add_events (GTK_WIDGET (da), GDK_POINTER_MOTION_MASK);
+   //gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_DOWN);
+   //gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_UP);
+//*  g_signal_connect(GTK_WIDGET (da),"scroll-event", 
+//		    G_CALLBACK(on_da_middle_btn_scrolled), pall);
+
 
 //  g_signal_connect (GTK_DRAWING_AREA (da), "button-release-event",
 //                    G_CALLBACK (on_button_release), pall);
 //  g_signal_connect (GTK_DRAWING_AREA (da), "motion-notify-event",
 //                    G_CALLBACK (on_motion_notify), pall);
-    gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (da), da_draw,
+  gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (da), da_draw,
                       pall, NULL);
-//  g_signal_connect(GTK_DRAWING_AREA (da),"scroll-event", 
-//		    G_CALLBACK(mouse_scroll), pall);
   g_signal_connect (GTK_TOGGLE_BUTTON (rb_Pace), "toggled",
                     G_CALLBACK (on_rb_pace), pall);
   g_signal_connect (GTK_TOGGLE_BUTTON (rb_Cadence), "toggled",
