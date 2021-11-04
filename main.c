@@ -2356,7 +2356,6 @@ main (int argc, char *argv[])
       = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "rb_Altitude"));
   rb_Splits = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "rb_Splits"));
   
-  //gtk_toggle_button_set_group (rb_Pace, rb_Pace);
   gtk_toggle_button_set_group (rb_Cadence, rb_Pace);
   gtk_toggle_button_set_group (rb_HeartRate, rb_Pace);
   gtk_toggle_button_set_group (rb_Altitude,  rb_Pace);
