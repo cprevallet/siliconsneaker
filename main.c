@@ -93,13 +93,9 @@
 #define TRACKWIDTH 9.0 
 // the result structure defined by fitwrapper.h
 struct parse_fit_file_return result;
-
-enum ZoomState
-{
-  Press = 0,
-  Move = 1,
-  Release = 2
-};
+// The mouse position in pixels relative to drawing area origin.
+static double mouse_x;
+static double mouse_y;
 enum UnitSystem
 {
   Metric = 1,
@@ -465,20 +461,8 @@ get_graph_edges (PlotData *pd, float *left_edge, float *right_edge,
                  float *top_edge, float *bottom_edge)
 {
   /* Find widget allocated width, height.*/
-
-  //GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (da));
-  //cairo_region_t *cairoRegion = gdk_window_get_visible_region (window);
-  //cairo_rectangle_int_t rectangle;
-  //cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
-  //float h = (float)rectangle.height;
-  //float w = (float)rectangle.width;
-  
   float h = (float)gtk_widget_get_height(GTK_WIDGET(da));
 	float w = (float)gtk_widget_get_width(GTK_WIDGET(da));
-
-  //printf("h=%f\n", h);
-  //printf("w=%f\n", w);
-
   float aspect = h / w;
   float xaxis_length, yaxis_length, graph_length, graph_height;
   /* 0.75 comes from the height/width ratio in glade for the viewport.
@@ -503,30 +487,20 @@ get_graph_edges (PlotData *pd, float *left_edge, float *right_edge,
       graph_length = w;
       horiz_margin = 0.0;
     }
-  //printf("graph_length=%f\n", graph_length);
-  //printf("graph_height=%f\n", graph_height);
-  //printf("vw_pxmin=%f\n", pd->vw_pxmin);
-  //printf("vw_pxmax=%f\n", pd->vw_pxmax);
-  //printf("vw_pymin=%f\n", pd->vw_pymin);
-  //printf("vw_pymax=%f\n", pd->vw_pymax);
   xaxis_length = graph_length * ((float)pd->vw_pxmax - (float)pd->vw_pxmin);
   yaxis_length = graph_height * ((float)pd->vw_pymax - (float)pd->vw_pymin);
-  printf("xaxis=%f\n", xaxis_length);
-  printf("yaxis=%f\n", yaxis_length);
   /* Calculate the pixel position for the edges of the plot
    * excluding the margins (e.g. at the axes).
    */
   if (left_edge && right_edge)
     {
       *left_edge = (((float)w - graph_length) / 2.0)
-                  // + ((graph_length - xaxis_length) / 2.0) + (float)rectangle.x;
                    + ((graph_length - xaxis_length) / 2.0);
       *right_edge = *left_edge + xaxis_length;
     }
   if (top_edge && bottom_edge)
     {
       *top_edge = (((float)h - graph_height) / 2.0)
-                  //+ ((graph_height - yaxis_length) / 2.0) + (float)rectangle.y;
                   + ((graph_height - yaxis_length) / 2.0);
       *bottom_edge = *top_edge + yaxis_length;
     }
@@ -1347,8 +1321,7 @@ da_draw (GtkDrawingArea* da,
   gpointer user_data
 )
 {
-
- AllData * data = user_data;
+  AllData * data = user_data;
   /* Generate a colored background. */
   cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,width,height);
   cairo_create(surface);
@@ -1357,8 +1330,6 @@ da_draw (GtkDrawingArea* da,
   cairo_set_source_rgb(cr, 128, 128, 128);
   cairo_paint(cr);
   cairo_restore(cr);
-
-
   /* Initialize plplot using the svg backend. */
   plsdev ("svg");
   /* Device attributes */
@@ -1397,20 +1368,12 @@ da_draw (GtkDrawingArea* da,
      for use in zooming. */
   plgvpd (&data->pd->vw_pxmin, &data->pd->vw_pxmax, &data->pd->vw_pymin,
           &data->pd->vw_pymax);
-
-  //printf("vw_pxmin=%f\n", data->pd->vw_pxmin);
-  //printf("vw_pxmax=%f\n", data->pd->vw_pxmax);
-  //printf("vw_pymin=%f\n", data->pd->vw_pymin);
-  //printf("vw_pymax=%f\n", data->pd->vw_pymax);
-
   /* Close PLplot library */
   plend ();
 
   /* Reload svg to cairo context. */
   GError **error = NULL;
   RsvgHandle *handle = rsvg_handle_new_from_file (tmpfile, error);
-//  RsvgRectangle viewport
-//      = { rectangle.x, rectangle.y, rectangle.width, rectangle.height };
   RsvgRectangle viewport
       = { 0, 0, width, height };
   rsvg_handle_render_document (handle, cr, &viewport, error);
@@ -1420,49 +1383,26 @@ da_draw (GtkDrawingArea* da,
  * GUI mouse ("device") coordinates.
  */
 void
-gui_to_world (struct PlotData *pd, double device_x, double device_y, enum ZoomState state)
+gui_to_world (struct PlotData *pd, double device_x, double device_y, float* fractx, float* fracty)
 {
   if (pd == NULL)
     {
       return;
     }
-
   float left_edge, right_edge, top_edge, bottom_edge;
   /* Get the graph edges in device coordinates (e.g. pixels) */
   get_graph_edges (pd, &left_edge, &right_edge, &top_edge, &bottom_edge);
-  //printf("left=%f\n", left_edge);
-  //printf("right=%f\n", right_edge);
-  //printf("top=%f\n", top_edge);
-  //printf("bot=%f\n", bottom_edge);
-  printf("dev_x=%f\n", device_x);
-  printf("dev_y=%f\n", device_y);
-  float fractx = (device_x - left_edge) / (right_edge - left_edge);
-  float fracty = (bottom_edge - device_y) / (bottom_edge - top_edge);
+  *fractx = (device_x - left_edge) / (right_edge - left_edge);
+  *fracty = (bottom_edge - device_y) / (bottom_edge - top_edge);
   if (device_x < left_edge)
-    fractx = 0.0;
+    *fractx = 0.0;
   if (device_x > right_edge)
-    fractx = 1.0;
+    *fractx = 1.0;
   if (device_y < top_edge)
-    fracty = 1.0;
+    *fracty = 1.0;
   if (device_y > bottom_edge)
-    fracty = 0.0;
-  printf("fractx=%f\n", fractx);
-  printf("fracty=%f\n", fracty);
-  /* Calculate the zoom limits in world coordinates. */
-  if (state == Press)
-    {
-      pd->zm_startx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
-      pd->zm_starty = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
-      pd->zm_endx = pd->zm_startx;
-      pd->zm_endy = pd->zm_starty;
-    }
-  if (state == Release || state == Move)
-    {
-      pd->zm_endx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
-      pd->zm_endy = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
-    }
-}
-
+    *fracty = 0.0;
+  }
 
 /* Convenience routine to change the cursor style. */
 void
@@ -1474,44 +1414,6 @@ change_cursor (GtkWidget *widget, const gchar *name)
   g_object_unref (cursor);
 }
 
-static void
-on_da_right_btn_pressed (GtkGestureClick *gesture,
-                                   int                n_press,
-                                   double             x,
-                                   double             y,
-                                   AllData*           data)
-{
-  change_cursor (GTK_WIDGET(da), "crosshair");
-  gui_to_world (data->pd, x, y, Press);
-  g_print ("on_da_right_btn_pressed() called\n");
-}
-
-static void
-on_da_right_btn_released (GtkGestureClick *gesture,
-                                   int                n_press,
-                                   double             x,
-                                   double             y,
-                                   AllData*           data)
-{
-  change_cursor (GTK_WIDGET(da), "default");
-  gui_to_world (data->pd, x, y, Release);
-  if ((data->pd->zm_startx != data->pd->zm_endx)
-      && (data->pd->zm_starty != data->pd->zm_endy))
-    {
-      /* Zoom */
-      data->pd->vw_xmin = fmin (data->pd->zm_startx, data->pd->zm_endx);
-      data->pd->vw_ymin = fmin (data->pd->zm_starty, data->pd->zm_endy);
-      data->pd->vw_xmax = fmax (data->pd->zm_startx, data->pd->zm_endx);
-      data->pd->vw_ymax = fmax (data->pd->zm_starty, data->pd->zm_endy);
-      gtk_widget_queue_draw (GTK_WIDGET (da));
-      reset_zoom (data->pd);
-    }
-
-  g_print ("on_da_right_btn_released() called\n");
-}
-
-static double mouse_x;
-static double mouse_y;
 
 static void
 on_da_right_btn_drag_begin (GtkGestureDrag *gesture,
@@ -1519,11 +1421,16 @@ on_da_right_btn_drag_begin (GtkGestureDrag *gesture,
                                    double             y,
                                    AllData*           data)
 {
+  float fractx;
+  float fracty;
   mouse_x = x;
   mouse_y = y;
   change_cursor (GTK_WIDGET(da), "crosshair");
-  gui_to_world (data->pd, mouse_x, mouse_y, Press);
-  g_print ("on_da_right_drag_begin() called\n");
+  gui_to_world (data->pd, mouse_x, mouse_y, &fractx, &fracty);
+  data->pd->zm_startx = fractx * (data->pd->vw_xmax - data->pd->vw_xmin) + data->pd->vw_xmin;
+  data->pd->zm_starty = fracty * (data->pd->vw_ymax - data->pd->vw_ymin) + data->pd->vw_ymin;
+  data->pd->zm_endx = data->pd->zm_startx;
+  data->pd->zm_endy = data->pd->zm_starty;
 }
 
 static void
@@ -1532,12 +1439,13 @@ on_da_right_btn_drag_update (GtkGestureDrag *gesture,
                                    double             dy,
                                    AllData*           data)
 {
-  mouse_x += dx;
-  mouse_y += dy;
+  float fractx;
+  float fracty;
   change_cursor (GTK_WIDGET(da), "crosshair");
-  gui_to_world (data->pd, mouse_x, mouse_y, Move);
+  gui_to_world (data->pd, mouse_x + dx, mouse_y + dy, &fractx, &fracty);
+  data->pd->zm_endx = fractx * (data->pd->vw_xmax - data->pd->vw_xmin) + data->pd->vw_xmin;
+  data->pd->zm_endy = fracty * (data->pd->vw_ymax - data->pd->vw_ymin) + data->pd->vw_ymin;
   gtk_widget_queue_draw (GTK_WIDGET (da));
-  g_print ("on_da_right_btn_drag() called\n");
 }
 
 static void
@@ -1546,10 +1454,12 @@ on_da_right_btn_drag_end (GtkGestureDrag *gesture,
                                    double             dy,
                                    AllData*           data)
 {
-  mouse_x += dx;
-  mouse_y += dy;
+  float fractx;
+  float fracty;
   change_cursor (GTK_WIDGET(da), "default");
-  gui_to_world (data->pd, mouse_x, mouse_y, Release);
+  gui_to_world (data->pd, mouse_x + dx, mouse_y + dy, &fractx, &fracty);
+  data->pd->zm_endx = fractx * (data->pd->vw_xmax - data->pd->vw_xmin) + data->pd->vw_xmin;
+  data->pd->zm_endy = fracty * (data->pd->vw_ymax - data->pd->vw_ymin) + data->pd->vw_ymin;
   if ((data->pd->zm_startx != data->pd->zm_endx)
       && (data->pd->zm_starty != data->pd->zm_endy))
     {
@@ -1561,10 +1471,8 @@ on_da_right_btn_drag_end (GtkGestureDrag *gesture,
       gtk_widget_queue_draw (GTK_WIDGET (da));
       reset_zoom (data->pd);
     }
-
-  g_print ("on_da_right_drag_end() called\n");
+  gtk_widget_queue_draw (GTK_WIDGET (da));
 }
-
 
 static void
 on_da_middle_btn_pressed (GtkGestureClick *gesture,
@@ -1577,9 +1485,7 @@ on_da_middle_btn_pressed (GtkGestureClick *gesture,
   reset_view_limits (data->pd);
   gtk_widget_queue_draw (GTK_WIDGET (da));
   reset_zoom (data->pd);
-  g_print ("on_da_middle_btn_pressed() called\n");
 }
-
 
 /* Handle mouse button press. */
 //#ifdef _WIN32
@@ -2495,41 +2401,21 @@ main (int argc, char *argv[])
 //                    G_CALLBACK (on_button_press), pall);
 
 
-
-  /* Register for mouse right button click "pressed" events on drawingarea*/
-//  GtkGesture * press;
-//  press = gtk_gesture_click_new ();
-//  //gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (press), GDK_BUTTON_SECONDARY);
-//  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (press), GDK_BUTTON_PRIMARY);
-//  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (press));
-//  g_signal_connect (press, "pressed", G_CALLBACK (on_da_right_btn_pressed), pall);
-//
-//  /* Register for mouse right button click "released" events on drawingarea*/
-//  GtkGesture * released;
-//  released = gtk_gesture_click_new ();
-//  //gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (released), GDK_BUTTON_SECONDARY);
-//  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (released), GDK_BUTTON_PRIMARY);
-//  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (released));
-//  g_signal_connect (released, "released", G_CALLBACK (on_da_right_btn_released), pall);
-//  
   GtkGesture * drag;
   drag = gtk_gesture_drag_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
-//  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_PRIMARY);
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag));
   g_signal_connect (drag, "drag-update", G_CALLBACK (on_da_right_btn_drag_update), pall);
 
   GtkGesture * drag_begin;
   drag_begin = gtk_gesture_drag_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
-//  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag_begin), GDK_BUTTON_PRIMARY);
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag_begin));
   g_signal_connect (drag, "drag-begin", G_CALLBACK (on_da_right_btn_drag_begin), pall);
 
   GtkGesture * drag_end;
   drag_end = gtk_gesture_drag_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
-//  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag_end), GDK_BUTTON_PRIMARY);
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag_end));
   g_signal_connect (drag, "drag-end", G_CALLBACK (on_da_right_btn_drag_end), pall);
 
@@ -2538,9 +2424,6 @@ main (int argc, char *argv[])
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (press_middle), GDK_BUTTON_MIDDLE);
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (press_middle));
   g_signal_connect (press_middle, "pressed", G_CALLBACK (on_da_middle_btn_pressed), pall);
-
-
-
 
 
 //  g_signal_connect (GTK_DRAWING_AREA (da), "button-release-event",
