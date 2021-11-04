@@ -1295,14 +1295,18 @@ draw_bar (PlotData *plap, PlotData *ppace, int width, int height)
 enum PlotType
 checkRadioButtons ()
 {
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Pace)) == TRUE)
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Pace)) == TRUE) {
     return PacePlot;
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Cadence)) == TRUE)
+}
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Cadence)) == TRUE) {
     return CadencePlot;
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_HeartRate)) == TRUE)
+}
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_HeartRate)) == TRUE) {
     return HeartRatePlot;
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Altitude)) == TRUE)
+}
+  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (rb_Altitude)) == TRUE) {
     return AltitudePlot;
+}
   return LapPlot;
 }
 
@@ -2351,6 +2355,13 @@ main (int argc, char *argv[])
   rb_Altitude
       = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "rb_Altitude"));
   rb_Splits = GTK_TOGGLE_BUTTON (gtk_builder_get_object (builder, "rb_Splits"));
+  
+  //gtk_toggle_button_set_group (rb_Pace, rb_Pace);
+  gtk_toggle_button_set_group (rb_Cadence, rb_Pace);
+  gtk_toggle_button_set_group (rb_HeartRate, rb_Pace);
+  gtk_toggle_button_set_group (rb_Altitude,  rb_Pace);
+  gtk_toggle_button_set_group (rb_Splits,  rb_Pace);
+  
   btnFileOpen = GTK_BUTTON (
       gtk_builder_get_object (builder, "btnFileOpen"));
   //btn_Zoom_In = GTK_BUTTON (gtk_builder_get_object (builder, "btn_Zoom_In"));
