@@ -25,7 +25,7 @@
  */
 
 /* Required external top level-dependencies.
- *	libgtk-3.so.0
+ *	libgtk-4.so.0
  *  libplplot.so.17
  *	libcairo.so.2
  *  libosmgpsmap-1.0
@@ -1432,19 +1432,42 @@ da_draw (GtkDrawingArea* da,
 //    }
 //}
 //
-///* Convenience routine to change the cursor style. */
-//void
-//change_cursor (GtkWidget *widget, const gchar *name)
-//{
-//  GdkDisplay *display = gtk_widget_get_display (widget);
-//  GdkCursor *cursor;
-//  cursor = gdk_cursor_new_from_name (display, name);
-//  gdk_window_set_cursor (gtk_widget_get_window (widget), cursor);
-//  // Release the (memory) reference on the cursor.
-//  g_object_unref (cursor);
-//}
-//
-///* Handle mouse button press. */
+
+/* Convenience routine to change the cursor style. */
+void
+change_cursor (GtkWidget *widget, const gchar *name)
+{
+  //GdkDisplay *display = gtk_widget_get_display (widget);
+  GdkCursor *cursor = gdk_cursor_new_from_name (name, NULL);
+  gtk_widget_set_cursor (widget, cursor);
+  // Release the (memory) reference on the cursor.
+  g_object_unref (cursor);
+}
+
+static void
+on_da_right_btn_pressed (GtkGestureClick *gesture,
+                                   int                n_press,
+                                   double             x,
+                                   double             y,
+                                   GtkWidget         *widget)
+{
+  change_cursor (widget, "crosshair");
+  g_print ("on_da_right_btn_pressed() called\n");
+}
+
+static void
+on_da_right_btn_released (GtkGestureClick *gesture,
+                                   int                n_press,
+                                   double             x,
+                                   double             y,
+                                   GtkWidget         *widget)
+{
+  change_cursor (widget, "default");
+  g_print ("on_da_right_btn_released() called\n");
+}
+
+
+/* Handle mouse button press. */
 //#ifdef _WIN32
 //G_MODULE_EXPORT
 //#endif
@@ -2336,8 +2359,8 @@ main (int argc, char *argv[])
   sc_IdxPct = GTK_SCALE (gtk_builder_get_object (builder, "sc_IdxPct"));
   lbl_val = GTK_LABEL (gtk_builder_get_object (builder, "lbl_val"));
 
-  GdkPixbuf *icon;
-  icon = gdk_pixbuf_new_from_resource ("/ui/siliconsneaker.png", NULL);
+  //GdkPixbuf *icon;
+  //icon = gdk_pixbuf_new_from_resource ("/ui/siliconsneaker.png", NULL);
   //gtk_window_set_default_icon (icon);
 
   /* Select a default chart to start. */
@@ -2356,6 +2379,24 @@ main (int argc, char *argv[])
 //  gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_MASK);
 //  g_signal_connect (GTK_DRAWING_AREA (da), "button-press-event",
 //                    G_CALLBACK (on_button_press), pall);
+
+
+/* Register for mouse right button click "pressed" events on drawingarea*/
+ GtkGesture *gesture = NULL;
+ gesture = gtk_gesture_click_new ();
+ gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 3);
+ g_signal_connect (gesture, "pressed",
+                   G_CALLBACK (on_da_right_btn_pressed), da);
+ gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (gesture));
+
+/* Register for mouse right button click "released" events on drawingarea*/
+ gesture = gtk_gesture_click_new ();
+ gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 3);
+ g_signal_connect (gesture, "released",
+                   G_CALLBACK (on_da_right_btn_released), da);
+ gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (gesture));
+
+
 //  g_signal_connect (GTK_DRAWING_AREA (da), "button-release-event",
 //                    G_CALLBACK (on_button_release), pall);
 //  g_signal_connect (GTK_DRAWING_AREA (da), "motion-notify-event",
