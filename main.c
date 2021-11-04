@@ -1414,6 +1414,24 @@ change_cursor (GtkWidget *widget, const gchar *name)
   g_object_unref (cursor);
 }
 
+static void
+on_da_left_btn_drag_begin (GtkGestureDrag *gesture,
+                                   double             x,
+                                   double             y,
+                                   AllData*           data)
+{
+  float fractx;
+  float fracty;
+  mouse_x = x;
+  mouse_y = y;
+  change_cursor (GTK_WIDGET(da), "hand1");
+  gui_to_world (data->pd, mouse_x, mouse_y, &fractx, &fracty);
+  data->pd->zm_startx = fractx * (data->pd->vw_xmax - data->pd->vw_xmin) + data->pd->vw_xmin;
+  data->pd->zm_starty = fracty * (data->pd->vw_ymax - data->pd->vw_ymin) + data->pd->vw_ymin;
+  data->pd->zm_endx = data->pd->zm_startx;
+  data->pd->zm_endy = data->pd->zm_starty;
+}
+
 
 static void
 on_da_right_btn_drag_begin (GtkGestureDrag *gesture,
@@ -1449,6 +1467,66 @@ on_da_right_btn_drag_update (GtkGestureDrag *gesture,
 }
 
 static void
+on_da_left_btn_drag_update (GtkGestureDrag *gesture,
+                                   double             dx,
+                                   double             dy,
+                                   AllData*           data)
+{
+  float fractx;
+  float fracty;
+  change_cursor (GTK_WIDGET(da), "hand");
+  gui_to_world (data->pd, mouse_x + dx, mouse_y + dy, &fractx, &fracty);
+  data->pd->zm_endx = fractx * (data->pd->vw_xmax - data->pd->vw_xmin) + data->pd->vw_xmin;
+  data->pd->zm_endy = fracty * (data->pd->vw_ymax - data->pd->vw_ymin) + data->pd->vw_ymin;
+  if ((data->pd->zm_startx != data->pd->zm_endx)
+      && (data->pd->zm_starty != data->pd->zm_endy))
+    {
+      /* pan */
+      data->pd->vw_xmin
+          = data->pd->vw_xmin + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->vw_xmax
+          = data->pd->vw_xmax + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->vw_ymin
+          = data->pd->vw_ymin + (data->pd->zm_starty - data->pd->zm_endy);
+      data->pd->vw_ymax
+          = data->pd->vw_ymax + (data->pd->zm_starty - data->pd->zm_endy);
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+		}
+
+}
+
+static void
+on_da_left_btn_drag_end (GtkGestureDrag *gesture,
+                                   double             dx,
+                                   double             dy,
+                                   AllData*           data)
+{
+  float fractx;
+  float fracty;
+  change_cursor (GTK_WIDGET(da), "default");
+  gui_to_world (data->pd, mouse_x + dx, mouse_y + dy, &fractx, &fracty);
+  data->pd->zm_endx = fractx * (data->pd->vw_xmax - data->pd->vw_xmin) + data->pd->vw_xmin;
+  data->pd->zm_endy = fracty * (data->pd->vw_ymax - data->pd->vw_ymin) + data->pd->vw_ymin;
+  if ((data->pd->zm_startx != data->pd->zm_endx)
+      && (data->pd->zm_starty != data->pd->zm_endy))
+    {
+      /* pan */
+      data->pd->vw_xmin
+          = data->pd->vw_xmin + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->vw_xmax
+          = data->pd->vw_xmax + (data->pd->zm_startx - data->pd->zm_endx);
+      data->pd->vw_ymin
+          = data->pd->vw_ymin + (data->pd->zm_starty - data->pd->zm_endy);
+      data->pd->vw_ymax
+          = data->pd->vw_ymax + (data->pd->zm_starty - data->pd->zm_endy);
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      reset_zoom (data->pd);
+    }
+  gtk_widget_queue_draw (GTK_WIDGET (da));
+}
+
+
+static void
 on_da_right_btn_drag_end (GtkGestureDrag *gesture,
                                    double             dx,
                                    double             dy,
@@ -1463,7 +1541,7 @@ on_da_right_btn_drag_end (GtkGestureDrag *gesture,
   if ((data->pd->zm_startx != data->pd->zm_endx)
       && (data->pd->zm_starty != data->pd->zm_endy))
     {
-      /* Zoom */
+      /* zoom */
       data->pd->vw_xmin = fmin (data->pd->zm_startx, data->pd->zm_endx);
       data->pd->vw_ymin = fmin (data->pd->zm_starty, data->pd->zm_endy);
       data->pd->vw_xmax = fmax (data->pd->zm_startx, data->pd->zm_endx);
@@ -1471,7 +1549,7 @@ on_da_right_btn_drag_end (GtkGestureDrag *gesture,
       gtk_widget_queue_draw (GTK_WIDGET (da));
       reset_zoom (data->pd);
     }
-  gtk_widget_queue_draw (GTK_WIDGET (da));
+  gtk_widget_queue_draw (GTK_WIDGET(da));
 }
 
 static void
@@ -2399,6 +2477,14 @@ main (int argc, char *argv[])
 //  gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_MASK);
 //  g_signal_connect (GTK_DRAWING_AREA (da), "button-press-event",
 //                    G_CALLBACK (on_button_press), pall);
+
+  GtkGesture * drag_primary;
+  drag_primary = gtk_gesture_drag_new ();
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag_primary), GDK_BUTTON_PRIMARY);
+  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag_primary));
+  g_signal_connect (drag_primary, "drag-update", G_CALLBACK (on_da_left_btn_drag_update), pall);
+  g_signal_connect (drag_primary, "drag-begin", G_CALLBACK (on_da_left_btn_drag_begin), pall);
+  g_signal_connect (drag_primary, "drag-end", G_CALLBACK (on_da_left_btn_drag_end), pall);
 
 
   GtkGesture * drag_secondary;
