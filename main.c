@@ -460,89 +460,106 @@ update_summary (SessionData *psd)
 //
 // Plot routines.
 //
-//void
-//get_graph_edges (PlotData *pd, float *left_edge, float *right_edge,
-//                 float *top_edge, float *bottom_edge)
-//{
-//  /* Find widget allocated width, height.*/
-//
-//  GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (da));
-//  cairo_region_t *cairoRegion = gdk_window_get_visible_region (window);
-//  cairo_rectangle_int_t rectangle;
-//  cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
-//  float h = (float)rectangle.height;
-//  float w = (float)rectangle.width;
-//  float aspect = h / w;
-//  float xaxis_length, yaxis_length, graph_length, graph_height;
-//  /* 0.75 comes from the height/width ratio in glade for the viewport.
-//     This is an approximation but it works well enough unless the margins
-//     are large relative to the graph itself. */
-//  float horiz_margin = ((0.75 - aspect) * w) / 2.0;
-//  float vert_margin = ((aspect - 0.75) * w) / 2.0;
-//  /* Calculating the axis lengths in pixels is tricky because PLPlot generates
-//     "the largest viewport with the given aspect ratio that ﬁts
-//      within the speciﬁed region."  We store the generated viewport limits
-//      (in normalized device coordinates) when we draw the graph
-//      in da_draw.  Search for plgvpd. */
-//  if (horiz_margin > vert_margin)
-//    {
-//      graph_length = w - (2.0 * horiz_margin);
-//      graph_height = h;
-//      vert_margin = 0.0;
-//    }
-//  else
-//    {
-//      graph_height = h - (2.0 * vert_margin);
-//      graph_length = w;
-//      horiz_margin = 0.0;
-//    }
-//  xaxis_length = graph_length * ((float)pd->vw_pxmax - (float)pd->vw_pxmin);
-//  yaxis_length = graph_height * ((float)pd->vw_pymax - (float)pd->vw_pymin);
-//  /* Calculate the pixel position for the edges of the plot
-//   * excluding the margins (e.g. at the axes).
-//   */
-//  if (left_edge && right_edge)
-//    {
-//      *left_edge = (((float)w - graph_length) / 2.0)
-//                   + ((graph_length - xaxis_length) / 2.0) + (float)rectangle.x;
-//      *right_edge = *left_edge + xaxis_length;
-//    }
-//  if (top_edge && bottom_edge)
-//    {
-//      *top_edge = (((float)h - graph_height) / 2.0)
-//                  + ((graph_height - yaxis_length) / 2.0) + (float)rectangle.y;
-//      *bottom_edge = *top_edge + yaxis_length;
-//    }
-//  else
-//    {
-//      return;
-//    }
-//}
-//
-///* Set the view limits to the data extents. */
-//void
-//reset_view_limits (PlotData *pd)
-//{
-//  if (pd == NULL)
-//    return;
-//  pd->vw_xmax = pd->xmax;
-//  pd->vw_ymin = pd->ymin;
-//  pd->vw_ymax = pd->ymax;
-//  pd->vw_xmin = pd->xmin;
-//}
-//
-///* Set zoom back to zero. */
-//void
-//reset_zoom (PlotData *pd)
-//{
-//  if (pd == NULL)
-//    return;
-//  pd->zm_startx = 0;
-//  pd->zm_starty = 0;
-//  pd->zm_endx = 0;
-//  pd->zm_endy = 0;
-//}
-//
+void
+get_graph_edges (PlotData *pd, float *left_edge, float *right_edge,
+                 float *top_edge, float *bottom_edge)
+{
+  /* Find widget allocated width, height.*/
+
+  //GdkWindow *window = gtk_widget_get_window (GTK_WIDGET (da));
+  //cairo_region_t *cairoRegion = gdk_window_get_visible_region (window);
+  //cairo_rectangle_int_t rectangle;
+  //cairo_region_get_rectangle (cairoRegion, 0, &rectangle);
+  //float h = (float)rectangle.height;
+  //float w = (float)rectangle.width;
+  
+  float h = (float)gtk_widget_get_height(GTK_WIDGET(da));
+	float w = (float)gtk_widget_get_width(GTK_WIDGET(da));
+
+  //printf("h=%f\n", h);
+  //printf("w=%f\n", w);
+
+  float aspect = h / w;
+  float xaxis_length, yaxis_length, graph_length, graph_height;
+  /* 0.75 comes from the height/width ratio in glade for the viewport.
+     This is an approximation but it works well enough unless the margins
+     are large relative to the graph itself. */
+  float horiz_margin = ((0.75 - aspect) * w) / 2.0;
+  float vert_margin = ((aspect - 0.75) * w) / 2.0;
+  /* Calculating the axis lengths in pixels is tricky because PLPlot generates
+     "the largest viewport with the given aspect ratio that ﬁts
+      within the speciﬁed region."  We store the generated viewport limits
+      (in normalized device coordinates) when we draw the graph
+      in da_draw.  Search for plgvpd. */
+  if (horiz_margin > vert_margin)
+    {
+      graph_length = w - (2.0 * horiz_margin);
+      graph_height = h;
+      vert_margin = 0.0;
+    }
+  else
+    {
+      graph_height = h - (2.0 * vert_margin);
+      graph_length = w;
+      horiz_margin = 0.0;
+    }
+  printf("graph_length=%f\n", graph_length);
+  printf("graph_height=%f\n", graph_height);
+  printf("vw_pxmin=%f\n", pd->vw_pxmin);
+  printf("vw_pxmax=%f\n", pd->vw_pxmax);
+  printf("vw_pymin=%f\n", pd->vw_pymin);
+  printf("vw_pymax=%f\n", pd->vw_pymax);
+  xaxis_length = graph_length * ((float)pd->vw_pxmax - (float)pd->vw_pxmin);
+  yaxis_length = graph_height * ((float)pd->vw_pymax - (float)pd->vw_pymin);
+  printf("xaxis=%f\n", xaxis_length);
+  printf("yaxis=%f\n", yaxis_length);
+  /* Calculate the pixel position for the edges of the plot
+   * excluding the margins (e.g. at the axes).
+   */
+  if (left_edge && right_edge)
+    {
+      *left_edge = (((float)w - graph_length) / 2.0)
+                  // + ((graph_length - xaxis_length) / 2.0) + (float)rectangle.x;
+                   + ((graph_length - xaxis_length) / 2.0);
+      *right_edge = *left_edge + xaxis_length;
+    }
+  if (top_edge && bottom_edge)
+    {
+      *top_edge = (((float)h - graph_height) / 2.0)
+                  //+ ((graph_height - yaxis_length) / 2.0) + (float)rectangle.y;
+                  + ((graph_height - yaxis_length) / 2.0);
+      *bottom_edge = *top_edge + yaxis_length;
+    }
+  else
+    {
+      return;
+    }
+}
+
+/* Set the view limits to the data extents. */
+void
+reset_view_limits (PlotData *pd)
+{
+  if (pd == NULL)
+    return;
+  pd->vw_xmax = pd->xmax;
+  pd->vw_ymin = pd->ymin;
+  pd->vw_ymax = pd->ymax;
+  pd->vw_xmin = pd->xmin;
+}
+
+/* Set zoom back to zero. */
+void
+reset_zoom (PlotData *pd)
+{
+  if (pd == NULL)
+    return;
+  pd->zm_startx = 0;
+  pd->zm_starty = 0;
+  pd->zm_endx = 0;
+  pd->zm_endy = 0;
+}
+
 /*  This routine is where the bulk of the session report
  *  initialization occurs.
  *
@@ -1380,6 +1397,12 @@ da_draw (GtkDrawingArea* da,
      for use in zooming. */
   plgvpd (&data->pd->vw_pxmin, &data->pd->vw_pxmax, &data->pd->vw_pymin,
           &data->pd->vw_pymax);
+
+  //printf("vw_pxmin=%f\n", data->pd->vw_pxmin);
+  //printf("vw_pxmax=%f\n", data->pd->vw_pxmax);
+  //printf("vw_pymin=%f\n", data->pd->vw_pymin);
+  //printf("vw_pymax=%f\n", data->pd->vw_pymax);
+
   /* Close PLplot library */
   plend ();
 
@@ -1396,48 +1419,51 @@ da_draw (GtkDrawingArea* da,
 /* Calculate the graph ("world") x,y coordinates corresponding to the
  * GUI mouse ("device") coordinates.
  */
-//void
-//gui_to_world (struct PlotData *pd, GdkEventButton *event, enum ZoomState state)
-//{
-//  if (pd == NULL)
-//    {
-//      return;
-//    }
-//
-//  float left_edge, right_edge, top_edge, bottom_edge;
-//  /* Get the graph edges in device coordinates (e.g. pixels) */
-//  get_graph_edges (pd, &left_edge, &right_edge, &top_edge, &bottom_edge);
-//  float fractx = (event->x - left_edge) / (right_edge - left_edge);
-//  float fracty = (bottom_edge - event->y) / (bottom_edge - top_edge);
-//  if (event->x < left_edge)
-//    fractx = 0.0;
-//  if (event->x > right_edge)
-//    fractx = 1.0;
-//  if (event->y < top_edge)
-//    fracty = 1.0;
-//  if (event->y > bottom_edge)
-//    fracty = 0.0;
-//  /* Calculate the zoom limits in world coordinates. */
-//  if (state == Press)
-//    {
-//      pd->zm_startx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
-//      pd->zm_starty = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
-//      pd->zm_endx = pd->zm_startx;
-//      pd->zm_endy = pd->zm_starty;
-//    }
-//  if (state == Release || state == Move)
-//    {
-//      pd->zm_endx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
-//      pd->zm_endy = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
-//    }
-//}
-//
+void
+gui_to_world (struct PlotData *pd, int device_x, int device_y, enum ZoomState state)
+{
+  if (pd == NULL)
+    {
+      return;
+    }
+
+  float left_edge, right_edge, top_edge, bottom_edge;
+  /* Get the graph edges in device coordinates (e.g. pixels) */
+  get_graph_edges (pd, &left_edge, &right_edge, &top_edge, &bottom_edge);
+  //printf("left=%f\n", left_edge);
+  //printf("right=%f\n", right_edge);
+  //printf("top=%f\n", top_edge);
+  //printf("bot=%f\n", bottom_edge);
+  float fractx = (device_x - left_edge) / (right_edge - left_edge);
+  float fracty = (bottom_edge - device_y) / (bottom_edge - top_edge);
+  if (device_x < left_edge)
+    fractx = 0.0;
+  if (device_x > right_edge)
+    fractx = 1.0;
+  if (device_y < top_edge)
+    fracty = 1.0;
+  if (device_y > bottom_edge)
+    fracty = 0.0;
+  /* Calculate the zoom limits in world coordinates. */
+  if (state == Press)
+    {
+      pd->zm_startx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
+      pd->zm_starty = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
+      pd->zm_endx = pd->zm_startx;
+      pd->zm_endy = pd->zm_starty;
+    }
+  if (state == Release || state == Move)
+    {
+      pd->zm_endx = fractx * (pd->vw_xmax - pd->vw_xmin) + pd->vw_xmin;
+      pd->zm_endy = fracty * (pd->vw_ymax - pd->vw_ymin) + pd->vw_ymin;
+    }
+}
+
 
 /* Convenience routine to change the cursor style. */
 void
 change_cursor (GtkWidget *widget, const gchar *name)
 {
-  //GdkDisplay *display = gtk_widget_get_display (widget);
   GdkCursor *cursor = gdk_cursor_new_from_name (name, NULL);
   gtk_widget_set_cursor (widget, cursor);
   // Release the (memory) reference on the cursor.
@@ -1449,9 +1475,10 @@ on_da_right_btn_pressed (GtkGestureClick *gesture,
                                    int                n_press,
                                    double             x,
                                    double             y,
-                                   GtkWidget         *widget)
+                                   AllData*           data)
 {
-  change_cursor (widget, "crosshair");
+  change_cursor (GTK_WIDGET(da), "crosshair");
+  gui_to_world (data->pd, x, y, Press);
   g_print ("on_da_right_btn_pressed() called\n");
 }
 
@@ -1460,9 +1487,22 @@ on_da_right_btn_released (GtkGestureClick *gesture,
                                    int                n_press,
                                    double             x,
                                    double             y,
-                                   GtkWidget         *widget)
+                                   AllData*           data)
 {
-  change_cursor (widget, "default");
+  change_cursor (GTK_WIDGET(da), "default");
+  gui_to_world (data->pd, x, y, Release);
+  if ((data->pd->zm_startx != data->pd->zm_endx)
+      && (data->pd->zm_starty != data->pd->zm_endy))
+    {
+      /* Zoom */
+      data->pd->vw_xmin = fmin (data->pd->zm_startx, data->pd->zm_endx);
+      data->pd->vw_ymin = fmin (data->pd->zm_starty, data->pd->zm_endy);
+      data->pd->vw_xmax = fmax (data->pd->zm_startx, data->pd->zm_endx);
+      data->pd->vw_ymax = fmax (data->pd->zm_starty, data->pd->zm_endy);
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+      reset_zoom (data->pd);
+    }
+
   g_print ("on_da_right_btn_released() called\n");
 }
 
@@ -1470,10 +1510,26 @@ static void
 on_da_right_btn_drag (GtkGestureDrag *gesture,
                                    double             x,
                                    double             y,
-                                   GtkWidget         *widget)
+                                   AllData*           data)
 {
-  change_cursor (widget, "crosshair");
+  change_cursor (GTK_WIDGET(da), "crosshair");
+  gui_to_world (data->pd, x, y, Move);
+  gtk_widget_queue_draw (GTK_WIDGET (da));
   g_print ("on_da_right_btn_drag() called\n");
+}
+
+static void
+on_da_middle_btn_pressed (GtkGestureClick *gesture,
+                                   int                n_press,
+                                   double             x,
+                                   double             y,
+                                   AllData*           data)
+{
+  change_cursor (GTK_WIDGET(da), "default");
+  reset_view_limits (data->pd);
+  gtk_widget_queue_draw (GTK_WIDGET (da));
+  reset_zoom (data->pd);
+  g_print ("on_da_middle_btn_pressed() called\n");
 }
 
 
@@ -2397,24 +2453,28 @@ main (int argc, char *argv[])
   press = gtk_gesture_click_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (press), GDK_BUTTON_SECONDARY);
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (press));
-  g_signal_connect (press, "pressed", G_CALLBACK (on_da_right_btn_pressed), da);
+  g_signal_connect (press, "pressed", G_CALLBACK (on_da_right_btn_pressed), pall);
 
   /* Register for mouse right button click "released" events on drawingarea*/
   GtkGesture * released;
   released = gtk_gesture_click_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (released), GDK_BUTTON_SECONDARY);
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (released));
-  g_signal_connect (released, "released", G_CALLBACK (on_da_right_btn_released), da);
+  g_signal_connect (released, "released", G_CALLBACK (on_da_right_btn_released), pall);
   
   GtkGesture * drag;
   drag = gtk_gesture_drag_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag));
-  g_signal_connect (drag, "drag-begin", G_CALLBACK (on_da_right_btn_drag), da);
-  g_signal_connect (drag, "drag-update", G_CALLBACK (on_da_right_btn_drag), da);
-  g_signal_connect (drag, "drag-end", G_CALLBACK (on_da_right_btn_drag), da);
+  g_signal_connect (drag, "drag-begin", G_CALLBACK (on_da_right_btn_drag), pall);
+  g_signal_connect (drag, "drag-update", G_CALLBACK (on_da_right_btn_drag), pall);
+  g_signal_connect (drag, "drag-end", G_CALLBACK (on_da_right_btn_drag), pall);
 
-
+  GtkGesture * press_middle;
+  press_middle = gtk_gesture_click_new ();
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (press_middle), GDK_BUTTON_MIDDLE);
+  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (press_middle));
+  g_signal_connect (press_middle, "pressed", G_CALLBACK (on_da_middle_btn_pressed), pall);
 
 
 
