@@ -2401,23 +2401,13 @@ main (int argc, char *argv[])
 //                    G_CALLBACK (on_button_press), pall);
 
 
-  GtkGesture * drag;
-  drag = gtk_gesture_drag_new ();
-  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
-  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag));
-  g_signal_connect (drag, "drag-update", G_CALLBACK (on_da_right_btn_drag_update), pall);
-
-  GtkGesture * drag_begin;
-  drag_begin = gtk_gesture_drag_new ();
-  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
-  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag_begin));
-  g_signal_connect (drag, "drag-begin", G_CALLBACK (on_da_right_btn_drag_begin), pall);
-
-  GtkGesture * drag_end;
-  drag_end = gtk_gesture_drag_new ();
-  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
-  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag_end));
-  g_signal_connect (drag, "drag-end", G_CALLBACK (on_da_right_btn_drag_end), pall);
+  GtkGesture * drag_secondary;
+  drag_secondary = gtk_gesture_drag_new ();
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag_secondary), GDK_BUTTON_SECONDARY);
+  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag_secondary));
+  g_signal_connect (drag_secondary, "drag-update", G_CALLBACK (on_da_right_btn_drag_update), pall);
+  g_signal_connect (drag_secondary, "drag-begin", G_CALLBACK (on_da_right_btn_drag_begin), pall);
+  g_signal_connect (drag_secondary, "drag-end", G_CALLBACK (on_da_right_btn_drag_end), pall);
 
   GtkGesture * press_middle;
   press_middle = gtk_gesture_click_new ();
