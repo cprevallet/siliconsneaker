@@ -2374,11 +2374,6 @@ main (int argc, char *argv[])
 
   /* Signals and events */
   //gtk_builder_connect_signals (builder, NULL);
-//  gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_PRESS_MASK);
-//  gtk_widget_add_events (GTK_WIDGET (da), GDK_BUTTON_RELEASE_MASK);
-//  g_signal_connect (GTK_DRAWING_AREA (da), "button-press-event",
-//                    G_CALLBACK (on_button_press), pall);
-
   GtkGesture * drag_primary;
   drag_primary = gtk_gesture_drag_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag_primary), GDK_BUTTON_PRIMARY);
