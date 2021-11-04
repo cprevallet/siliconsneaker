@@ -1466,6 +1466,16 @@ on_da_right_btn_released (GtkGestureClick *gesture,
   g_print ("on_da_right_btn_released() called\n");
 }
 
+static void
+on_da_right_btn_drag (GtkGestureDrag *gesture,
+                                   double             x,
+                                   double             y,
+                                   GtkWidget         *widget)
+{
+  change_cursor (widget, "crosshair");
+  g_print ("on_da_right_btn_drag() called\n");
+}
+
 
 /* Handle mouse button press. */
 //#ifdef _WIN32
@@ -2381,20 +2391,33 @@ main (int argc, char *argv[])
 //                    G_CALLBACK (on_button_press), pall);
 
 
-/* Register for mouse right button click "pressed" events on drawingarea*/
- GtkGesture *gesture = NULL;
- gesture = gtk_gesture_click_new ();
- gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 3);
- g_signal_connect (gesture, "pressed",
-                   G_CALLBACK (on_da_right_btn_pressed), da);
- gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (gesture));
 
-/* Register for mouse right button click "released" events on drawingarea*/
- gesture = gtk_gesture_click_new ();
- gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (gesture), 3);
- g_signal_connect (gesture, "released",
-                   G_CALLBACK (on_da_right_btn_released), da);
- gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (gesture));
+  /* Register for mouse right button click "pressed" events on drawingarea*/
+  GtkGesture * press;
+  press = gtk_gesture_click_new ();
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (press), GDK_BUTTON_SECONDARY);
+  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (press));
+  g_signal_connect (press, "pressed", G_CALLBACK (on_da_right_btn_pressed), da);
+
+  /* Register for mouse right button click "released" events on drawingarea*/
+  GtkGesture * released;
+  released = gtk_gesture_click_new ();
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (released), GDK_BUTTON_SECONDARY);
+  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (released));
+  g_signal_connect (released, "released", G_CALLBACK (on_da_right_btn_released), da);
+  
+  GtkGesture * drag;
+  drag = gtk_gesture_drag_new ();
+  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_SECONDARY);
+  gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (drag));
+  g_signal_connect (drag, "drag-begin", G_CALLBACK (on_da_right_btn_drag), da);
+  g_signal_connect (drag, "drag-update", G_CALLBACK (on_da_right_btn_drag), da);
+  g_signal_connect (drag, "drag-end", G_CALLBACK (on_da_right_btn_drag), da);
+
+
+
+
+
 
 
 //  g_signal_connect (GTK_DRAWING_AREA (da), "button-release-event",
