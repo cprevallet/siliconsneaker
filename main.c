@@ -2407,17 +2407,6 @@ main (int argc, char *argv[])
   gtk_widget_add_controller (GTK_WIDGET(da), GTK_EVENT_CONTROLLER (scroll_middle));
   g_signal_connect (scroll_middle, "scroll", G_CALLBACK (on_da_middle_btn_scrolled), pall);
    
-  //gtk_widget_add_events (GTK_WIDGET (da), GDK_POINTER_MOTION_MASK);
-   //gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_DOWN);
-   //gtk_widget_add_events (GTK_WIDGET (da), GDK_SCROLL_UP);
-//*  g_signal_connect(GTK_WIDGET (da),"scroll-event", 
-//		    G_CALLBACK(on_da_middle_btn_scrolled), pall);
-
-
-//  g_signal_connect (GTK_DRAWING_AREA (da), "button-release-event",
-//                    G_CALLBACK (on_button_release), pall);
-//  g_signal_connect (GTK_DRAWING_AREA (da), "motion-notify-event",
-//                    G_CALLBACK (on_motion_notify), pall);
   gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (da), da_draw,
                       pall, NULL);
   g_signal_connect (GTK_TOGGLE_BUTTON (rb_Pace), "toggled",
