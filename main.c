@@ -72,7 +72,7 @@
 //
 // Declarations section
 //
-#define VERSION "1.8"
+#define VERSION "1.9"
 // How big should the initial window be?
 #define FRACT_OF_SCRN 0.85
 // Maximum readable records from a fit file.
@@ -1537,6 +1537,20 @@ on_motion_notify (GtkWidget *widget, GdkEventButton *event, AllData *data)
       gui_to_world (data->pd, event, Move);
       gtk_widget_queue_draw (GTK_WIDGET (da));
     }
+  if (event->state & GDK_BUTTON1_MASK)
+    {
+      gui_to_world (data->pd, (GdkEventButton *)event, Release);
+          data->pd->vw_xmin
+              = data->pd->vw_xmin + (data->pd->zm_startx - data->pd->zm_endx);
+          data->pd->vw_xmax
+              = data->pd->vw_xmax + (data->pd->zm_startx - data->pd->zm_endx);
+          data->pd->vw_ymin
+              = data->pd->vw_ymin + (data->pd->zm_starty - data->pd->zm_endy);
+          data->pd->vw_ymax
+              = data->pd->vw_ymax + (data->pd->zm_starty - data->pd->zm_endy);
+      gtk_widget_queue_draw (GTK_WIDGET (da));
+    }
+
   return TRUE;
 }
 
@@ -2081,6 +2095,7 @@ on_window_show_about_dialog (GtkButton *btn, GtkWindow *window)
       "© 2021 Craig S. Prevallet", "license-type", GTK_LICENSE_GPL_2_0,
       "wrap-license", TRUE, NULL);
 }
+
 
 /* Call when the main window is closed.*/
 #ifdef _WIN32

@@ -1,3 +1,10 @@
+siliconsneaker (1.9) UNRELEASED; urgency=medium
+
+  * Graph updates while panning.
+ 
+ -- Craig Prevallet <penguintx@hotmail.com>  Fri, 5 Nov 2021 15:18:46 -0500
+
+
 siliconsneaker (1.8) UNRELEASED; urgency=medium
 
   * Single background color for graph, now light.
