@@ -1549,6 +1549,7 @@ on_motion_notify (GtkWidget *widget, GdkEventButton *event, AllData *data)
           data->pd->vw_ymax
               = data->pd->vw_ymax + (data->pd->zm_starty - data->pd->zm_endy);
       gtk_widget_queue_draw (GTK_WIDGET (da));
+      while(gtk_events_pending()) gtk_main_iteration();
     }
 
   return TRUE;
